@@ -166,6 +166,12 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-name">팥</div>
       <div class="crop-desc">수확량 조사</div>
     </div>
+    <div class="crop-card done" onclick="go('tea')">
+      <span class="badge badge-done">완성</span>
+      <div class="crop-icon">🍵</div>
+      <div class="crop-name">차</div>
+      <div class="crop-desc">수확량 조사</div>
+    </div>
   </div>
 </div>
 
@@ -255,7 +261,7 @@ function switchTab(i){
 function go(page){
   const map={
     garlic:'./garlic.html', onion:'./onion.html', bean:'./bean.html',
-    sweetpotato:'./sweetpotato.html', red_bean:'./red_bean.html',
+    sweetpotato:'./sweetpotato.html', red_bean:'./red_bean.html', tea:'./tea.html',
     apple:'./apple.html', apple_multi:'./apple_multi.html',
     fruit:'./fruit.html', rice:'./rice.html',
     wheat_barley_oat:'./wheat_barley_oat.html'
