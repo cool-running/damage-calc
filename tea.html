@@ -690,7 +690,6 @@ function calcResult(){
   if(!avgYield||!actArea||surveyArea<=0||tYield<=0){
     resultBox.className='result-box pending';
     pctEl.textContent='- -'; pctEl.style.color='white';
-    const _ur2=document.getElementById('result-unins-rate'); if(_ur2) _ur2.textContent='- -';
     document.getElementById('r-survey').textContent='-';
     document.getElementById('r-unins').textContent='-';
     document.getElementById('r-loss').textContent='-';
@@ -708,8 +707,6 @@ function calcResult(){
   document.getElementById('r-loss').textContent=netLoss.toLocaleString()+' kg';
 
   resultBox.className='result-box';
-  const uninsRateEl=document.getElementById('result-unins-rate');
-  if(uninsRateEl) uninsRateEl.textContent=(uninsRate*100)+'%';
   if(rawPct<0){
     pctEl.textContent=rawPct.toFixed(2)+'%';
     pctEl.style.color='#60B4FF';
@@ -779,7 +776,6 @@ function setEditMode(){
   document.getElementById('result-section').className='result-box pending';
   document.getElementById('result-pct').textContent='- -';
   document.getElementById('result-pct').style.color='white';
-  const _ur=document.getElementById('result-unins-rate'); if(_ur) _ur.textContent='- -';
   saveState();
 }
 
