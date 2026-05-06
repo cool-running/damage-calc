@@ -440,11 +440,13 @@ tfoot td.v{color:var(--text)}
         <table class="fit-table" style="display:inline-table;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden">
           <thead><tr>
             <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">피해율</th>
+            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상비율</th>
             <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">조사수확량</th>
             <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상감수량</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 14px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px;white-space:nowrap" id="cap-pct">-</td>
+            <td style="padding:7px 14px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px;white-space:nowrap" id="cap-unins-rate">-</td>
             <td style="padding:7px 14px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px;white-space:nowrap" id="cap-survey">-</td>
             <td style="padding:7px 14px;text-align:center;background:#fff;font-weight:700;font-size:12px;white-space:nowrap" id="cap-unins">-</td>
           </tr></tbody>
@@ -688,6 +690,7 @@ function calcResult(){
   if(!avgYield||!actArea||surveyArea<=0||tYield<=0){
     resultBox.className='result-box pending';
     pctEl.textContent='- -'; pctEl.style.color='white';
+    const _ur2=document.getElementById('result-unins-rate'); if(_ur2) _ur2.textContent='- -';
     document.getElementById('r-survey').textContent='-';
     document.getElementById('r-unins').textContent='-';
     document.getElementById('r-loss').textContent='-';
@@ -705,6 +708,8 @@ function calcResult(){
   document.getElementById('r-loss').textContent=netLoss.toLocaleString()+' kg';
 
   resultBox.className='result-box';
+  const uninsRateEl=document.getElementById('result-unins-rate');
+  if(uninsRateEl) uninsRateEl.textContent=(uninsRate*100)+'%';
   if(rawPct<0){
     pctEl.textContent=rawPct.toFixed(2)+'%';
     pctEl.style.color='#60B4FF';
@@ -774,6 +779,7 @@ function setEditMode(){
   document.getElementById('result-section').className='result-box pending';
   document.getElementById('result-pct').textContent='- -';
   document.getElementById('result-pct').style.color='white';
+  const _ur=document.getElementById('result-unins-rate'); if(_ur) _ur.textContent='- -';
   saveState();
 }
 
@@ -884,6 +890,7 @@ function fillTeaCaptureTemplate(){
   document.getElementById('cap-other-area').textContent=document.getElementById('other_area').value?document.getElementById('other_area').value+' ㎡':'0 ㎡';
   document.getElementById('cap-harv-area').textContent=document.getElementById('harv_area').value?document.getElementById('harv_area').value+' ㎡':'0 ㎡';
   document.getElementById('cap-pct').textContent=document.getElementById('result-pct').textContent||'-';
+  document.getElementById('cap-unins-rate').textContent=(parseFloat(document.getElementById('unins_rate').value)||0)+'%';
   document.getElementById('cap-survey').textContent=document.getElementById('r-survey').textContent||'-';
   document.getElementById('cap-unins').textContent=document.getElementById('r-unins').textContent||'-';
   // 표본 테이블
