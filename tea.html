@@ -629,7 +629,7 @@ function calc(){
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
   const m2Avg=insArea>0?Math.round(avgYield/insArea*10000)/10000:0;
-  const effAvg=isChanged?Math.floor(m2Avg*actArea):avgYield;
+  const effAvg=isChanged?Math.round(m2Avg*actArea):avgYield;
   const properSample=actArea>0?getProperSample(actArea):4;
 
   // 계약변경
@@ -663,7 +663,7 @@ function calcResult(){
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
   const m2Avg=insArea>0?Math.round(avgYield/insArea*10000)/10000:0;
-  const effAvg=isChanged?Math.floor(m2Avg*actArea):avgYield;
+  const effAvg=isChanged?Math.round(m2Avg*actArea):avgYield;
   const properSample=actArea>0?getProperSample(actArea):samples.length||4;
 
   // 표본면적 = 구간수 × 0.08㎡
