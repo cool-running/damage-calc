@@ -264,8 +264,8 @@ tfoot td.v{color:var(--text)}
         <input type="text" id="survey_area_disp" class="auto" readonly>
       </div>
       <div class="field">
-        <label>표본구간수</label>
-        <input type="text" id="proper_sample_disp" class="auto" readonly>
+        <label>㎡당 평년수확량</label>
+        <input type="text" id="m2_avg_disp" class="auto" readonly>
       </div>
       <div class="field">
         <label>계약변경여부</label>
@@ -274,11 +274,18 @@ tfoot td.v{color:var(--text)}
     </div>
     <div class="g3">
       <div class="field">
-        <label>수확면적률</label>
+        <label>가입수확면적률</label>
+        <span class="unit-badge">%</span>
+        <input type="number" id="ins_harvest_rate" class="inp" inputmode="decimal" placeholder="0"
+          enterkeyhint="next"
+          oninput="markFilled(this)" onblur="onInsHarvestRateChange()" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>실제수확면적률</label>
         <span class="unit-badge">%</span>
         <input type="number" id="harvest_area_rate" class="inp" inputmode="decimal" placeholder="0"
           enterkeyhint="next"
-          oninput="markFilled(this)" onblur="calc()" autocomplete="off">
+          oninput="markFilled(this)" onblur="onActHarvestRateChange()" autocomplete="off">
       </div>
       <div class="field">
         <label>미보상비율</label>
@@ -287,10 +294,6 @@ tfoot td.v{color:var(--text)}
           enterkeyhint="done"
           oninput="markFilled(this)" onblur="calc()"
           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" autocomplete="off">
-      </div>
-      <div class="field">
-        <label>㎡당 평년수확량</label>
-        <input type="text" id="m2_avg_disp" class="auto" readonly>
       </div>
     </div>
   </div>
@@ -368,6 +371,7 @@ tfoot td.v{color:var(--text)}
 
 <!-- 계산 결과 hidden -->
 <div id="tea-hidden-results" style="display:none">
+  <input type="hidden" id="ins_avg_yield_hidden" value="">
   <span id="r-survey">-</span><span id="r-unins">-</span><span id="r-loss">-</span>
 </div>
 
@@ -390,7 +394,7 @@ tfoot td.v{color:var(--text)}
           <thead><tr>
             <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">평년수확량</th>
             <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">가입면적</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">수확면적률</th>
+            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">실제수확면적률</th>
             <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">원장변경유무</th>
           </tr></thead>
           <tbody><tr>
@@ -616,6 +620,35 @@ function updateTotals(){
   calcResult();
 }
 
+// ── 수확면적률 변경 핸들러 ──────────────────────────
+function onInsHarvestRateChange(){
+  // 가입수확면적률 저장 시점에 현재 평년수확량을 원장값으로 기억
+  const avgVal=parseFloat((document.getElementById('avg_yield').value||'').replace(/,/g,''))||0;
+  if(avgVal>0) document.getElementById('ins_avg_yield_hidden').value=avgVal;
+  recalcAvgYield();
+  calc(); saveState();
+}
+function onActHarvestRateChange(){
+  recalcAvgYield();
+  calc(); saveState();
+}
+function recalcAvgYield(){
+  const insRate=parseFloat(document.getElementById('ins_harvest_rate').value)||0;
+  const actRate=parseFloat(document.getElementById('harvest_area_rate').value)||0;
+  if(!insRate||!actRate) return;
+  const insAvg=parseFloat(document.getElementById('ins_avg_yield_hidden').value)||0;
+  if(!insAvg) return;
+  const avgEl=document.getElementById('avg_yield');
+  if(insRate===actRate){
+    // 동일하면 원장값 복원
+    avgEl.value=insAvg.toLocaleString();
+  } else {
+    const newAvg=Math.floor(insAvg*actRate/insRate);
+    avgEl.value=newAvg.toLocaleString();
+  }
+  avgEl.classList.add('filled');
+}
+
 // ── 메인 계산 ────────────────────────────────────
 function calc(){
   const avgYield=toNum(document.getElementById('avg_yield'));
@@ -643,7 +676,7 @@ function calc(){
   }
 
   document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString()+' ㎡':'';
-  document.getElementById('proper_sample_disp').value=actArea>0?properSample+'구간':'';
+  const _psd=document.getElementById('proper_sample_disp'); if(_psd) _psd.value=actArea>0?properSample+'구간':'';
   document.getElementById('m2_avg_disp').value=m2Avg>0?m2Avg.toFixed(4)+' kg/㎡':'';
 
   calcResult();
@@ -744,7 +777,9 @@ function setCalcMode(){
   if(!toNum(document.getElementById('ins_area')))  missing.push('• 가입면적');
   if(!toNum(document.getElementById('act_area')))  missing.push('• 실경작면적');
   const har=(parseFloat(document.getElementById('harvest_area_rate').value)||0);
-  if(!har) missing.push('• 수확면적률');
+  if(!har) missing.push('• 실제수확면적률');
+  const insHar=(parseFloat(document.getElementById('ins_harvest_rate').value)||0);
+  if(!insHar) missing.push('• 가입수확면적률');
   if(samples.length>0){
     const empty=[];
     samples.forEach((s,i)=>{
@@ -785,7 +820,8 @@ function closeResetModal(){ document.getElementById('reset-overlay').style.displ
 function confirmResetAll(){ closeResetModal(); resetAll(); }
 function resetAll(){
   try{ localStorage.removeItem('tea_state'); }catch(e){}
-  ['avg_yield','ins_area','act_area','dead_area','other_area','harv_area','harvest_area_rate','unins_rate'].forEach(id=>{
+  document.getElementById('ins_avg_yield_hidden').value='';
+  ['avg_yield','ins_area','act_area','dead_area','other_area','harv_area','ins_harvest_rate','harvest_area_rate','unins_rate'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){ el.value=''; el.classList.remove('filled'); }
   });
@@ -793,7 +829,7 @@ function resetAll(){
   if(farmEl){ farmEl.value=''; farmEl.classList.remove('filled'); }
   document.getElementById('survey_date').value=fmt(new Date());
   document.getElementById('survey_date').classList.add('filled');
-  ['contract_yn_disp','survey_area_disp','proper_sample_disp','m2_avg_disp'].forEach(id=>{
+  ['contract_yn_disp','survey_area_disp','m2_avg_disp'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){ el.value=''; el.style.color=''; el.style.fontWeight=''; }
   });
@@ -820,6 +856,8 @@ function saveState(){
       dead_area:document.getElementById('dead_area').value,
       other_area:document.getElementById('other_area').value,
       harv_area:document.getElementById('harv_area').value,
+      ins_harvest_rate:document.getElementById('ins_harvest_rate').value,
+      ins_avg_yield_hidden:document.getElementById('ins_avg_yield_hidden').value,
       harvest_area_rate:document.getElementById('harvest_area_rate').value,
       unins_rate:document.getElementById('unins_rate').value,
       samples:samples,
@@ -833,7 +871,7 @@ function loadState(){
     const raw=localStorage.getItem('tea_state');
     if(!raw) return false;
     const s=JSON.parse(raw);
-    const fields=['avg_yield','ins_area','act_area','dead_area','other_area','harv_area','harvest_area_rate','unins_rate','survey_date'];
+    const fields=['avg_yield','ins_area','act_area','dead_area','other_area','harv_area','ins_harvest_rate','harvest_area_rate','unins_rate','survey_date'];
     fields.forEach(id=>{
       if(s[id]!==undefined&&s[id]!==''){
         const el=document.getElementById(id);
@@ -841,6 +879,7 @@ function loadState(){
       }
     });
     if(s.farm_no){ const el=document.getElementById('farm_no'); if(el){ el.value=s.farm_no; el.classList.add('filled'); } }
+    if(s.ins_avg_yield_hidden){ const el=document.getElementById('ins_avg_yield_hidden'); if(el) el.value=s.ins_avg_yield_hidden; }
     if(s.samples&&s.samples.length>0) samples=s.samples;
     if(s.isLocked) setTimeout(()=>{
       _isLocked=true;
@@ -878,7 +917,9 @@ function fillTeaCaptureTemplate(){
   document.getElementById('cap-farmno-disp').textContent=farmNo?`농지번호: ${farmNo}`:'';
   document.getElementById('cap-avg-yield').textContent=document.getElementById('avg_yield').value?document.getElementById('avg_yield').value+' kg':'-';
   document.getElementById('cap-ins-area').textContent=document.getElementById('ins_area').value?document.getElementById('ins_area').value+' ㎡':'-';
-  document.getElementById('cap-harvest-rate').textContent=document.getElementById('harvest_area_rate').value?document.getElementById('harvest_area_rate').value+'%':'-';
+  const _insHR=document.getElementById('ins_harvest_rate').value||'';
+  const _actHR=document.getElementById('harvest_area_rate').value||'';
+  document.getElementById('cap-harvest-rate').textContent=_actHR?(_insHR&&_insHR!==_actHR?_insHR+'%→'+_actHR+'%':_actHR+'%'):'-';
   const capCon=document.getElementById('cap-contract');
   capCon.textContent=contractV; capCon.style.color=contractColor; capCon.style.fontWeight='700';
   document.getElementById('cap-act-area').textContent=document.getElementById('act_area').value?document.getElementById('act_area').value+' ㎡':'-';
