@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#185FA5">
+<meta name="theme-color" content="#2E7D32">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 <style>
 :root{
-  --blue:#185FA5;--blue2:#378ADD;
-  --auto:#F3F1EA;--border:#D8D6CE;--binp:#378ADD;
+  --blue:#2E7D32;--blue2:#4CAF50;
+  --auto:#F3F1EA;--border:#D8D6CE;--binp:#4CAF50;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
   --red:#e24b4a;--green:#1D9E75;
@@ -109,16 +109,16 @@ input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);
 
 /* mobile-focus & focus 통합 */
 input.inp.mobile-focus,input.inp:focus,input.inp:focus-visible,input.inp:active,tbody td input.mobile-focus,tbody td input:focus,tbody td input:focus-visible,tbody td input:active{
-  outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(55,138,221,0.22)!important;background:#DCEEFF!important;color:#185FA5!important;
+  outline:none!important;border-color:#2E7D32!important;box-shadow:0 0 0 3px rgba(46,125,50,0.22)!important;background:#E8F5E9!important;color:#2E7D32!important;
 }
 input.inp.filled.mobile-focus,input.inp.filled:focus,input.inp.filled:focus-visible,input.inp.filled:active,tbody td input.filled.mobile-focus,tbody td input.filled:focus,tbody td input.filled:focus-visible,tbody td input.filled:active{
-  outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(55,138,221,0.22)!important;background:#DCEEFF!important;color:#185FA5!important;
+  outline:none!important;border-color:#2E7D32!important;box-shadow:0 0 0 3px rgba(46,125,50,0.22)!important;background:#E8F5E9!important;color:#2E7D32!important;
 }
 
 /* 버튼 */
 .reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
 .bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--blue2);border-radius:var(--rs);color:var(--blue2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;-webkit-appearance:none;appearance:none}
-.bigtext-btn.on{background:var(--blue2);color:#fff;box-shadow:0 2px 8px rgba(55,138,221,0.35)}
+.bigtext-btn.on{background:var(--blue2);color:#fff;box-shadow:0 2px 8px rgba(46,125,50,0.35)}
 .bigtext-btn:active{opacity:0.8}
 
 /* 크게보기 모드 */
@@ -139,7 +139,7 @@ tbody td{padding:3px 2px;border-bottom:0.5px solid #eee;text-align:center;vertic
 tbody td.no{text-align:center;color:var(--sub);font-size:10px;font-weight:600;width:20px}
 tbody td input{width:100%;height:34px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:13px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text);transition:background 0.15s,border-color 0.15s}
 tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
-tbody td input.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,0.15);background:#dceeff;color:#185FA5}
+tbody td input.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,125,50,0.15);background:#e8f5e9;color:#2E7D32}
 tfoot td{padding:6px 1px;background:#f3efe8;font-weight:700;font-size:10px;text-align:center;border-top:1.5px solid var(--border)}
 tfoot td.v{color:var(--text)}
 
@@ -151,7 +151,7 @@ tfoot td.v{color:var(--text)}
 .sample-info-row strong{font-size:13px;font-weight:800;color:var(--text)}
 
 /* 결과 박스 */
-.result-box{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(24,95,165,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
+.result-box{background:linear-gradient(135deg,#2E7D32 0%,#43A047 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(46,125,50,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
 .result-box.pending{background:linear-gradient(135deg,#888 0%,#aaa 100%);border:1.5px solid rgba(255,255,255,0.15);box-shadow:none}
 .save-btn{background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);color:white;border-radius:12px;height:36px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 14px;white-space:nowrap;flex-shrink:0}
 .save-btn:active{background:rgba(255,255,255,0.35)}
@@ -159,10 +159,10 @@ tfoot td.v{color:var(--text)}
 /* 계산/수정 버튼 */
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .btn-calc{height:46px;border:none;border-radius:12px;background:var(--blue);color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-calc:active{background:#1354a0}
+.btn-calc:active{background:#256427}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit:active{background:#f0fdf8}
-.btn-calc.active{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);box-shadow:0 4px 14px rgba(24,95,165,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#2E7D32 0%,#43A047 100%);box-shadow:0 4px 14px rgba(46,125,50,0.35)}
 .btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
 
 /* 입력 잠금 */
@@ -468,7 +468,7 @@ tfoot td.v{color:var(--text)}
     <div style="font-size:17px;font-weight:800;color:#333;text-align:center;margin-bottom:10px">입력이 완료되지 않았습니다</div>
     <div style="font-size:13px;line-height:1.7;color:#666;text-align:center;margin-bottom:6px">아래 항목을 확인해 주세요.</div>
     <div id="validation-list" style="background:#FFF5F5;border:1px solid #ffd0d0;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#c0392b;line-height:2"></div>
-    <button onclick="document.getElementById('validation-overlay').style.display='none'" style="width:100%;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
+    <button onclick="document.getElementById('validation-overlay').style.display='none'" style="width:100%;height:46px;border:none;border-radius:12px;background:#2E7D32;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
   </div>
 </div>
 
@@ -479,7 +479,7 @@ tfoot td.v{color:var(--text)}
     <div style="font-size:14px;line-height:1.65;color:#666;text-align:center;margin-bottom:20px">입력한 모든 값을 초기화할까요?<br>초기화 후에는 되돌릴 수 없습니다.</div>
     <div style="display:flex;gap:10px">
       <button onclick="closeResetModal()" style="flex:1;height:46px;border:1.5px solid #d9d9d9;border-radius:12px;background:#f7f7f7;color:#555;font-size:15px;font-weight:700;cursor:pointer">취소</button>
-      <button onclick="confirmResetAll()" style="flex:1;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">초기화</button>
+      <button onclick="confirmResetAll()" style="flex:1;height:46px;border:none;border-radius:12px;background:#2E7D32;color:#fff;font-size:15px;font-weight:700;cursor:pointer">초기화</button>
     </div>
   </div>
 </div>
