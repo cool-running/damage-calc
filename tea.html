@@ -636,8 +636,7 @@ function calc(){
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
-  const m2Avg=insArea>0?Math.round(avgYieldAdj/insArea*10000)/10000:0;
-  const effAvg=isChanged?Math.round(m2Avg*actArea):avgYieldAdj;
+  const m2Avg=insArea>0?Math.round(avgYield/insArea*10000)/10000:0;
   const properSample=actArea>0?getProperSample(actArea):4;
 
   // 계약변경
@@ -896,10 +895,25 @@ function fillTeaCaptureTemplate(){
   document.getElementById('cap-ins-area').textContent=document.getElementById('ins_area').value?document.getElementById('ins_area').value+' ㎡':'-';
   const _insHR=document.getElementById('ins_harvest_rate').value||'';
   const _actHR=document.getElementById('harvest_area_rate').value||'';
-  document.getElementById('cap-harvest-rate').textContent=_actHR?(_insHR&&_insHR!==_actHR?_insHR+'%→'+_actHR+'%':_actHR+'%'):'-';
+  const _hrChanged=_insHR&&_actHR&&_insHR!==_actHR;
+  const _hrEl=document.getElementById('cap-harvest-rate');
+  _hrEl.textContent=_actHR?(_hrChanged?_insHR+'%→'+_actHR+'%':_actHR+'%'):'-';
+  _hrEl.style.color=_hrChanged?'#e24b4a':'#111827';
+  _hrEl.style.fontWeight='700';
+  // 원장변경 대상: 면적 또는 수확면적률 변경
+  const _insArea=parseFloat((document.getElementById('ins_area').value||'').replace(/,/g,''))||0;
+  const _actArea=parseFloat((document.getElementById('act_area').value||'').replace(/,/g,''))||0;
+  const _areaChanged=_insArea>0&&_actArea>0&&Math.abs((_actArea-_insArea)/_insArea)>0.1;
+  const _isOriginalChanged=_areaChanged||_hrChanged;
   const capCon=document.getElementById('cap-contract');
-  capCon.textContent=contractV; capCon.style.color=contractColor; capCon.style.fontWeight='700';
-  document.getElementById('cap-act-area').textContent=document.getElementById('act_area').value?document.getElementById('act_area').value+' ㎡':'-';
+  capCon.textContent=_isOriginalChanged?'원장변경 대상':'이상무';
+  capCon.style.color=_isOriginalChanged?'#e24b4a':'#111827';
+  capCon.style.fontWeight='700';
+  // 실경작면적 - 면적변경 시 빨간색
+  const _actAreaEl=document.getElementById('cap-act-area');
+  _actAreaEl.textContent=document.getElementById('act_area').value?document.getElementById('act_area').value+' ㎡':'-';
+  _actAreaEl.style.color=_areaChanged?'#e24b4a':'#111827';
+  _actAreaEl.style.fontWeight=_areaChanged?'700':'700';
   document.getElementById('cap-dead-area').textContent=document.getElementById('dead_area').value?document.getElementById('dead_area').value+' ㎡':'0 ㎡';
   document.getElementById('cap-other-area').textContent=document.getElementById('other_area').value?document.getElementById('other_area').value+' ㎡':'0 ㎡';
   document.getElementById('cap-harv-area').textContent=document.getElementById('harv_area').value?document.getElementById('harv_area').value+' ㎡':'0 ㎡';
