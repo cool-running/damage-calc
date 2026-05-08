@@ -718,7 +718,7 @@ function calc(){
 
   // 면적 변경 평년수확량
   const effAvg = isChanged
-    ? Math.round(avgYield * (actArea/insArea) * 10) / 10
+    ? Math.round(Math.round(avgYield/insArea*10000)/10000 * actArea)
     : avgYield;
 
   const resultBox = document.getElementById('result-section');
@@ -764,7 +764,7 @@ function calc(){
 
   const survYield   = Math.round(unitSample * surveyArea) + Math.round(unitAvg * (otherArea + harvArea));
   const loss        = Math.max(0, effAvg - survYield);
-  const uninsLoss   = loss * uninsRate;
+  const uninsLoss   = Math.round(loss * uninsRate);
   const netLoss     = Math.max(0, loss - uninsLoss);
   const pct         = Math.round(netLoss / effAvg * 10000) / 100;
 

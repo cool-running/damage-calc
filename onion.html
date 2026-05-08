@@ -902,7 +902,7 @@ function calc(){
 
   // 면적 10% 초과/부족시 변경 평년수확량 적용
   const effAvg = isChanged
-    ? Math.round(avgYield * (actArea/insArea) * 10) / 10
+    ? Math.round(Math.round(avgYield/insArea*10000)/10000 * actArea)
     : avgYield;
 
   // 비대추정
@@ -966,7 +966,7 @@ function calc(){
   const estYield = tEff/1000/tA * growIdx * surveyArea; // 표시용
 
   const loss = Math.max(0, effAvg - totalYield);
-  const uninsLoss = loss * uninsRate;
+  const uninsLoss = Math.round(loss * uninsRate);
   const netLoss = Math.max(0, loss - uninsLoss);
   // ⑤ ROUND 피해율 소수4자리
   const pct = Math.round(netLoss / effAvg * 10000) / 100;

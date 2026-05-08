@@ -550,7 +550,7 @@ function calcCommon(){
   }
 
   const effAvg = (insArea>0&&actArea>0&&Math.abs(areaErr)>0.1)
-    ? Math.round(avgYield*(actArea/insArea)*10)/10 : avgYield;
+    ? Math.round(Math.round(avgYield/insArea*10000)/10000 * actArea) : avgYield;
 
   return {avgYield, insArea, actArea, realArea, surveyArea, effAvg,
           uninsArea, harvArea,
