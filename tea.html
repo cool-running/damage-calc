@@ -621,33 +621,8 @@ function updateTotals(){
 }
 
 // ── 수확면적률 변경 핸들러 ──────────────────────────
-function onInsHarvestRateChange(){
-  // 가입수확면적률 저장 시점에 현재 평년수확량을 원장값으로 기억
-  const avgVal=parseFloat((document.getElementById('avg_yield').value||'').replace(/,/g,''))||0;
-  if(avgVal>0) document.getElementById('ins_avg_yield_hidden').value=avgVal;
-  recalcAvgYield();
-  calc(); saveState();
-}
-function onActHarvestRateChange(){
-  recalcAvgYield();
-  calc(); saveState();
-}
-function recalcAvgYield(){
-  const insRate=parseFloat(document.getElementById('ins_harvest_rate').value)||0;
-  const actRate=parseFloat(document.getElementById('harvest_area_rate').value)||0;
-  if(!insRate||!actRate) return;
-  const insAvg=parseFloat(document.getElementById('ins_avg_yield_hidden').value)||0;
-  if(!insAvg) return;
-  const avgEl=document.getElementById('avg_yield');
-  if(insRate===actRate){
-    // 동일하면 원장값 복원
-    avgEl.value=insAvg.toLocaleString();
-  } else {
-    const newAvg=Math.floor(insAvg*actRate/insRate);
-    avgEl.value=newAvg.toLocaleString();
-  }
-  avgEl.classList.add('filled');
-}
+function onInsHarvestRateChange(){ calc(); saveState(); }
+function onActHarvestRateChange(){ calc(); saveState(); }
 
 // ── 메인 계산 ────────────────────────────────────
 function calc(){
@@ -661,8 +636,8 @@ function calc(){
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
-  const m2Avg=insArea>0?Math.round(avgYield/insArea*10000)/10000:0;
-  const effAvg=isChanged?Math.round(m2Avg*actArea):avgYield;
+  const m2Avg=insArea>0?Math.round(avgYieldAdj/insArea*10000)/10000:0;
+  const effAvg=isChanged?Math.round(m2Avg*actArea):avgYieldAdj;
   const properSample=actArea>0?getProperSample(actArea):4;
 
   // 계약변경
@@ -691,12 +666,17 @@ function calcResult(){
   const harvArea=toNum(document.getElementById('harv_area'));
   const uninsRate=(parseFloat(document.getElementById('unins_rate').value)||0)/100;
   const harvestAreaRate=(parseFloat(document.getElementById('harvest_area_rate').value)||0)/100;
+  const insHarvestRate=(parseFloat(document.getElementById('ins_harvest_rate').value)||0)/100;
+  // 수확면적률 변경 시 평년수확량 내부 보정 (표시는 그대로, 계산에만 적용)
+  const avgYieldAdj=(insHarvestRate>0&&harvestAreaRate>0&&insHarvestRate!==harvestAreaRate)
+    ? Math.floor(avgYield*harvestAreaRate/insHarvestRate)
+    : avgYield;
 
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
-  const m2Avg=insArea>0?Math.round(avgYield/insArea*10000)/10000:0;
-  const effAvg=isChanged?Math.round(m2Avg*actArea):avgYield;
+  const m2Avg=insArea>0?Math.round(avgYieldAdj/insArea*10000)/10000:0;
+  const effAvg=isChanged?Math.round(m2Avg*actArea):avgYieldAdj;
   const properSample=actArea>0?getProperSample(actArea):samples.length||4;
 
   // 표본면적 = 구간수 × 0.08㎡
@@ -820,7 +800,6 @@ function closeResetModal(){ document.getElementById('reset-overlay').style.displ
 function confirmResetAll(){ closeResetModal(); resetAll(); }
 function resetAll(){
   try{ localStorage.removeItem('tea_state'); }catch(e){}
-  document.getElementById('ins_avg_yield_hidden').value='';
   ['avg_yield','ins_area','act_area','dead_area','other_area','harv_area','ins_harvest_rate','harvest_area_rate','unins_rate'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){ el.value=''; el.classList.remove('filled'); }
@@ -857,7 +836,6 @@ function saveState(){
       other_area:document.getElementById('other_area').value,
       harv_area:document.getElementById('harv_area').value,
       ins_harvest_rate:document.getElementById('ins_harvest_rate').value,
-      ins_avg_yield_hidden:document.getElementById('ins_avg_yield_hidden').value,
       harvest_area_rate:document.getElementById('harvest_area_rate').value,
       unins_rate:document.getElementById('unins_rate').value,
       samples:samples,
@@ -879,7 +857,6 @@ function loadState(){
       }
     });
     if(s.farm_no){ const el=document.getElementById('farm_no'); if(el){ el.value=s.farm_no; el.classList.add('filled'); } }
-    if(s.ins_avg_yield_hidden){ const el=document.getElementById('ins_avg_yield_hidden'); if(el) el.value=s.ins_avg_yield_hidden; }
     if(s.samples&&s.samples.length>0) samples=s.samples;
     if(s.isLocked) setTimeout(()=>{
       _isLocked=true;
