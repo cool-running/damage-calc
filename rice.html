@@ -1149,7 +1149,6 @@ function fillRiceCaptureTemplate(){
 
   document.getElementById('cap-variety').textContent = varietyTxt;
   document.getElementById('cap-avgYield').textContent = (!isNaN(avgYieldN) && avgYieldN>0) ? avgYieldN.toLocaleString()+' kg' : '-';
-  document.getElementById('cap-insArea').textContent = fmtArea('insArea');
   const capContract = document.getElementById('cap-contract');
   capContract.textContent = contractV;
   capContract.style.color = contractColor;
@@ -1160,6 +1159,7 @@ function fillRiceCaptureTemplate(){
     const n = parseFloat(v);
     return (!isNaN(n) && n>=0) ? n.toLocaleString()+' ㎡' : '-';
   };
+  document.getElementById('cap-insArea').textContent = fmtArea('insArea');
   document.getElementById('cap-actArea').textContent = fmtArea('actArea');
   const _insV = parseFloat((document.getElementById('insArea')?.value||'').replace(/,/g,''))||0;
   const _actV = parseFloat((document.getElementById('actArea')?.value||'').replace(/,/g,''))||0;
