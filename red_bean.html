@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="theme-color" content="#185FA5">
+<meta name="theme-color" content="#8B1A1A">
 <title>팥 피해율 계산기</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-:root{--blue:#185FA5;--blue2:#378ADD;--auto:#F3F1EA;--border:#D8D6CE;--binp:#378ADD;--text:#1a1a1a;--sub:#666;--hint:#aaa;--bg:#F5F4F0;--card:#fff;--red:#e24b4a;--green:#1D9E75;--r:12px;--rs:8px}
+:root{--blue:#8B1A1A;--blue2:#B94040;--auto:#F3F1EA;--border:#D8D6CE;--binp:#B94040;--text:#1a1a1a;--sub:#666;--hint:#aaa;--bg:#F5F4F0;--card:#fff;--red:#e24b4a;--green:#1D9E75;--r:12px;--rs:8px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
 .header{background:var(--blue);color:white;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px}
@@ -36,9 +36,9 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;text-align:center}
-input.inp:focus{outline:none !important;border-color:#185FA5 !important;box-shadow:0 0 0 3px rgba(24,95,165,0.2) !important;background:#dceeff !important;color:#185FA5 !important}
-input.inp.mobile-focus{outline:none !important;border-color:#185FA5 !important;box-shadow:0 0 0 3px rgba(24,95,165,0.2) !important;background:#dceeff !important;color:#185FA5 !important}
-input.inp.filled:focus{background:#dceeff !important;color:#185FA5 !important;border-color:#185FA5 !important}
+input.inp:focus{outline:none !important;border-color:#8B1A1A !important;box-shadow:0 0 0 3px rgba(139,26,26,0.2) !important;background:#fde8e8 !important;color:#8B1A1A !important}
+input.inp.mobile-focus{outline:none !important;border-color:#8B1A1A !important;box-shadow:0 0 0 3px rgba(139,26,26,0.2) !important;background:#fde8e8 !important;color:#8B1A1A !important}
+input.inp.filled:focus{background:#fde8e8 !important;color:#8B1A1A !important;border-color:#8B1A1A !important}
 input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;text-align:center}
 .reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
@@ -50,7 +50,7 @@ input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);
   display:inline-flex;align-items:center;gap:4px;transition:all .15s;
   -webkit-appearance:none;appearance:none;
 }
-.bigtext-btn.on{ background:var(--blue2);color:#fff;box-shadow:0 2px 8px rgba(55,138,221,0.35); }
+.bigtext-btn.on{ background:var(--blue2);color:#fff;box-shadow:0 2px 8px rgba(185,64,64,0.35); }
 .bigtext-btn:active{opacity:0.8}
 /* 단위 배지 */
 .unit-badge{
@@ -75,12 +75,12 @@ thead th{background:#f8f8f8;padding:6px 2px;text-align:center;font-weight:600;co
 tbody td{padding:3px 2px;border-bottom:0.5px solid #eee;text-align:center}
 tfoot td{padding:6px 1px;background:#f0f0f0;font-weight:700;font-size:10px;text-align:center;border-top:1.5px solid var(--border)}
 tbody td input{width:100%;height:34px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:13px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text);transition:background 0.15s,border-color 0.15s}
-tbody td input:focus{outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(55,138,221,0.22)!important;background:#DCEEFF!important;color:#185FA5!important}
+tbody td input:focus{outline:none!important;border-color:#8B1A1A!important;box-shadow:0 0 0 3px rgba(185,64,64,0.22)!important;background:#FDE8E8!important;color:#8B1A1A!important}
 tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
-tbody td input.filled:focus{outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(55,138,221,0.22)!important;background:#DCEEFF!important;color:#185FA5!important}
+tbody td input.filled:focus{outline:none!important;border-color:#8B1A1A!important;box-shadow:0 0 0 3px rgba(185,64,64,0.22)!important;background:#FDE8E8!important;color:#8B1A1A!important}
 .info-strip{font-size:12px;color:var(--sub);margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border)}
 .info-strip strong{color:var(--text)}
-.result-box{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(24,95,165,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
+.result-box{background:linear-gradient(135deg,#8B1A1A 0%,#B94040 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(139,26,26,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
 .result-box.pending{background:linear-gradient(135deg,#888 0%,#aaa 100%);border:1.5px solid rgba(255,255,255,0.15);box-shadow:none}
 .result-pct{font-size:40px;font-weight:700;line-height:1}
 #save-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center}
@@ -90,7 +90,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
 .save-modal .btn-ok{width:100%;height:42px;background:var(--blue);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
 .sample-btn-row{display:flex;gap:8px;margin-top:10px;align-items:stretch}
 .sample-btn-row .add-btn,.sample-btn-row .del-sample-btn{flex:1;margin:0;box-sizing:border-box;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center}
-.add-btn{height:42px;border:2px dashed #2f80ed;background:#eef6ff;border-radius:12px;font-size:14px;font-weight:800;color:#1659b7;cursor:pointer;transition:all .15s ease;width:100%;padding:0;line-height:1}
+.add-btn{height:42px;border:2px dashed #B94040;background:#fdf0f0;border-radius:12px;font-size:14px;font-weight:800;color:#8B1A1A;cursor:pointer;transition:all .15s ease;width:100%;padding:0;line-height:1}
 .del-sample-btn{height:42px;border:2px solid var(--red);background:#fff4f4;color:#c8403d;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all .15s ease;width:100%;padding:0;line-height:1}
 .add-btn:active,.del-sample-btn:active{transform:translateY(1px)}
 .sample-summary-row{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:nowrap;overflow:hidden}
@@ -108,7 +108,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
 .btn-calc:active{background:#1354a0}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit:active{background:#f0fdf8}
-.btn-calc.active{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);box-shadow:0 4px 14px rgba(24,95,165,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#8B1A1A 0%,#B94040 100%);box-shadow:0 4px 14px rgba(139,26,26,0.35)}
 .btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
 
 
@@ -120,7 +120,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
 .del-limit-modal{background:#fff;border-radius:18px;padding:22px 18px;width:100%;max-width:320px;box-shadow:0 18px 40px rgba(0,0,0,0.18);text-align:center}
 .del-limit-modal .title{font-size:18px;font-weight:800;color:#333;margin-bottom:10px}
 .del-limit-modal .desc{font-size:14px;line-height:1.6;color:#666;margin-bottom:18px}
-.del-limit-modal .btn-ok{width:100%;height:44px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.del-limit-modal .btn-ok{width:100%;height:44px;border:none;border-radius:12px;background:#8B1A1A;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
 .capture-box{background:#f8fafc;border:1px solid #dbe3ea;border-radius:14px;overflow:hidden;text-align:center}
 .capture-box-dark{background:#f8fafc;border:1px solid #2f4c6e;border-radius:14px;overflow:hidden;text-align:center}
 .capture-label{font-size:12px;font-weight:400;color:#6b7280;padding:6px 4px 5px;line-height:1.3}
@@ -135,7 +135,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
 .reset-actions{display:flex;gap:10px}
 .reset-actions button{flex:1;height:46px;border-radius:12px;font-size:15px;font-weight:700}
 .reset-actions .cancel{border:1.5px solid #d9d9d9;background:#f7f7f7;color:#555}
-.reset-actions .confirm{border:none;background:#185FA5;color:#fff}
+.reset-actions .confirm{border:none;background:#8B1A1A;color:#fff}
 
 </style>
 </head>
@@ -297,7 +297,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
   </div>
 
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:932px;background:#f3f4f6;padding:0;z-index:-1">
-  <div style="min-height:932px;background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
+  <div style="min-height:932px;background:linear-gradient(180deg,#4a0a0a 0%,#B94040 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
     <div style="height:26px"></div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">
       <div style="font-size:15px;font-weight:700">팥 피해율 계산결과</div>
@@ -312,9 +312,9 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">1. 기본정보</div>
         <table class="fit-table" style="display:inline-table;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden">
           <thead><tr>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">평년수확량</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">가입면적</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">원장변경유무</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">평년수확량</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">가입면적</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">원장변경유무</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 14px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px;white-space:nowrap" id="cap-avgYield">-</td>
@@ -328,10 +328,10 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">2. 면적조사</div>
         <table class="fit-table" style="display:inline-table;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden">
           <thead><tr>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">실제경작면적</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">고사면적</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상면적</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">기수확면적</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">실제경작면적</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">고사면적</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상면적</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">기수확면적</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 14px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px;white-space:nowrap" id="cap-actArea">-</td>
@@ -346,11 +346,11 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">3. 표본조사</div>
         <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden">
           <thead><tr>
-            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">No</th>
-            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">길이</th>
-            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">이랑폭</th>
-            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">종실중량</th>
-            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">함수비</th>
+            <th style="padding:7px 4px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">No</th>
+            <th style="padding:7px 4px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">길이</th>
+            <th style="padding:7px 4px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">이랑폭</th>
+            <th style="padding:7px 4px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">종실중량</th>
+            <th style="padding:7px 4px;background:#9e3030;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">함수비</th>
           </tr></thead>
           <tbody id="cap-sample-table"></tbody>
         </table>
@@ -360,11 +360,11 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">4. 결과</div>
         <table class="fit-table" style="display:inline-table;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden">
           <thead><tr>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">피해율</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상비율</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">조사수확량</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">감수량</th>
-            <th style="padding:7px 14px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상감수량</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">피해율</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상비율</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">조사수확량</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">감수량</th>
+            <th style="padding:7px 14px;background:#9e3030;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center;white-space:nowrap">미보상감수량</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 14px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px;white-space:nowrap" id="cap-pct-inline">-</td>
@@ -386,7 +386,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
     <div style="font-size:17px;font-weight:800;color:#333;text-align:center;margin-bottom:10px">입력이 완료되지 않았습니다</div>
     <div style="font-size:13px;line-height:1.7;color:#666;text-align:center;margin-bottom:6px">아래 항목을 확인해 주세요.</div>
     <div id="validation-list" style="background:#FFF5F5;border:1px solid #ffd0d0;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#c0392b;line-height:2"></div>
-    <button onclick="document.getElementById('validation-overlay').style.display='none'" style="width:100%;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
+    <button onclick="document.getElementById('validation-overlay').style.display='none'" style="width:100%;height:46px;border:none;border-radius:12px;background:#8B1A1A;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
   </div>
 </div>
 
@@ -397,7 +397,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
     <div style="font-size:17px;font-weight:800;color:#333;text-align:center;margin-bottom:10px">입력이 완료되지 않았습니다</div>
     <div style="font-size:13px;line-height:1.7;color:#666;text-align:center;margin-bottom:6px">아래 항목을 확인해 주세요.</div>
     <div id="validation-list" style="background:#FFF5F5;border:1px solid #ffd0d0;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#c0392b;line-height:2"></div>
-    <button onclick="document.getElementById('validation-overlay').style.display='none'" style="width:100%;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
+    <button onclick="document.getElementById('validation-overlay').style.display='none'" style="width:100%;height:46px;border:none;border-radius:12px;background:#8B1A1A;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
   </div>
 </div>
 
