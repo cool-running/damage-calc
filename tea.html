@@ -338,6 +338,10 @@ tfoot td.v{color:var(--text)}
         </tfoot>
       </table>
     </div>
+    <div id="sample-btn-row" style="display:none;gap:8px;margin-top:8px">
+      <button onclick="removeSample()" style="flex:1;height:42px;border:1.5px solid var(--red);background:#FFF5F5;border-radius:12px;font-size:14px;font-weight:800;color:var(--red);cursor:pointer;transition:all .15s ease">－ 구간 삭제</button>
+      <button onclick="addSample()" style="flex:1;height:42px;border:1.5px dashed #4CAF50;background:#EBF4FF;border-radius:12px;font-size:14px;font-weight:800;color:#2E7D32;cursor:pointer;transition:all .15s ease">＋ 구간 추가</button>
+    </div>
     <div class="sample-info-row">
       <span>표본면적: <strong id="s-area">-</strong></span>
       <span>㎡당 표본중량: <strong id="s-unit">-</strong></span>
@@ -484,6 +488,15 @@ tfoot td.v{color:var(--text)}
   </div>
 </div>
 
+<!-- 팝업: 표본 삭제 불가 -->
+<div id="delete-limit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:350;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:18px;padding:22px 18px;width:100%;max-width:320px;box-shadow:0 18px 40px rgba(0,0,0,0.18)">
+    <div style="font-size:18px;font-weight:800;color:#333;text-align:center;margin-bottom:10px">표본 삭제 불가</div>
+    <div style="font-size:14px;line-height:1.6;color:#666;text-align:center;margin-bottom:18px">적정표본구간 이하의 표본은<br>삭제할 수 없습니다.</div>
+    <button onclick="document.getElementById('delete-limit-overlay').style.display='none'" style="width:100%;height:44px;border:none;border-radius:12px;background:#2E7D32;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
+  </div>
+</div>
+
 <!-- 팝업: 저장 완료 -->
 <div id="save-overlay">
   <div class="save-modal">
@@ -535,12 +548,15 @@ function renderSamples(){
   const guide=document.getElementById('sample-guide');
   const wrap=document.getElementById('sample-tbl-wrap');
   const badge=document.getElementById('sample-count-badge');
+  const btnRow=document.getElementById('sample-btn-row');
 
   if(samples.length===0){
     guide.style.display='block'; wrap.style.display='none'; badge.textContent='';
+    if(btnRow) btnRow.style.display='none';
     return;
   }
   guide.style.display='none'; wrap.style.display='block';
+  if(btnRow) btnRow.style.display='flex';
   badge.textContent=`(${samples.length}구간)`;
 
   document.getElementById('sample-body').innerHTML=samples.map((s,i)=>`
@@ -571,7 +587,28 @@ function renderSamples(){
   setTimeout(()=>{ bindMobileFocusHandlers(); bindSampleNextNavigation(); },0);
 }
 
-// ── 구간 계산 ────────────────────────────────────
+// ── 표본 추가 / 삭제 ──────────────────────────────
+function addSample(){
+  samples.push({aP:'',aC:'',bP:'',bC:'',weight:''});
+  renderSamples();
+  samples.forEach((_,i)=>calcRow(i));
+  saveState();
+}
+
+function removeSample(){
+  const actArea=toNum(document.getElementById('act_area'));
+  const needed=actArea>0?getProperSample(actArea):4;
+  if(samples.length<=needed){
+    document.getElementById('delete-limit-overlay').style.display='flex';
+    return;
+  }
+  samples.pop();
+  renderSamples();
+  samples.forEach((_,i)=>calcRow(i));
+  saveState();
+}
+
+
 function calcRow(i){
   const s=samples[i];
   const aP=parseFloat(s.aP)||0;
@@ -678,8 +715,8 @@ function calcResult(){
   const effAvg=isChanged?Math.round(m2Avg*actArea):avgYieldAdj;
   const properSample=actArea>0?getProperSample(actArea):samples.length||4;
 
-  // 표본면적 = 구간수 × 0.08㎡
-  const sampleArea=properSample*0.08;
+  // 표본면적 = 실제 구간수 × 0.08㎡ (추가 구간 포함)
+  const sampleArea=samples.length*0.08;
   // 구간수확량 합(g)
   const tYield=samples.reduce((a,s)=>a+(s._rowYield||0),0);
   // ㎡당 표본중량(kg/㎡) = 유효중량합 × 수확면적률 / 표본면적 / 1000
@@ -815,6 +852,8 @@ function resetAll(){
   setEditMode();
   samples=[];
   renderSamples();
+  const _btnRow=document.getElementById('sample-btn-row');
+  if(_btnRow) _btnRow.style.display='none';
   document.getElementById('s-area').textContent='-';
   document.getElementById('s-unit').textContent='-';
 
