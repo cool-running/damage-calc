@@ -444,11 +444,12 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
       <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">2. 면적조사</div>
         <!-- 1행: 면적 4개 -->
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;margin-bottom:8px">
+        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;margin-bottom:8px;table-layout:fixed">
+          <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
           <thead><tr>
             <th style="padding:6px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">실제경작면적</th>
             <th style="padding:6px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">고사면적</th>
-            <th style="padding:6px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">타작물미보상면적</th>
+            <th style="padding:6px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">타작물미보상</th>
             <th style="padding:6px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">기수확면적</th>
           </tr></thead>
           <tbody><tr>
@@ -459,7 +460,8 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
           </tr></tbody>
         </table>
         <!-- 2행: 조사대상/표본구간수/병충해단독/조사일 - 1행과 동일한 너비 -->
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden">
+        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;table-layout:fixed">
+          <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
           <thead><tr>
             <th style="padding:6px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">조사대상면적</th>
             <th style="padding:6px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">표본구간수</th>
