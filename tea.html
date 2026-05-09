@@ -719,13 +719,13 @@ function calcResult(){
   const sampleArea=samples.length*0.08;
   // 구간수확량 합(g)
   const tYield=samples.reduce((a,s)=>a+(s._rowYield||0),0);
-  // ㎡당 표본중량(kg/㎡) = 유효중량합 × 수확면적률 / 표본면적 / 1000 — 농협전산: 소수3자리 올림(ceil)
+  // ㎡당 표본중량(kg/㎡) — 농협전산: 소수3자리 반올림
   const m2Weight=sampleArea>0&&tYield>0&&harvestAreaRate>0
-    ? Math.ceil((tYield*harvestAreaRate)/sampleArea/1000*1000)/1000
+    ? Math.round((tYield*harvestAreaRate)/sampleArea/1000*1000)/1000
     : 0;
-  // 조사수확량 — 농협전산: ceil 방식
+  // 조사수확량 — 농협전산: 반올림 (JS 부동소수점 오차 보정 후 round)
   const surveyYield=surveyArea>0&&m2Weight>0
-    ? Math.ceil(m2Weight*surveyArea+m2Avg*(otherArea+harvArea))
+    ? Math.round(parseFloat((m2Weight*surveyArea+m2Avg*(otherArea+harvArea)).toFixed(10)))
     : 0;
 
   // 요약
