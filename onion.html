@@ -370,7 +370,7 @@ tbody td input.filled:active{
         <label>평년수확량</label>
         <span class="unit-badge">kg</span>
         <input type="text" id="avg_yield" class="inp" inputmode="decimal"
-          oninput="onCommaInput(this)" onchange="calc()" onblur="calc()" autocomplete="off">
+          oninput="onCommaInput(this)" onchange="updateSamplesAndCalc()" onblur="updateSamplesAndCalc()" autocomplete="off">
       </div>
       <div class="field">
         <label>가입면적</label>
@@ -824,7 +824,7 @@ function updateGarlicCols(){
 }
 
 function updateSamplesAndCalc(){
-  const actArea=toNum(document.getElementById('act_area'));
+  const actArea=toNum(document.getElementById('act_area'))||toNum(document.getElementById('ins_area'));
   const deadArea=parseFloat(document.getElementById('dead_area').value)||0;
   const otherArea=parseFloat(document.getElementById('other_area').value)||0;
   const harvArea=parseFloat(document.getElementById('harv_area').value)||0;
@@ -961,11 +961,11 @@ function calc(){
     return;
   }
 
-  // ③ 비대지수 반영 후 ROUND3
-  const unitYield = round3(tEff * (1 + growIdx) / 1000 / tA);
-  // ④ FLOOR 조사수확량
+  // ③ 비대지수 반영 (ROUND3 미적용 — 반올림 시 조사수확량 오차 발생)
+  const unitYield = tEff * (1 + growIdx) / 1000 / tA;
+  // ④ ROUND 조사수확량 (시스템과 동일: FLOOR 아닌 ROUND)
   const m2Avg = insArea>0 ? Math.round(avgYield/insArea*10000)/10000 : 0;
-  const totalYield = Math.floor(unitYield * surveyArea + m2Avg*(otherArea+harvArea));
+  const totalYield = Math.round(unitYield * surveyArea + m2Avg*(otherArea+harvArea));
   const estYield = tEff/1000/tA * growIdx * surveyArea; // 표시용
 
   const loss = Math.max(0, effAvg - totalYield);
@@ -1066,6 +1066,7 @@ function resetAll(){
   document.getElementById('s-area').textContent='-';
   document.getElementById('s-unit').textContent='-';
   calc();
+  saveState();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
