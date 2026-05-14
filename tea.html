@@ -703,10 +703,7 @@ function calcResult(){
   const uninsRate=(parseFloat(document.getElementById('unins_rate').value)||0)/100;
   const harvestAreaRate=(parseFloat(document.getElementById('harvest_area_rate').value)||0)/100;
   const insHarvestRate=(parseFloat(document.getElementById('ins_harvest_rate').value)||0)/100;
-  // 수확면적률 변경 시 평년수확량 내부 보정 (표시는 그대로, 계산에만 적용)
-  const avgYieldAdj=(insHarvestRate>0&&harvestAreaRate>0&&insHarvestRate!==harvestAreaRate)
-    ? Math.floor(avgYield*harvestAreaRate/insHarvestRate)
-    : avgYield;
+  const avgYieldAdj=avgYield;
 
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
