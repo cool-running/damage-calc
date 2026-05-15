@@ -354,11 +354,19 @@ tbody td input.filled:active{
       <option value="onion" selected>양파</option>
     </select>
     <div style="display:flex;gap:8px;align-items:flex-end">
-      <div class="field" style="width:50%">
+      <div class="field" style="width:40%">
+        <label>품종</label>
+        <div class="inp filled" style="display:flex;align-items:center;height:46px;padding:0 10px;font-size:14px;font-weight:700;color:#333;background:#f0f4f8;border-radius:var(--rs);border:1.5px solid var(--border)">양파</div>
+      </div>
+      <div class="field" style="width:40%">
         <label>농지번호 4자리</label>
         <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
           maxlength="4"
           oninput="markFilled(this)" onchange="" autocomplete="off">
+      </div>
+      <div style="width:20%;flex-shrink:0">
+        <button onclick="openHistoryModal()" title="이전 기록 불러오기"
+          style="width:100%;height:46px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
@@ -471,8 +479,10 @@ tbody td input.filled:active{
           길이
         </label>
         <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄"
-          style="flex:1;height:30px;border:1.5px solid #378ADD;border-radius:7px;padding:0 6px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
-          oninput="onBatchLenInput(this)" onblur="applyBatchLen()" autocomplete="off">
+          style="flex:1;height:30px;border:1.5px solid #378ADD;border-radius:7px;padding:0 6px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0;transition:background .15s,border-color .15s"
+          oninput="onBatchLenInput(this)" onblur="applyBatchLen()"
+          onfocus="this.style.background='#DCEEFF';this.style.borderColor='#185FA5'"
+          autocomplete="off">
         <button onclick="applyBatchLen()" style="height:30px;width:40px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
       </div>
     </div>
@@ -704,6 +714,20 @@ tbody td input.filled:active{
   </div>
 </div>
 
+<!-- 이전 기록 불러오기 모달 -->
+<div id="history-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:18px;width:100%;max-width:360px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 18px 40px rgba(0,0,0,0.2)">
+    <div style="padding:18px 18px 12px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:16px;font-weight:800;color:#185FA5">📋 이전 기록 불러오기</div>
+      <button onclick="closeHistoryModal()" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div id="history-list" style="overflow-y:auto;flex:1;padding:10px 12px"></div>
+    <div style="padding:12px 18px;border-top:1px solid #eee">
+      <button onclick="closeHistoryModal()" style="width:100%;height:42px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-size:14px;font-weight:700;cursor:pointer">닫기</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── 길이/폭 정규화: .9 → 0.9 ────────────────────
 function normalizeDim(val){
@@ -819,6 +843,7 @@ function applyBatchLen(){
   const raw = document.getElementById('batch-len-val').value;
   const val = normalizeDim(raw);
   if(val==='') return;
+  vibrate([20]);
   samples.forEach(s=>{ s.len=val; });
   renderSamples();
   calcTotals();
@@ -1081,6 +1106,7 @@ function setCalcMode(silent=false){
   document.getElementById('btn-calc').classList.add('active');
   document.getElementById('btn-edit').classList.remove('active');
   saveState();
+  saveToHistory();
 }
 function setEditMode(){
   _isLocked = false;
@@ -1226,6 +1252,101 @@ async function saveImage(){
     }catch(_){}
     document.getElementById('save-done-overlay').style.display='flex';
   }catch(e){ alert('저장 중 오류가 발생했어요.'); }
+}
+
+// ── 이전 기록 불러오기 ───────────────────────────
+function openHistoryModal(){
+  const list = document.getElementById('history-list');
+  let records = [];
+  try{ records = JSON.parse(localStorage.getItem('onion_history')||'[]'); }catch(e){}
+
+  if(records.length===0){
+    list.innerHTML='<div style="text-align:center;color:#aaa;padding:30px 0;font-size:14px">저장된 기록이 없습니다</div>';
+  } else {
+    list.innerHTML = records.slice().reverse().map((r,i)=>{
+      const idx = records.length-1-i;
+      return `<div style="border:1.5px solid #e8edf3;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:background .15s"
+        onclick="loadHistoryRecord(${idx})"
+        onmouseenter="this.style.background='#EBF4FF'" onmouseleave="this.style.background='white'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:15px;font-weight:800;color:#185FA5">${r.farm_no ? '농지 '+r.farm_no : '농지번호 미입력'}</span>
+          <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:#555">🧅 양파</span>
+          <span style="font-size:12px;color:#555">📐 ${r.act_area||r.ins_area||'-'} ㎡</span>
+          <span style="font-size:12px;color:#555">📊 ${r.pct!=null?r.pct+'%':'-'}</span>
+          <span style="font-size:12px;color:#555">🗓 조사일 ${r.survey_date||'-'}</span>
+        </div>
+        <div style="margin-top:6px;display:flex;justify-content:flex-end;gap:6px">
+          <button onclick="event.stopPropagation();deleteHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:1px solid #ffb3b3;border-radius:6px;background:white;color:#e24b4a;font-size:11px;font-weight:700;cursor:pointer">삭제</button>
+          <button onclick="event.stopPropagation();loadHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:none;border-radius:6px;background:#185FA5;color:white;font-size:11px;font-weight:700;cursor:pointer">불러오기</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('history-overlay').style.display='flex';
+}
+
+function closeHistoryModal(){
+  document.getElementById('history-overlay').style.display='none';
+}
+
+function loadHistoryRecord(idx){
+  let records=[];
+  try{ records=JSON.parse(localStorage.getItem('onion_history')||'[]'); }catch(e){}
+  const r=records[idx];
+  if(!r) return;
+  const fields=['farm_no','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate','crack_count','survey_date','harvest_date'];
+  fields.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && r[id]!==undefined && r[id]!==''){
+      el.value=r[id]; el.classList.add('filled');
+    }
+  });
+  if(r.samples && r.samples.length>0) samples=r.samples;
+  closeHistoryModal();
+  renderSamples();
+  calcTotals();
+  saveState();
+}
+
+function deleteHistoryRecord(idx){
+  let records=[];
+  try{ records=JSON.parse(localStorage.getItem('onion_history')||'[]'); }catch(e){}
+  records.splice(idx,1);
+  try{ localStorage.setItem('onion_history',JSON.stringify(records)); }catch(e){}
+  openHistoryModal();
+}
+
+function saveToHistory(){
+  const farmNo=(document.getElementById('farm_no').value||'').trim();
+  const surveyDate=document.getElementById('survey_date').value||'';
+  const pctEl=document.getElementById('result-pct');
+  const pct=pctEl&&pctEl.textContent!=='- -'?pctEl.textContent.replace('%',''):null;
+  const record={
+    farm_no: farmNo,
+    avg_yield: document.getElementById('avg_yield').value,
+    ins_area: document.getElementById('ins_area').value,
+    act_area: document.getElementById('act_area').value,
+    dead_area: document.getElementById('dead_area').value,
+    other_area: document.getElementById('other_area').value,
+    harv_area: document.getElementById('harv_area').value,
+    unins_rate: document.getElementById('unins_rate').value,
+    crack_count: document.getElementById('crack_count')?.value||'',
+    survey_date: surveyDate,
+    harvest_date: document.getElementById('harvest_date').value,
+    samples: JSON.parse(JSON.stringify(samples)),
+    pct: pct,
+    saved_at: new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/ /g,'')
+  };
+  let records=[];
+  try{ records=JSON.parse(localStorage.getItem('onion_history')||'[]'); }catch(e){}
+  const ei=farmNo?records.findIndex(r=>r.farm_no===farmNo&&r.survey_date===surveyDate):-1;
+  if(ei>=0) records[ei]=record;
+  else records.push(record);
+  if(records.length>30) records=records.slice(-30);
+  try{ localStorage.setItem('onion_history',JSON.stringify(records)); }catch(e){}
 }
 
 // ── localStorage 저장/불러오기 ────────────────────

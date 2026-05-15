@@ -515,8 +515,10 @@ tbody td input.filled:active{
           길이
         </label>
         <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄"
-          style="flex:1;height:30px;border:1.5px solid #378ADD;border-radius:7px;padding:0 6px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
-          oninput="onBatchLenInput(this)" onblur="applyBatchLen()" autocomplete="off">
+          style="flex:1;height:30px;border:1.5px solid #378ADD;border-radius:7px;padding:0 6px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0;transition:background .15s,border-color .15s"
+          oninput="onBatchLenInput(this)" onblur="applyBatchLen()"
+          onfocus="this.style.background='#DCEEFF';this.style.borderColor='#185FA5'"
+          autocomplete="off">
         <button onclick="applyBatchLen()" style="height:30px;width:40px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
       </div>
     </div>
@@ -902,6 +904,7 @@ function applyBatchLen(){
   const raw = document.getElementById('batch-len-val').value;
   const val = normalizeDim(raw);
   if(val==='') return;
+  vibrate([20]);
   samples.forEach(s=>{ s.len=val; });
   renderSamples();
   calcTotals();
