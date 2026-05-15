@@ -1105,14 +1105,13 @@ function calc(){
   const trunc2 = v => Math.trunc(v * 100) / 100;
   const round2 = v => { const s=Math.round(+(Math.round(v+'e+2')+'e-2')*100)/100; return isNaN(s)?Math.round(v*100)/100:s; }; // half_up
   const round3 = v => Math.round(v * 1000) / 1000;
-  const round4 = v => Math.round(v * 10000) / 10000;
 
   let tA=0, tEff=0;
   for(const s of samples){
     const l=parseFloat(s.len)||0, w=parseFloat(s.wid)||0;
     const n=parseFloat(s.norm)||0, d8=parseFloat(s.d80)||0, d5=parseFloat(s.d50)||0;
     tA += round2(l * w);                          // ② ROUND2 면적
-    tEff += round2((n + d8*0.2 + d5) * cc);       // ① ROUND2 유효중량 (전산 일치)
+    tEff += round2((n + d8*0.2 + d5) * cc);       // ① ROUND2 유효중량
   }
 
   if(tA<=0||tEff<=0){
@@ -1121,18 +1120,18 @@ function calc(){
     return;
   }
 
-  // ③ 비대지수 반영 후 ROUND4 적용 (전산과 동일)
-  const unitYield = round4(tEff * (1 + growIdx) / 1000 / tA);
-  // ④ FLOOR 조사수확량 (전산과 동일)
+  // ③ 비대지수 반영 후 ROUND3 (전산 표시값과 동일)
+  const unitYield = round3(tEff * (1 + growIdx) / 1000 / tA);
+  // ④ ROUND 조사수확량 (전산과 동일)
   const m2Avg = insArea>0 ? Math.round(avgYield/insArea*10000)/10000 : 0;
-  const totalYield = Math.floor(unitYield * surveyArea + m2Avg*(otherArea+harvArea));
+  const totalYield = Math.round(unitYield * surveyArea + m2Avg*(otherArea+harvArea));
   const survYield = totalYield;
   const estYield = tEff/1000/tA * growIdx * surveyArea;
 
   const loss = Math.max(0, effAvg - totalYield);
   const uninsLoss = Math.round(loss * uninsRate);
   const netLoss = Math.max(0, loss - uninsLoss);
-  // ⑤ FLOOR 피해율 (소수4자리 → 소수2자리 표시)
+  // ⑤ FLOOR 피해율 (소수4자리 버림 → 소수2자리 표시, 전산 동일)
   const rawPct = Math.floor((effAvg - totalYield) / effAvg * 10000) / 100;
   const pct = Math.floor(netLoss / effAvg * 10000) / 100;
 
