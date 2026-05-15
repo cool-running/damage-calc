@@ -387,23 +387,23 @@ tbody td input.filled:active{
       <button class="bigtext-btn" id="bigtext-btn" onclick="toggleBigText()">🔍 <span id="bigtext-label">크게</span></button>
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="field" style="width:50%">
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div class="field" style="width:40%">
         <label>품종</label>
         <select id="crop" class="inp filled" onchange="markFilled(this);onCropChange()" style="text-align:left;text-align-last:left">
           <option value="garlic_s">마늘 난지형</option>
           <option value="garlic_n">마늘 한지형</option>
         </select>
       </div>
-      <div class="field" style="flex:1">
+      <div class="field" style="width:40%">
         <label>농지번호 4자리</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
-            maxlength="4" style="flex:1"
-            oninput="markFilled(this);updateFarmNoDisplay()" onchange="updateFarmNoDisplay()" autocomplete="off">
-          <button onclick="openHistoryModal()" title="이전 기록 불러오기"
-            style="height:46px;min-width:46px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;color:var(--blue);font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">📋</button>
-        </div>
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
+          maxlength="4"
+          oninput="markFilled(this);updateFarmNoDisplay()" onchange="updateFarmNoDisplay()" autocomplete="off">
+      </div>
+      <div style="width:20%;flex-shrink:0">
+        <button onclick="openHistoryModal()" title="이전 기록 불러오기"
+          style="width:100%;height:46px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
