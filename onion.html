@@ -459,9 +459,22 @@ tbody td input.filled:active{
   </div>
 
   <div class="section">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="sec-title" style="margin-bottom:0">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--blue)"></span></div>
-    <span style="font-size:10px;color:var(--hint);font-weight:400">길이·폭(m) / 중량(g)</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div class="sec-title" style="margin-bottom:0">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--blue)"></span></div>
+        <div style="font-size:10px;color:var(--hint);font-weight:400;margin-top:2px">길이·폭(m) / 중량(g)</div>
+      </div>
+      <!-- 길이 일괄적용 (우측 50%) -->
+      <div id="batch-len-row" style="display:none;align-items:center;gap:5px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:5px 8px;width:50%;flex-shrink:0">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0">
+          <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:15px;height:15px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+          길이
+        </label>
+        <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄"
+          style="flex:1;height:30px;border:1.5px solid #378ADD;border-radius:7px;padding:0 6px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
+          oninput="onBatchLenInput(this)" onblur="applyBatchLen()" autocomplete="off">
+        <button onclick="applyBatchLen()" style="height:30px;width:40px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
+      </div>
     </div>
     <div id="sample-guide" class="guide">실제경작면적 입력 후 자동으로 구간이 생성됩니다</div>
     <div id="sample-tbl-wrap" class="tbl-wrap" style="display:none">
@@ -751,10 +764,12 @@ function renderSamples(){
 
   if(samples.length===0){
     guide.style.display='block'; wrap.style.display='none'; btnRow.style.display='none'; badge.textContent='';
+    document.getElementById('batch-len-row').style.display='none';
     return;
   }
   guide.style.display='none'; wrap.style.display='block'; btnRow.style.display='flex';
   badge.textContent=`(${samples.length}구간)`;
+  document.getElementById('batch-len-row').style.display='flex';
 
   document.getElementById('sample-body').innerHTML=samples.map((s,i)=>`
     <tr>
@@ -762,7 +777,7 @@ function renderSamples(){
       <td><input type="text" value="${s.len?formatDim(s.len):''}" inputmode="decimal"
         class="${s.len?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='');debouncedCalcTotals()"
-        onblur="this.value=normalizeDim(this.value);samples[${i}].len=this.value;calcTotals()" autocomplete="off"></td>
+        onblur="this.value=normalizeDim(this.value);samples[${i}].len=this.value;if(document.getElementById('batch-len-chk').checked){syncBatchLenFromSample(this.value);}calcTotals()" autocomplete="off"></td>
       <td><input type="text" value="${s.wid?formatDim(s.wid):''}" inputmode="decimal"
         class="${s.wid?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='');debouncedCalcTotals()"
@@ -781,6 +796,37 @@ function renderSamples(){
 
     </tr>`).join('');
   setTimeout(()=>{ updateGarlicCols(); bindMobileFocusHandlers(); calcTotals(); }, 0);
+}
+
+// ── 길이 일괄적용 ─────────────────────────────────
+function toggleBatchLen(){
+  const chk = document.getElementById('batch-len-chk');
+  const valInput = document.getElementById('batch-len-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].len){
+      valInput.value = formatDim(samples[0].len);
+    }
+    valInput.focus();
+    valInput.select?.();
+  }
+}
+function onBatchLenInput(el){
+  el.classList.toggle('filled', el.value!=='');
+}
+function applyBatchLen(){
+  const chk = document.getElementById('batch-len-chk');
+  if(!chk.checked) return;
+  const raw = document.getElementById('batch-len-val').value;
+  const val = normalizeDim(raw);
+  if(val==='') return;
+  samples.forEach(s=>{ s.len=val; });
+  renderSamples();
+  calcTotals();
+  saveState();
+}
+function syncBatchLenFromSample(val){
+  const input = document.getElementById('batch-len-val');
+  if(input) input.value = val||'';
 }
 
 function addSample(){samples.push({len:'',wid:'',norm:'',d80:'',d50:''});renderSamples();}
