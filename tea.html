@@ -670,9 +670,10 @@ function calc(){
   const otherArea=parseFloat(document.getElementById('other_area').value)||0;
   const harvArea=toNum(document.getElementById('harv_area'));
 
-  const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
+  const effArea=(insArea>0&&!isChanged)?insArea:actArea;
+  const surveyArea=Math.max(0,effArea-deadArea-otherArea-harvArea);
   const m2Avg=insArea>0?Math.round(avgYield/insArea*10000)/10000:0;
   const properSample=actArea>0?getProperSample(actArea):4;
 
@@ -705,9 +706,10 @@ function calcResult(){
   const insHarvestRate=(parseFloat(document.getElementById('ins_harvest_rate').value)||0)/100;
   const avgYieldAdj=avgYield;
 
-  const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
+  const effArea=(insArea>0&&!isChanged)?insArea:actArea;
+  const surveyArea=Math.max(0,effArea-deadArea-otherArea-harvArea);
   const m2Avg=insArea>0?Math.round(avgYieldAdj/insArea*10000)/10000:0;
   const effAvg=isChanged?Math.round(m2Avg*actArea):avgYieldAdj;
   const properSample=actArea>0?getProperSample(actArea):samples.length||4;

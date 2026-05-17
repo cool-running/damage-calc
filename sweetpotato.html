@@ -703,11 +703,6 @@ function calc(){
   const harvArea  = parseFloat(document.getElementById('harv_area').value)||0;
   const uninsRate = (parseFloat(document.getElementById('unins_rate').value)||0)/100;
 
-  const surveyArea = Math.max(0, actArea-deadArea-otherArea-harvArea);
-
-  // 조사대상면적 표시
-  document.getElementById('survey_area_disp').value = surveyArea>0 ? surveyArea.toLocaleString()+' ㎡' : '';
-
   // 계약변경여부
   const contractEl = document.getElementById('contract_yn_disp');
   const areaErrNum = insArea>0 ? (actArea-insArea)/insArea : 0;
@@ -720,6 +715,13 @@ function calc(){
     contractEl.value = '';
     contractEl.style.color = '';
   }
+
+  // 오차범위 10% 이내이면 가입면적 기준, 초과이면 실제경작면적 기준
+  const effArea = (insArea>0 && !isChanged) ? insArea : actArea;
+  const surveyArea = Math.max(0, effArea-deadArea-otherArea-harvArea);
+
+  // 조사대상면적 표시
+  document.getElementById('survey_area_disp').value = surveyArea>0 ? surveyArea.toLocaleString()+' ㎡' : '';
 
   // 면적 변경 평년수확량
   const effAvg = isChanged

@@ -534,15 +534,10 @@ function calcCommon(){
   const deadArea = parseFloat(document.getElementById('deadArea').value)||0;
   const uninsArea = parseFloat(document.getElementById('uninsArea').value)||0;
   const harvArea = parseFloat(document.getElementById('harvArea').value)||0;
-  const realArea = actArea||insArea;
-  const surveyArea = Math.max(0, realArea - deadArea - uninsArea - harvArea);
-
-  document.getElementById('surveyArea').value = surveyArea>0 ? surveyArea.toLocaleString()+' ㎡' : '';
-
   const areaErr = insArea>0&&actArea>0 ? (actArea-insArea)/insArea : 0;
   const contractEl = document.getElementById('contractYn');
+  const isChanged = insArea>0&&actArea>0&&Math.abs(areaErr)>0.1;
   if(insArea>0&&actArea>0){
-    const isChanged = Math.abs(areaErr)>0.1;
     contractEl.value = isChanged ? '원장변경 대상' : '이상무';
     contractEl.style.color = isChanged ? '#e24b4a' : '#1D9E75';
     contractEl.style.fontWeight = '700';
@@ -552,10 +547,16 @@ function calcCommon(){
     contractEl.style.fontWeight='';
   }
 
-  const effAvg = (insArea>0&&actArea>0&&Math.abs(areaErr)>0.1)
+  // 오차범위 10% 이내이면 가입면적 기준, 초과이면 실제경작면적 기준
+  const effArea = (insArea>0 && !isChanged) ? insArea : (actArea||insArea);
+  const surveyArea = Math.max(0, effArea - deadArea - uninsArea - harvArea);
+
+  document.getElementById('surveyArea').value = surveyArea>0 ? surveyArea.toLocaleString()+' ㎡' : '';
+
+  const effAvg = isChanged
     ? Math.round(Math.round(avgYield/insArea*10000)/10000 * actArea) : avgYield;
 
-  return {avgYield, insArea, actArea, realArea, surveyArea, effAvg,
+  return {avgYield, insArea, actArea, effArea, surveyArea, effAvg,
           uninsArea, harvArea,
           uninsRate: (parseFloat(document.getElementById('uninsRate').value)||0)/100};
 }
