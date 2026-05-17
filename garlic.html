@@ -1485,7 +1485,10 @@ function loadHistoryRecord(idx){
   const r=records[idx];
   if(!r) return;
 
-  // 현재 상태를 덮어씀
+  // samples 먼저 복원 (면적 세팅이 updateSamplesAndCalc 트리거하기 전에)
+  if(r.samples && r.samples.length>0) samples=JSON.parse(JSON.stringify(r.samples));
+
+  // 필드값 세팅 (이벤트 트리거 없이 value만 직접 세팅)
   const fields=['crop','farm_no','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate','crack_count','survey_date','harvest_date'];
   fields.forEach(id=>{
     const el=document.getElementById(id);
@@ -1494,7 +1497,7 @@ function loadHistoryRecord(idx){
       el.classList.add('filled');
     }
   });
-  if(r.samples && r.samples.length>0) samples=r.samples;
+
   closeHistoryModal();
   renderSamples();
   calcTotals();
