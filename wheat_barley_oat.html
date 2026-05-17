@@ -1057,23 +1057,24 @@ function loadHistoryRecord(idx){
   // 품종 먼저 전환
   if(r.crop && r.crop !== crop) setCrop(r.crop);
 
-  // spVals 먼저 복원
-  if(r.spVals && r.spVals.length>0){
-    r.spVals.forEach((v,i)=>{
-      const el=document.getElementById('sp'+i);
-      if(el){ el.value=v; el.classList.toggle('filled',v!==''); }
-    });
+  // spVals 복원 (없으면 초기화)
+  for(let i=0;i<8;i++){
+    const el=document.getElementById('sp'+i);
+    if(!el) continue;
+    const v=(r.spVals&&r.spVals[i])||'';
+    el.value=v; el.classList.toggle('filled',v!=='');
   }
 
-  // 나머지 필드 복원
+  // 모든 필드 복원 (값 없으면 빈칸으로 초기화)
   const fields=['avgYield','insArea','actArea','deadArea','uninsArea','preArea',
                 'uninsRate','rowLen','rowWid','moisture','fullYield','fullMoisture',
                 'fullUninsRate','farm_no','surveyDate'];
   fields.forEach(id=>{
     const el=document.getElementById(id);
-    if(el && r[id]!==undefined && r[id]!==''){
-      el.value=r[id]; el.classList.add('filled');
-    }
+    if(!el) return;
+    const v=r[id]||'';
+    el.value=v;
+    el.classList.toggle('filled', v!=='');
   });
 
   closeHistoryModal();
