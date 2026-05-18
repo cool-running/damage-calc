@@ -210,10 +210,22 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-name">벼</div>
       <div class="crop-desc">수확량 조사</div>
     </div>
-    <div class="crop-card done" onclick="go('wheat_barley_oat')">
+    <div class="crop-card done" onclick="go('wheat')">
       <span class="badge badge-done">완성</span>
-      <div class="crop-icon">🌾🌿🥣</div>
-      <div class="crop-name">밀·보리·귀리</div>
+      <div class="crop-icon">🍞</div>
+      <div class="crop-name">밀</div>
+      <div class="crop-desc">수확량 조사</div>
+    </div>
+    <div class="crop-card done" onclick="go('barley')">
+      <span class="badge badge-done">완성</span>
+      <div class="crop-icon">🌿</div>
+      <div class="crop-name">보리</div>
+      <div class="crop-desc">수확량 조사</div>
+    </div>
+    <div class="crop-card done" onclick="go('oat')">
+      <span class="badge badge-done">완성</span>
+      <div class="crop-icon">🥣</div>
+      <div class="crop-name">귀리</div>
       <div class="crop-desc">수확량 조사</div>
     </div>
   </div>
@@ -272,7 +284,10 @@ function go(page){
     sweetpotato:'./sweetpotato.html', red_bean:'./red_bean.html', tea:'./tea.html',
     apple:'./apple.html', apple_multi:'./apple_multi.html',
     fruit:'./fruit.html', rice:'./rice.html',
-    wheat_barley_oat:'./wheat_barley_oat.html'
+    wheat_barley_oat:'./wheat_barley_oat.html',
+    wheat:'./wheat.html',
+    barley:'./barley.html',
+    oat:'./oat.html'
   };
   if(map[page]) location.href=map[page];
 }
@@ -281,7 +296,7 @@ function go(page){
 let currentFilter='all';
 const CROP_ICONS={
   '마늘':'🧄','양파':'🧅','콩':'🫘','고구마':'🍠','팥':'🫘',
-  '벼':'🌾','밀':'🌾','보리':'🌾','귀리':'🥣',
+  '벼':'🌾','밀':'🍞','보리':'🌿','귀리':'🥣',
   '착과수':'🍎',
   '사과':'🍎','배':'🍐','단감':'🟠','떫은감':'🟤',
   '포도':'🍇','복숭아':'🍑','자두':'🫐'
