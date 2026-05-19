@@ -773,9 +773,17 @@ function updateSamplesAndCalc(){
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const needed=actArea>0?getProperSample(surveyArea>0?actArea:actArea):0;
 
-  if(needed===0){ samples=[]; }
-  else if(needed>samples.length){ while(samples.length<needed) samples.push({aP:'',aC:'',bP:'',bC:'',weight:''}); }
-  else if(needed<samples.length){ samples=samples.slice(0,needed); }
+  const hasData = i => { const s=samples[i]; return s&&(s.aP||s.aC||s.bP||s.bC||s.weight); };
+  const lastDataIdx = samples.reduce((max,_,i)=>hasData(i)?i:max, -1);
+
+  if(needed===0){
+    if(lastDataIdx < 0) samples=[];
+  } else if(needed>samples.length){
+    while(samples.length<needed) samples.push({aP:'',aC:'',bP:'',bC:'',weight:''});
+  } else if(needed<samples.length){
+    const safeNeeded = Math.max(needed, lastDataIdx+1);
+    samples = samples.slice(0, safeNeeded);
+  }
 
   renderSamples();
   calc();
