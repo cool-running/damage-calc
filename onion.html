@@ -902,13 +902,14 @@ function updateSamplesAndCalc(){
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const needed=getSampleCount(surveyArea);
 
-  if(needed===0){ samples=[]; }
-  else if(needed>samples.length){
+  const hasData = i => { const s=samples[i]; return s&&(s.len||s.wid||s.norm||s.d80||s.d50); };
+  const lastDataIdx = samples.reduce((max,_,i)=>hasData(i)?i:max, -1);
+
+  if(needed===0){
+    if(lastDataIdx < 0) samples=[];
+  } else if(needed>samples.length){
     while(samples.length<needed) samples.push({len:'',wid:'',norm:'',d80:'',d50:''});
   } else if(needed<samples.length){
-    // 데이터 입력된 구간은 삭제하지 않음
-    const hasData = i => { const s=samples[i]; return s.len||s.wid||s.norm||s.d80||s.d50; };
-    const lastDataIdx = samples.reduce((max,_,i)=>hasData(i)?i:max, -1);
     const safeNeeded = Math.max(needed, lastDataIdx+1);
     samples = samples.slice(0, safeNeeded);
   }
