@@ -519,12 +519,30 @@ function closeConfirm(){ document.getElementById('confirm-modal').classList.remo
 
 // ── 스와이프 (실시간 드래그 + 부드러운 릴리즈) ──
 (function(){
-  let _sx=0, _sy=0, _dragging=false, _vertLocked=false;
+  let _sx=0, _sy=0, _dragging=false, _vertLocked=false, _swipeAllowed=false;
   const TABS=4;
   const getSlider = ()=>document.getElementById('tab-slider');
 
   function inScrollArea(el){
-    return el.closest('#hist-list')||el.closest('.confirm-box')||el.closest('#img-zoom-wrap');
+    return el.closest('.confirm-box')||el.closest('#img-zoom-wrap');
+  }
+
+  // hist-list 영역에서 실제로 세로 스크롤이 가능한 상태인지 확인
+  function histListCanScroll(dy){
+    const list = document.getElementById('hist-list');
+    if(!list) return false;
+    const wrap = list.closest('.tab-content');
+    // 스크롤 컨테이너는 body (탭 콘텐츠는 body 스크롤에 의존)
+    const scrollEl = document.documentElement;
+    const atTop    = scrollEl.scrollTop <= 0;
+    const atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 2;
+    // 위로 스와이프(dy<0)인데 이미 맨 아래 → 스와이프 허용
+    // 아래로 스와이프(dy>0)인데 이미 맨 위 → 스와이프 허용
+    if(dy < 0 && atBottom) return false;
+    if(dy > 0 && atTop)    return false;
+    // 스크롤 필요 없는 크기면 스와이프 허용
+    if(scrollEl.scrollHeight <= scrollEl.clientHeight + 2) return false;
+    return true;
   }
 
   document.addEventListener('touchstart', e=>{
@@ -532,7 +550,7 @@ function closeConfirm(){ document.getElementById('confirm-modal').classList.remo
     if(inScrollArea(e.target)) return;
     _sx=e.touches[0].clientX;
     _sy=e.touches[0].clientY;
-    _dragging=false; _vertLocked=false;
+    _dragging=false; _vertLocked=false; _swipeAllowed=false;
     getSlider().style.transition='none';
   },{passive:true});
 
@@ -541,9 +559,21 @@ function closeConfirm(){ document.getElementById('confirm-modal').classList.remo
     if(inScrollArea(e.target)) return;
     const dx=e.touches[0].clientX-_sx;
     const dy=e.touches[0].clientY-_sy;
+
     if(!_dragging && !_vertLocked){
-      if(Math.abs(dy)>Math.abs(dx)+5){ _vertLocked=true; return; }
-      if(Math.abs(dx)>8) _dragging=true;
+      if(Math.abs(dy)>Math.abs(dx)+5){
+        // 세로 방향 우세 — hist-list 영역이면 스크롤 가능한지 체크
+        if(e.target.closest('#hist-list') && !histListCanScroll(dy)){
+          // 스크롤 불필요 → 가로 스와이프 허용
+        } else {
+          _vertLocked=true; return;
+        }
+      }
+      if(Math.abs(dx)>8){
+        // 가로 방향 우세 — hist-list 내부여도 가로 스와이프 허용
+        _dragging=true;
+        _swipeAllowed=true;
+      }
     }
     if(!_dragging||_vertLocked) return;
     const base=-_curTab*100;
@@ -559,7 +589,7 @@ function closeConfirm(){ document.getElementById('confirm-modal').classList.remo
     if(dx<-50 && _curTab<TABS-1)     switchTab(_curTab+1);
     else if(dx>50 && _curTab>0)      switchTab(_curTab-1);
     else                              switchTab(_curTab);
-    _dragging=false;
+    _dragging=false; _swipeAllowed=false;
   },{passive:true});
 })();
 if('serviceWorker' in navigator){
