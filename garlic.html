@@ -452,31 +452,28 @@ tbody td input.filled:active{
           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('harvest_date').focus()}" autocomplete="off">
       </div>
     </div>
-    <div class="g3">
-      <div class="field">
-        <label>조사대상면적</label>
-        <input type="text" id="survey_area_disp" class="auto" readonly>
-      </div>
-      <div class="field">
-        <label>조사수확량</label>
-        <span class="unit-badge">kg</span>
-        <input type="text" id="area_err_disp" class="auto" readonly>
-      </div>
-      <div class="field">
-        <label>계약변경여부</label>
-        <input type="text" id="contract_yn_disp" class="auto" readonly>
-      </div>
-    </div>
-    <div class="g2" style="margin-top:6px">
-      <div class="field">
-        <label>㎡당 평년수확량</label>
-        <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
-      </div>
-      <div class="field">
-        <label>㎡당 조사수확량</label>
-        <input type="text" id="surv_unit_disp" class="auto" readonly placeholder="-">
+    <!-- 자동계산 2x2 -->
+    <div style="background:#f0f5fb;border-radius:12px;padding:10px 10px 6px;margin-top:8px">
+      <div class="g2">
+        <div class="field">
+          <label style="color:#4a7aad">조사대상면적</label>
+          <input type="text" id="survey_area_disp" class="auto" readonly>
+        </div>
+        <div class="field">
+          <label style="color:#4a7aad">계약변경여부</label>
+          <input type="text" id="contract_yn_disp" class="auto" readonly>
+        </div>
+        <div class="field">
+          <label style="color:#4a7aad">㎡당 평년수확량</label>
+          <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
+        </div>
+        <div class="field">
+          <label style="color:#4a7aad">㎡당 조사수확량</label>
+          <input type="text" id="surv_unit_disp" class="auto" readonly placeholder="-">
+        </div>
       </div>
     </div>
+    <input type="hidden" id="area_err_disp">
   </div>
 
   <div class="section">
