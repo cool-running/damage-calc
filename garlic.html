@@ -467,6 +467,16 @@ tbody td input.filled:active{
         <input type="text" id="contract_yn_disp" class="auto" readonly>
       </div>
     </div>
+    <div class="g2" style="margin-top:6px">
+      <div class="field">
+        <label>㎡당 평년수확량</label>
+        <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
+      </div>
+      <div class="field">
+        <label>㎡당 조사수확량</label>
+        <input type="text" id="surv_unit_disp" class="auto" readonly placeholder="-">
+      </div>
+    </div>
   </div>
 
   <div class="section">
@@ -676,6 +686,20 @@ tbody td input.filled:active{
             <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">벌마늘</th>
           </tr></thead>
           <tbody id="cap-sample-table"></tbody>
+        </table>
+
+        <!-- 3-3 표본 합계 -->
+        <div style="font-size:12px;font-weight:600;color:#555;margin-top:10px;margin-bottom:6px">3-3. 표본 합계</div>
+        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;table-layout:fixed">
+          <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+          <thead><tr>
+            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">표본면적 합계(㎡)</th>
+            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">표본중량 합계(g)</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#f0f7ff;font-weight:700;font-size:13px" id="cap-total-area">-</td>
+            <td style="padding:7px 4px;text-align:center;background:#f0f7ff;font-weight:700;font-size:13px" id="cap-total-weight">-</td>
+          </tr></tbody>
         </table>
       </div>
 
@@ -1117,10 +1141,21 @@ function calc(){
   const resultBox=document.getElementById('result-section');
   const pctEl=document.getElementById('result-pct');
 
+  // ㎡당 평년수확량 (평년+면적 입력되는 즉시 표시)
+  const avgUnitEl = document.getElementById('avg_unit_disp');
+  const survUnitEl = document.getElementById('surv_unit_disp');
+  if(avgYield && effArea>0){
+    avgUnitEl.value = (effAvg / effArea).toFixed(3) + ' kg/㎡';
+  } else {
+    avgUnitEl.value = '';
+  }
+
   // 필수값 미입력시 대기 상태
   if(!avgYield||!actArea||surveyArea<=0){
     resultBox.className='result-box pending';
     pctEl.textContent='- -'; pctEl.style.color='white';
+    
+    survUnitEl.value = '';
     return;
   }
 
@@ -1149,6 +1184,8 @@ function calc(){
   if(tA<=0||tEff<=0){
     resultBox.className='result-box pending';
     pctEl.textContent='- -'; pctEl.style.color='white';
+    
+    document.getElementById('surv_unit_disp').value='';
     return;
   }
 
@@ -1175,6 +1212,12 @@ function calc(){
   document.getElementById('r-est').textContent=estYield.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
   document.getElementById('r-unins').textContent=uninsLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
   document.getElementById('r-loss').textContent=netLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
+
+  // ㎡당 수치 표시
+  const avgUnitVal = effAvg / effArea;
+  const survUnitVal = surveyArea > 0 ? totalYield / surveyArea : 0;
+  
+  document.getElementById('surv_unit_disp').value = survUnitVal.toFixed(3)+' kg/㎡';
 
   resultBox.className='result-box';
   if(rawPct < 0){
@@ -1372,6 +1415,20 @@ function fillGarlicCaptureTemplate(){
     }
   });
   tbody.innerHTML = html || '<tr><td colspan="6" style="padding:10px;text-align:center;font-size:12px">-</td></tr>';
+
+  // 3-3 표본 합계
+  const round2 = v => Math.round((v+Number.EPSILON)*100)/100;
+  let totalA=0, totalN=0, total80=0, total50=0;
+  samples.forEach(s=>{
+    const l=parseFloat(s.len)||0, w=parseFloat(s.wid)||0;
+    totalA += round2(l*w);
+    totalN += parseFloat(s.norm)||0;
+    total80 += parseFloat(s.d80)||0;
+    total50 += parseFloat(s.d50)||0;
+  });
+  const totalWeight = totalN + total80 + total50;
+  document.getElementById('cap-total-area').textContent = totalA > 0 ? totalA.toFixed(2)+' ㎡' : '-';
+  document.getElementById('cap-total-weight').textContent = totalWeight > 0 ? totalWeight.toLocaleString()+' g' : '-';
 }
 
 
