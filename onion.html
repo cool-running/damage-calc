@@ -355,15 +355,12 @@ tbody td input.filled:active{
     </select>
     <div style="display:flex;gap:8px;align-items:flex-end">
       <div class="field" style="width:40%">
-        <label>품종</label>
-        <div class="inp filled" style="display:flex;align-items:center;height:46px;padding:0 10px;font-size:14px;font-weight:700;color:#333;background:#f0f4f8;border-radius:var(--rs);border:1.5px solid var(--border)">양파</div>
-      </div>
-      <div class="field" style="width:40%">
         <label>농지번호 4자리</label>
         <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
           maxlength="4"
           oninput="markFilled(this)" onchange="" autocomplete="off">
       </div>
+      <div style="width:40%"></div>
       <div style="width:20%;flex-shrink:0">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
           style="width:100%;height:46px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
@@ -415,21 +412,28 @@ tbody td input.filled:active{
           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('harvest_date').focus()}" autocomplete="off">
       </div>
     </div>
-    <div class="g3">
-      <div class="field">
-        <label>조사대상면적</label>
-        <input type="text" id="survey_area_disp" class="auto" readonly>
-      </div>
-      <div class="field">
-        <label>조사수확량</label>
-        <span class="unit-badge">kg</span>
-        <input type="text" id="area_err_disp" class="auto" readonly>
-      </div>
-      <div class="field">
-        <label>계약변경여부</label>
-        <input type="text" id="contract_yn_disp" class="auto" readonly>
+    <!-- 자동계산 2x2 -->
+    <div style="background:#f0f5fb;border-radius:12px;padding:10px 10px 6px;margin-top:8px">
+      <div class="g2">
+        <div class="field">
+          <label style="color:#4a7aad">조사대상면적</label>
+          <input type="text" id="survey_area_disp" class="auto" readonly>
+        </div>
+        <div class="field">
+          <label style="color:#4a7aad">계약변경여부</label>
+          <input type="text" id="contract_yn_disp" class="auto" readonly>
+        </div>
+        <div class="field">
+          <label style="color:#4a7aad">㎡당 평년수확량</label>
+          <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
+        </div>
+        <div class="field">
+          <label style="color:#4a7aad">㎡당 조사수확량</label>
+          <input type="text" id="surv_unit_disp" class="auto" readonly placeholder="-">
+        </div>
       </div>
     </div>
+    <input type="hidden" id="area_err_disp">
   </div>
 
   <div class="section">
@@ -635,6 +639,20 @@ tbody td input.filled:active{
             <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">80%형</th>
           </tr></thead>
           <tbody id="cap-sample-table"></tbody>
+        </table>
+
+        <!-- 3-3 표본 합계 -->
+        <div style="font-size:12px;font-weight:600;color:#555;margin-top:10px;margin-bottom:6px">3-3. 표본 합계</div>
+        <table style="width:50%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;table-layout:fixed">
+          <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+          <thead><tr>
+            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">표본면적 합계(㎡)</th>
+            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">표본중량 합계(g)</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#f0f7ff;font-weight:700;font-size:13px" id="cap-total-area">-</td>
+            <td style="padding:7px 4px;text-align:center;background:#f0f7ff;font-weight:700;font-size:13px" id="cap-total-weight">-</td>
+          </tr></tbody>
         </table>
       </div>
 
@@ -1008,10 +1026,21 @@ function calc(){
   const resultBox=document.getElementById('result-section');
   const pctEl=document.getElementById('result-pct');
 
+  // ㎡당 평년수확량 (입력 즉시 표시)
+  const _effAreaEarly = actArea||insArea;
+  const avgUnitEl = document.getElementById('avg_unit_disp');
+  const survUnitEl = document.getElementById('surv_unit_disp');
+  if(avgYield && _effAreaEarly>0){
+    const _effAvgEarly = (insArea>0&&actArea>0&&Math.abs((actArea-insArea)/insArea)>0.1)
+      ? Math.round(Math.round(avgYield/insArea*10000)/10000*actArea) : avgYield;
+    avgUnitEl.value = (_effAvgEarly/_effAreaEarly).toFixed(3)+' kg/㎡';
+  } else { avgUnitEl.value=''; }
+
   // 필수값 미입력시 대기 상태
   if(!avgYield||!actArea||surveyArea<=0){
     resultBox.className='result-box pending';
     pctEl.textContent='- -'; pctEl.style.color='white';
+    survUnitEl.value='';
     return;
   }
 
@@ -1061,6 +1090,14 @@ function calc(){
   document.getElementById('r-est').textContent=estYield.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
   document.getElementById('r-unins').textContent=uninsLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
   document.getElementById('r-loss').textContent=netLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
+
+  // ㎡당 수치 표시
+  const _effArea = actArea||insArea;
+  if(avgYield && _effArea>0){
+    document.getElementById('avg_unit_disp').value=(effAvg/_effArea).toFixed(3)+' kg/㎡';
+  }
+  const _survUnit = surveyArea>0 ? totalYield/surveyArea : 0;
+  document.getElementById('surv_unit_disp').value = _survUnit>0 ? _survUnit.toFixed(3)+' kg/㎡' : '';
 
   resultBox.className='result-box';
   const _rawPctO = Math.round((effAvg - totalYield) / effAvg * 10000) / 100;
@@ -1209,6 +1246,19 @@ function fillOnionCaptureTemplate(){
     }
   });
   tbody.innerHTML = html || '<tr><td colspan="5" style="padding:10px;text-align:center;font-size:12px">-</td></tr>';
+
+  // 3-3 표본 합계
+  const round2 = v => Math.round((v+Number.EPSILON)*100)/100;
+  let totalA=0, totalN=0, total80=0;
+  samples.forEach(s=>{
+    const l=parseFloat(s.len)||0, w=parseFloat(s.wid)||0;
+    totalA += round2(l*w);
+    totalN += parseFloat(s.norm)||0;
+    total80 += parseFloat(s.d80)||0;
+  });
+  const totalWeight = totalN + total80;
+  document.getElementById('cap-total-area').textContent = totalA > 0 ? totalA.toFixed(2)+' ㎡' : '-';
+  document.getElementById('cap-total-weight').textContent = totalWeight > 0 ? totalWeight.toLocaleString()+' g' : '-';
 }
 
 
