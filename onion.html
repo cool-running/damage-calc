@@ -412,17 +412,23 @@ tbody td input.filled:active{
           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('harvest_date').focus()}" autocomplete="off">
       </div>
     </div>
-    <!-- 자동계산 2x2 -->
+    <!-- 자동계산 3+2 -->
     <div style="background:#f0f5fb;border-radius:12px;padding:10px 10px 6px;margin-top:8px">
-      <div class="g2">
+      <div class="g3" style="margin-bottom:0">
         <div class="field">
           <label style="color:#4a7aad">조사대상면적</label>
           <input type="text" id="survey_area_disp" class="auto" readonly>
         </div>
         <div class="field">
+          <label style="color:#4a7aad">조사수확량</label>
+          <input type="text" id="area_err_disp" class="auto" readonly>
+        </div>
+        <div class="field">
           <label style="color:#4a7aad">계약변경여부</label>
           <input type="text" id="contract_yn_disp" class="auto" readonly>
         </div>
+      </div>
+      <div class="g2">
         <div class="field">
           <label style="color:#4a7aad">㎡당 평년수확량</label>
           <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
@@ -433,7 +439,6 @@ tbody td input.filled:active{
         </div>
       </div>
     </div>
-    <input type="hidden" id="area_err_disp">
   </div>
 
   <div class="section">
@@ -991,9 +996,9 @@ function calc(){
   const contractEl = document.getElementById('contract_yn_disp');
   const isChanged = insArea>0 && actArea>0 && Math.abs(areaErrNum)>0.1;
   if(insArea>0 && actArea>0){
-    contractEl.value = isChanged ? '원장변경 대상' : '이상무';
-    contractEl.style.color = isChanged ? '#e24b4a' : '#1D9E75';
-    contractEl.style.fontWeight = isChanged ? '700' : '600';
+    contractEl.value = isChanged ? '여' : '부';
+    contractEl.style.color = isChanged ? '#e24b4a' : '#185FA5';
+    contractEl.style.fontWeight = '700';
 
   } else {
     contractEl.value = '';
@@ -1198,7 +1203,7 @@ function fillOnionCaptureTemplate(){
   const capFarmEl = document.getElementById('cap-farmno-disp');
   if(capDateEl) capDateEl.textContent = survDateVal || '';
   if(capFarmEl) capFarmEl.textContent = farmNoVal ? '농지번호: ' + farmNoVal : '';
-  const contractColor = contractV.includes('변경') ? '#e24b4a' : '#111827';
+  const contractColor = contractV === '여' ? '#e24b4a' : contractV === '부' ? '#185FA5' : '#111827';
 
   document.getElementById('cap-avg-yield').textContent = document.getElementById('avg_yield').value ? document.getElementById('avg_yield').value+' kg' : '-';
   document.getElementById('cap-ins-area').textContent = document.getElementById('ins_area').value ? document.getElementById('ins_area').value+' ㎡' : '-';

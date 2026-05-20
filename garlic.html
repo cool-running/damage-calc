@@ -452,17 +452,23 @@ tbody td input.filled:active{
           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('harvest_date').focus()}" autocomplete="off">
       </div>
     </div>
-    <!-- 자동계산 2x2 -->
+    <!-- 자동계산 3+2 -->
     <div style="background:#f0f5fb;border-radius:12px;padding:10px 10px 6px;margin-top:8px">
-      <div class="g2">
+      <div class="g3" style="margin-bottom:0">
         <div class="field">
           <label style="color:#4a7aad">조사대상면적</label>
           <input type="text" id="survey_area_disp" class="auto" readonly>
         </div>
         <div class="field">
+          <label style="color:#4a7aad">조사수확량</label>
+          <input type="text" id="area_err_disp" class="auto" readonly>
+        </div>
+        <div class="field">
           <label style="color:#4a7aad">계약변경여부</label>
           <input type="text" id="contract_yn_disp" class="auto" readonly>
         </div>
+      </div>
+      <div class="g2">
         <div class="field">
           <label style="color:#4a7aad">㎡당 평년수확량</label>
           <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
@@ -473,7 +479,6 @@ tbody td input.filled:active{
         </div>
       </div>
     </div>
-    <input type="hidden" id="area_err_disp">
   </div>
 
   <div class="section">
@@ -1103,9 +1108,9 @@ function calc(){
   document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString()+' ㎡':'';
   document.getElementById('area_err_disp').value='';
   if(insArea>0 && actArea>0){
-    contractEl.value = isChanged ? '원장변경 대상' : '이상무';
-    contractEl.style.color = isChanged ? '#e24b4a' : '#1D9E75';
-    contractEl.style.fontWeight = isChanged ? '700' : '600';
+    contractEl.value = isChanged ? '여' : '부';
+    contractEl.style.color = isChanged ? '#e24b4a' : '#185FA5';
+    contractEl.style.fontWeight = '700';
 
   } else {
     contractEl.value = '';
@@ -1347,7 +1352,7 @@ function fillGarlicCaptureTemplate(){
   const cropEl = document.getElementById('crop');
   const cropTxt = cropEl.options[cropEl.selectedIndex].text;
   const contractV = document.getElementById('contract_yn_disp').value || '-';
-  const contractColor = contractV.includes('변경') ? '#e24b4a' : '#111827';
+  const contractColor = contractV === '여' ? '#e24b4a' : contractV === '부' ? '#185FA5' : '#111827';
 
   // 날짜 + 농지번호 캡처
   const survDateVal = document.getElementById('survey_date').value || '';
