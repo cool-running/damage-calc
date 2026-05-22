@@ -127,7 +127,7 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
   <div class="header-icon" id="header-icon">🍞</div>
   <div>
     <h1 id="header-title">밀 피해율 계산기</h1>
-    <div class="header-sub" id="header-sub">밭작물 · 밀 수확량조사</div>
+    <div class="header-sub" id="header-sub">논작물 · 밀 수확량조사</div>
   </div>
 </div>
 
@@ -619,9 +619,9 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
 // ── 상수 ──────────────────────────────────────
 const STD_MOISTURE = 0.13; // 밀·보리·귀리 공통
 const CROP_INFO = {
-  wheat:  { icon:'🍞', title:'밀 피해율 계산기',  sub:'밭작물 · 밀 수확량조사',  label:'밀',  color:'#C8860A' },
-  barley: { icon:'🌿', title:'보리 피해율 계산기', sub:'밭작물 · 보리 수확량조사', label:'보리', color:'#2E7D32' },
-  oat:    { icon:'🥣', title:'귀리 피해율 계산기', sub:'밭작물 · 귀리 수확량조사', label:'귀리', color:'#6A3FA0' }
+  wheat:  { icon:'🍞', title:'밀 피해율 계산기',  sub:'논작물 · 밀 수확량조사',  label:'밀',  color:'#C8860A' },
+  barley: { icon:'🌿', title:'보리 피해율 계산기', sub:'논작물 · 보리 수확량조사', label:'보리', color:'#2E7D32' },
+  oat:    { icon:'🥣', title:'귀리 피해율 계산기', sub:'논작물 · 귀리 수확량조사', label:'귀리', color:'#6A3FA0' }
 };
 const STORAGE_KEYS = { wheat:'wheat_state', barley:'barley_state', oat:'oat_state' };
 function getStorageKey(){ return STORAGE_KEYS[crop] || 'wheat_state'; }
@@ -1284,7 +1284,7 @@ async function saveImage(){
     link.click();
     try{
       const _label=CROP_INFO[crop].label;
-      const _rec={id:Date.now(),crop:_label,cropDetail:_label,category:'밭작물',
+      const _rec={id:Date.now(),crop:_label,cropDetail:_label,category:'논작물',
         farmNo:(document.getElementById('farm_no')?.value||'').trim(),
         surveyDate:document.getElementById('surveyDate')?.value||'',
         pct:document.getElementById('result-pct')?.textContent||'-',
