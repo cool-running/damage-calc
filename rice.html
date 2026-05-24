@@ -1174,7 +1174,9 @@ function fillRiceCaptureTemplate(){
 
   // 2행
   document.getElementById('cap-surveyArea').textContent = document.getElementById('surveyArea').value || '-';
-  document.getElementById('cap-properSample').textContent = document.getElementById('properSample').value || '-';
+  const _capProper = parseInt(document.getElementById('properSampleDisp').value)||0;
+  const _capActual = actualProper > 0 ? actualProper : _capProper;
+  document.getElementById('cap-properSample').textContent = _capActual > 0 ? _capActual+'구간' : (document.getElementById('properSample').value||'-');
   document.getElementById('cap-disease').textContent = document.getElementById('dis-y')?.checked ? '여' : '부';
   const rawDate = document.getElementById('surveyDate')?.value || '';
   document.getElementById('cap-surveyDate').textContent = rawDate ? rawDate.replace(/-/g,'.') : '-';

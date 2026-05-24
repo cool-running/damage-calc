@@ -1212,7 +1212,10 @@ function fillCaptureTemplate(){
   document.getElementById('cap-uninsArea').textContent = fmtA('uninsArea');
   document.getElementById('cap-preArea').textContent   = fmtA('preArea');
   document.getElementById('cap-surveyArea').textContent= document.getElementById('surveyArea').value||'-';
-  document.getElementById('cap-properSample').textContent = document.getElementById('properSample').value||'-';
+  // 표본구간수: 실제 입력 구간수(actualProper) 기준으로 표시
+  const _capProper = parseInt(document.getElementById('properSampleDisp').value)||0;
+  const _capActual = actualProper > 0 ? actualProper : _capProper;
+  document.getElementById('cap-properSample').textContent = _capActual > 0 ? _capActual+'구간' : (document.getElementById('properSample').value||'-');
   document.getElementById('cap-surveyDate').textContent = sd?sd.replace(/-/g,'.'):'-';
 
   if(mode==='sample'){
