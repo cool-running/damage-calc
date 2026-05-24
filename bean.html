@@ -162,15 +162,19 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
       <button class="bigtext-btn" id="bigtext-btn" onclick="toggleBigText()">🔍 <span id="bigtext-label">크게</span></button>
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
-    <div class="g2">
-      <div class="field">
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div class="field" style="flex:2">
         <label>농지번호 4자리</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
-          maxlength="4" oninput="markFilled(this)" autocomplete="off">
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호 4자리"
+          maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);markFilled(this);checkDupFarmNo(this.value)" autocomplete="off">
       </div>
-      <div class="field">
+      <div class="field" style="flex:2">
         <label>조사일자</label>
         <input type="date" id="survey_date" class="inp" onchange="markFilled(this)" autocomplete="off">
+      </div>
+      <div style="flex-shrink:0">
+        <button onclick="openHistoryModal()" title="이전 기록 불러오기"
+          style="width:46px;height:46px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
@@ -393,6 +397,32 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
   </div>
 </div>
 
+<!-- 원장변경건 확인 팝업 -->
+<!-- 이전 기록 불러오기 모달 -->
+<div id="history-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:18px;width:100%;max-width:360px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 18px 40px rgba(0,0,0,0.2)">
+    <div style="padding:18px 18px 12px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:16px;font-weight:800;color:#185FA5">📋 이전 기록 불러오기</div>
+      <button onclick="closeHistoryModal()" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div id="history-list" style="overflow-y:auto;flex:1;padding:10px 12px"></div>
+    <div style="padding:12px 18px;border-top:1px solid #eee">
+      <button onclick="closeHistoryModal()" style="width:100%;height:42px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-size:14px;font-weight:700;cursor:pointer">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div id="dup-farmno-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:360;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.18)">
+    <div style="font-size:18px;font-weight:800;color:#333;text-align:center;margin-bottom:8px">동일 농지번호 감지</div>
+    <div id="dup-farmno-msg" style="font-size:14px;line-height:1.7;color:#666;text-align:center;margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="dupFarmNoAnswer(false)" style="flex:1;height:46px;border:1.5px solid #d9d9d9;border-radius:12px;background:#f7f7f7;color:#555;font-size:15px;font-weight:700;cursor:pointer">아니오</button>
+      <button onclick="dupFarmNoAnswer(true)" style="flex:1;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">예 (원장변경)</button>
+    </div>
+  </div>
+</div>
+
 <div id="reset-overlay">
   <div class="reset-modal">
     <div class="title">전체 초기화</div>
@@ -428,6 +458,130 @@ let mode = 'sample';
 let samples = [];
 
 // 모달 함수 - 최상단에 선언해야 HTML onclick에서 바로 호출 가능
+
+// ── 원장변경건 / 회차 관리 ────────────────────────
+let _lastResetFarmNo = '';
+let _isAmendCase = false;
+let _farmNoSeq = 0;
+let _dupCheckPending = false;
+
+function openDupFarmNoModal(farmNo){
+  document.getElementById('dup-farmno-msg').innerHTML =
+    '농지번호 <b>'+farmNo+'</b>는 이미 조사한 농지입니다.<br>원장변경건인가요?';
+  document.getElementById('dup-farmno-overlay').style.display='flex';
+  _dupCheckPending = true;
+}
+function dupFarmNoAnswer(isAmend){
+  document.getElementById('dup-farmno-overlay').style.display='none';
+  _dupCheckPending = false;
+  _isAmendCase = isAmend;
+  if(isAmend){ _farmNoSeq++; }
+}
+function checkDupFarmNo(val){
+  const v=(val||'').trim();
+  if(!v||!_lastResetFarmNo) return;
+  if(v===_lastResetFarmNo&&!_dupCheckPending&&_farmNoSeq===0&&!_isAmendCase){
+    openDupFarmNoModal(v);
+  }
+}
+
+
+// ── 이전 기록 불러오기 ───────────────────────────
+const HISTORY_KEY = 'bean_history';
+
+function openHistoryModal(){
+  const list = document.getElementById('history-list');
+  let records = [];
+  try{ records = JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){}
+  if(records.length===0){
+    list.innerHTML='<div style="text-align:center;color:#aaa;padding:30px 0;font-size:14px">저장된 기록이 없습니다</div>';
+  } else {
+    list.innerHTML = records.slice().reverse().map((r,i)=>{
+      const idx = records.length-1-i;
+      const farmDisp = (r.farm_no_disp||r.farm_no) ? '농지 '+(r.farm_no_disp||r.farm_no) : '농지번호 미입력';
+      const pctDisp = r.pct!=null ? r.pct+'%' : '-';
+      return `<div style="border:1.5px solid #e8edf3;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white;transition:background .15s"
+        onclick="loadHistoryRecord(${idx})"
+        onmouseenter="this.style.background='#EBF4FF'" onmouseleave="this.style.background='white'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:15px;font-weight:800;color:#185FA5">${farmDisp}</span>
+          <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:#555">🫘 콩</span>
+          <span style="font-size:12px;color:#555">📐 ${r.actArea||r.act_area||r.insArea||r.ins_area||'-'} ㎡</span>
+          <span style="font-size:12px;color:#555">📊 ${pctDisp}</span>
+          <span style="font-size:12px;color:#555">🗓 ${r.survey_date||'-'}</span>
+        </div>
+        <div style="margin-top:6px;display:flex;justify-content:flex-end;gap:6px">
+          <button onclick="event.stopPropagation();deleteHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:1px solid #ffb3b3;border-radius:6px;background:white;color:#e24b4a;font-size:11px;font-weight:700;cursor:pointer">삭제</button>
+          <button onclick="event.stopPropagation();loadHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:none;border-radius:6px;background:#185FA5;color:white;font-size:11px;font-weight:700;cursor:pointer">불러오기</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('history-overlay').style.display='flex';
+}
+
+function closeHistoryModal(){
+  document.getElementById('history-overlay').style.display='none';
+}
+
+function loadHistoryRecord(idx){
+  let records=[];
+  try{ records=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){}
+  const r=records[idx];
+  if(!r) return;
+  const fields=['farm_no', 'survey_date', 'avgYield', 'insArea', 'actArea', 'deadArea', 'uninsArea', 'harvArea', 'uninsRate', 'fullWeight', 'fullMoisture', 'fullUninsRate'];
+  fields.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const v=r[id]||'';
+    el.value=v;
+    if(el.classList) el.classList.toggle('filled', v!=='');
+  });
+  _farmNoSeq = r.seq||0;
+  _isAmendCase = r.isAmend||false;
+  // samples 복원
+  if(r.samples && Array.isArray(r.samples)){
+    samples = JSON.parse(JSON.stringify(r.samples));
+    renderSamples();
+    calcTotals();
+  }
+  closeHistoryModal();
+  calc();
+  saveState();
+}
+
+function deleteHistoryRecord(idx){
+  let records=[];
+  try{ records=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){}
+  records.splice(idx,1);
+  try{ localStorage.setItem(HISTORY_KEY,JSON.stringify(records)); }catch(e){}
+  openHistoryModal();
+}
+
+function saveToHistory(){
+  const farmNo=(document.getElementById('farm_no')?.value||'').trim();
+  const surveyDate=document.getElementById('survey_date')?.value||'';
+  const pctEl=document.getElementById('result-pct');
+  const pct=pctEl&&pctEl.textContent!=='- -'?pctEl.textContent.replace('%',''):null;
+  const farmNoDisp=farmNo?farmNo+(_farmNoSeq>0?'('+_farmNoSeq+')':''):'';
+  const record={ farm_no:farmNo, farm_no_disp:farmNoDisp, seq:_farmNoSeq, isAmend:_isAmendCase, survey_date:surveyDate, pct,
+    saved_at:new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/ /g,'')
+  };
+  const fields=['farm_no', 'survey_date', 'avgYield', 'insArea', 'actArea', 'deadArea', 'uninsArea', 'harvArea', 'uninsRate', 'fullWeight', 'fullMoisture', 'fullUninsRate'];
+  fields.forEach(id=>{ const el=document.getElementById(id); if(el) record[id]=el.value; });
+  if(typeof samples!=='undefined') record.samples=JSON.parse(JSON.stringify(samples));
+  let records=[];
+  try{ records=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){}
+  const ei=farmNoDisp?records.findIndex(r=>(r.farm_no_disp||r.farm_no)===farmNoDisp&&r.survey_date===surveyDate):-1;
+  if(ei>=0) records[ei]=record;
+  else records.push(record);
+  if(records.length>30) records=records.slice(-30);
+  try{ localStorage.setItem(HISTORY_KEY,JSON.stringify(records)); }catch(e){}
+}
+
 function openResetModal(){document.getElementById('reset-overlay').classList.add('show');}
 function closeResetModal(){document.getElementById('reset-overlay').classList.remove('show');}
 function confirmResetAll(){closeResetModal(); resetAll();}
@@ -804,6 +958,8 @@ function loadState(){
 }
 
 function resetAll(){
+  _lastResetFarmNo=(document.getElementById('farm_no')?.value||'').trim();
+  _isAmendCase=false; _farmNoSeq=0;
   try{localStorage.removeItem('bean_state');}catch(e){}
   ['avgYield','insArea','actArea','deadArea','uninsArea','harvArea','uninsRate',
    'fullWeight','fullMoisture','fullUninsRate',
@@ -836,7 +992,7 @@ function fillBeanCaptureTemplate(){
   const capDateEl = document.getElementById('cap-date-disp');
   const capFarmEl = document.getElementById('cap-farmno-disp');
   if(capDateEl) capDateEl.textContent = survDateVal || '';
-  if(capFarmEl) capFarmEl.textContent = farmNoVal ? '농지번호: ' + farmNoVal : '';
+  if(capFarmEl) capFarmEl.textContent = farmNoVal ? '농지번호: ' + farmNoVal + (_farmNoSeq>0?'('+_farmNoSeq+')':'') : '';
   const avgYield = document.getElementById('avgYield')?.value ? document.getElementById('avgYield').value + ' kg' : '-';
   const insArea = document.getElementById('insArea')?.value ? document.getElementById('insArea').value + ' ㎡' : '-';
   const contract = document.getElementById('contractYn')?.value || '-';
@@ -909,7 +1065,7 @@ async function saveImage(){
     link.download=`콩피해율_${stamp}.png`;link.href=canvas.toDataURL('image/png');link.click();
     try{
       const _rec={id:Date.now(),crop:'콩',cropDetail:'콩',category:'밭작물',
-        farmNo:(document.getElementById('farm_no')?.value||'').trim(),
+        farmNo:(document.getElementById('farm_no')?.value||'').trim()+(_farmNoSeq>0?'('+_farmNoSeq+')':''),
         surveyDate:document.getElementById('survey_date')?.value||'',
         pct:document.getElementById('result-pct')?.textContent||'-',
         filename:`콩피해율_${stamp}.png`,savedAt:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
@@ -920,6 +1076,7 @@ async function saveImage(){
       _h.unshift(_rec);if(_h.length>200)_h.splice(200);
       localStorage.setItem('save_history',JSON.stringify(_h));
       _saveImgCache(_rec.id,_dataUrl);
+      saveToHistory();
     }catch(_){}
     document.getElementById('save-overlay').classList.add('show');
   }catch(e){alert('저장 중 오류가 발생했어요.');}
