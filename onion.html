@@ -356,8 +356,8 @@ tbody td input.filled:active{
     <div style="display:flex;gap:8px;align-items:flex-end">
       <div class="field" style="width:40%">
         <label>농지번호 4자리</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
-          maxlength="4"
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호 4자리"
+          maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);checkDupFarmNo(this.value)"
           oninput="markFilled(this)" onchange="" autocomplete="off">
       </div>
       <div style="width:40%"></div>
@@ -695,6 +695,18 @@ tbody td input.filled:active{
     <div style="font-size:13px;line-height:1.7;color:#666;text-align:center;margin-bottom:6px">아래 항목을 확인해 주세요.</div>
     <div id="validation-list" style="background:#FFF5F5;border:1px solid #ffd0d0;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#c0392b;line-height:2"></div>
     <button onclick="document.getElementById('validation-overlay').style.display='none'" style="width:100%;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">확인</button>
+  </div>
+</div>
+
+<!-- 원장변경건 확인 팝업 -->
+<div id="dup-farmno-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:360;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.18)">
+    <div style="font-size:18px;font-weight:800;color:#333;text-align:center;margin-bottom:8px">동일 농지번호 감지</div>
+    <div id="dup-farmno-msg" style="font-size:14px;line-height:1.7;color:#666;text-align:center;margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="dupFarmNoAnswer(false)" style="flex:1;height:46px;border:1.5px solid #d9d9d9;border-radius:12px;background:#f7f7f7;color:#555;font-size:15px;font-weight:700;cursor:pointer">아니오</button>
+      <button onclick="dupFarmNoAnswer(true)" style="flex:1;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">예 (원장변경)</button>
+    </div>
   </div>
 </div>
 
@@ -1169,7 +1181,36 @@ function lockInputs(){ setCalcMode(); }
 function unlockInputs(){ setEditMode(); }
 
 // ── 초기화 ───────────────────────────────────────
+
+// ── 원장변경건 / 회차 관리 ────────────────────────
+let _lastResetFarmNo = '';
+let _isAmendCase = false;
+let _farmNoSeq = 0;
+let _dupCheckPending = false;
+
+function openDupFarmNoModal(farmNo){
+  document.getElementById('dup-farmno-msg').innerHTML =
+    '농지번호 <b>'+farmNo+'</b>는 이미 조사한 농지입니다.<br>원장변경건인가요?';
+  document.getElementById('dup-farmno-overlay').style.display='flex';
+  _dupCheckPending = true;
+}
+function dupFarmNoAnswer(isAmend){
+  document.getElementById('dup-farmno-overlay').style.display='none';
+  _dupCheckPending = false;
+  _isAmendCase = isAmend;
+  if(isAmend){ _farmNoSeq++; }
+}
+function checkDupFarmNo(val){
+  const v=(val||'').trim();
+  if(!v||!_lastResetFarmNo) return;
+  if(v===_lastResetFarmNo&&!_dupCheckPending&&_farmNoSeq===0&&!_isAmendCase){
+    openDupFarmNoModal(v);
+  }
+}
+
 function resetAll(){
+  _lastResetFarmNo=(document.getElementById('farm_no')?.value||'').trim();
+  _isAmendCase=false; _farmNoSeq=0;
   try{ localStorage.removeItem('onion_state'); }catch(e){}
   ['avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate','harvest_date','crack_count'].forEach(id=>{
     const el=document.getElementById(id);
@@ -1202,7 +1243,7 @@ function fillOnionCaptureTemplate(){
   const capDateEl = document.getElementById('cap-date-disp');
   const capFarmEl = document.getElementById('cap-farmno-disp');
   if(capDateEl) capDateEl.textContent = survDateVal || '';
-  if(capFarmEl) capFarmEl.textContent = farmNoVal ? '농지번호: ' + farmNoVal : '';
+  if(capFarmEl) capFarmEl.textContent = farmNoVal ? '농지번호: '+farmNoVal+(_farmNoSeq>0?'('+_farmNoSeq+')':'') : '';
   const contractColor = contractV === '여' ? '#e24b4a' : contractV === '부' ? '#185FA5' : '#111827';
 
   document.getElementById('cap-avg-yield').textContent = document.getElementById('avg_yield').value ? document.getElementById('avg_yield').value+' kg' : '-';
@@ -1301,7 +1342,7 @@ async function saveImage(){
     try{
       const _cropEl=document.getElementById('crop');
       const _rec={id:Date.now(),crop:'양파',cropDetail:'양파',category:'밭작물',
-        farmNo:(document.getElementById('farm_no')?.value||'').trim(),
+        farmNo:(document.getElementById('farm_no')?.value||'').trim()+(_farmNoSeq>0?'('+_farmNoSeq+')':''),
         surveyDate:document.getElementById('survey_date')?.value||'',
         pct:document.getElementById('result-pct')?.textContent||'-',
         filename:`양파피해율_${stamp}.png`,savedAt:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
@@ -1332,7 +1373,7 @@ function openHistoryModal(){
         onclick="loadHistoryRecord(${idx})"
         onmouseenter="this.style.background='#EBF4FF'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:15px;font-weight:800;color:#185FA5">${r.farm_no ? '농지 '+r.farm_no : '농지번호 미입력'}</span>
+          <span style="font-size:15px;font-weight:800;color:#185FA5">${(r.farm_no_disp||r.farm_no) ? '농지 '+(r.farm_no_disp||r.farm_no) : '농지번호 미입력'}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1391,8 +1432,9 @@ function saveToHistory(){
   const surveyDate=document.getElementById('survey_date').value||'';
   const pctEl=document.getElementById('result-pct');
   const pct=pctEl&&pctEl.textContent!=='- -'?pctEl.textContent.replace('%',''):null;
+  const farmNoDisp=farmNo?farmNo+(_farmNoSeq>0?'('+_farmNoSeq+')':''):'';
   const record={
-    farm_no: farmNo,
+    farm_no: farmNo, farm_no_disp: farmNoDisp, seq: _farmNoSeq, isAmend: _isAmendCase,
     avg_yield: document.getElementById('avg_yield').value,
     ins_area: document.getElementById('ins_area').value,
     act_area: document.getElementById('act_area').value,
@@ -1409,7 +1451,7 @@ function saveToHistory(){
   };
   let records=[];
   try{ records=JSON.parse(localStorage.getItem('onion_history')||'[]'); }catch(e){}
-  const ei=farmNo?records.findIndex(r=>r.farm_no===farmNo&&r.survey_date===surveyDate):-1;
+  const ei=farmNoDisp?records.findIndex(r=>(r.farm_no_disp||r.farm_no)===farmNoDisp&&r.survey_date===surveyDate):-1;
   if(ei>=0) records[ei]=record;
   else records.push(record);
   if(records.length>30) records=records.slice(-30);
