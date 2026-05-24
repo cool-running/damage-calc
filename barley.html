@@ -154,8 +154,9 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
     <div style="display:flex;gap:8px;align-items:flex-end">
       <div class="field" style="width:40%">
         <label>농지번호</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
-          oninput="markFilled(this);saveState()" autocomplete="off">
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호 4자리"
+          maxlength="4" pattern="[0-9]{4}"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);markFilled(this);saveState();checkDupFarmNo(this.value)" autocomplete="off">
       </div>
       <div class="field" style="width:40%">
         <label>조사일자</label>
@@ -555,6 +556,18 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
   </div>
 </div>
 
+<!-- 원장변경건 확인 팝업 -->
+<div id="dup-farmno-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:360;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.18)">
+    <div style="font-size:18px;font-weight:800;color:#333;text-align:center;margin-bottom:8px">동일 농지번호 감지</div>
+    <div id="dup-farmno-msg" style="font-size:14px;line-height:1.7;color:#666;text-align:center;margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="dupFarmNoAnswer(false)" style="flex:1;height:46px;border:1.5px solid #d9d9d9;border-radius:12px;background:#f7f7f7;color:#555;font-size:15px;font-weight:700;cursor:pointer">아니오</button>
+      <button onclick="dupFarmNoAnswer(true)" style="flex:1;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">예 (원장변경)</button>
+    </div>
+  </div>
+</div>
+
 <!-- 표본구간 삭제 확인 팝업 -->
 <div id="sample-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:410;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.2)">
@@ -710,6 +723,37 @@ function normalizeDim(val){
 }
 function debouncedCalc(){ clearTimeout(_calcTimer); saveState(); _calcTimer=setTimeout(calc,300); }
 function openResetModal(){ document.getElementById('reset-overlay').style.display='flex'; }
+
+// ── 원장변경건 / 회차 관리 ────────────────────────
+let _lastResetFarmNo = '';   // 초기화 직전 농지번호
+let _isAmendCase = false;    // 원장변경건 여부
+let _farmNoSeq = 0;          // 회차 (0=첫회, 1=두번째...)
+let _dupCheckPending = false; // 팝업 대기 중 여부
+
+function openDupFarmNoModal(farmNo){
+  document.getElementById('dup-farmno-msg').innerHTML =
+    `농지번호 <b>${farmNo}</b>는 이미 조사한 농지입니다.<br>원장변경건인가요?`;
+  document.getElementById('dup-farmno-overlay').style.display='flex';
+  _dupCheckPending = true;
+}
+function dupFarmNoAnswer(isAmend){
+  document.getElementById('dup-farmno-overlay').style.display='none';
+  _dupCheckPending = false;
+  _isAmendCase = isAmend;
+  if(isAmend){
+    _farmNoSeq++;
+  }
+  // 저장 상태 반영
+  saveState();
+}
+
+function checkDupFarmNo(val){
+  const v = (val||'').trim();
+  if(!v || !_lastResetFarmNo) return;
+  if(v === _lastResetFarmNo && !_dupCheckPending && _farmNoSeq === 0 && !_isAmendCase){
+    openDupFarmNoModal(v);
+  }
+}
 
 // ── 품목 전환 ──────────────────────────────────
 const _CROPS=['wheat','barley','oat'];
@@ -1018,7 +1062,7 @@ function openHistoryModal(){
         onclick="loadHistoryRecord(${idx})"
         onmouseenter="this.style.background='#EBF4FF'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:15px;font-weight:800;color:#185FA5">${r.farm_no ? '농지 '+r.farm_no : '농지번호 미입력'}</span>
+          <span style="font-size:15px;font-weight:800;color:#185FA5">${(r.farm_no_disp||r.farm_no) ? '농지 '+(r.farm_no_disp||r.farm_no) : '농지번호 미입력'}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1090,8 +1134,9 @@ function saveToHistory(){
   const pct=pctEl&&pctEl.textContent!=='- -'?pctEl.textContent.replace('%',''):null;
   const spVals=[];
   for(let i=0;i<8;i++){ const el=document.getElementById('sp'+i); spVals.push(el?el.value:''); }
+  const farmNoDisp = farmNo ? farmNo+(_farmNoSeq>0?'('+_farmNoSeq+')':'') : '';
   const record={
-    crop, farm_no:farmNo, surveyDate,
+    crop, farm_no:farmNo, farm_no_disp:farmNoDisp, seq:_farmNoSeq, isAmend:_isAmendCase, surveyDate,
     avgYield:  document.getElementById('avgYield')?.value||'',
     insArea:   document.getElementById('insArea')?.value||'',
     actArea:   document.getElementById('actArea')?.value||'',
@@ -1110,7 +1155,7 @@ function saveToHistory(){
   };
   let records=[];
   try{ records=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){}
-  const ei=farmNo?records.findIndex(r=>r.farm_no===farmNo&&r.surveyDate===surveyDate&&r.crop===crop):-1;
+  const ei=farmNoDisp?records.findIndex(r=>(r.farm_no_disp||r.farm_no)===farmNoDisp&&r.surveyDate===surveyDate&&r.crop===crop):-1;
   if(ei>=0) records[ei]=record;
   else records.push(record);
   if(records.length>30) records=records.slice(-30);
@@ -1169,6 +1214,10 @@ function loadState(){
 
 // ── 초기화 ────────────────────────────────────
 function resetAll(){
+  // 초기화 직전 농지번호 기억
+  _lastResetFarmNo = (document.getElementById('farm_no')?.value||'').trim();
+  _isAmendCase = false;
+  _farmNoSeq = 0;
   try{ localStorage.removeItem(getStorageKey()); }catch(e){}  ['avgYield','insArea','actArea','deadArea','uninsArea','preArea','uninsRate',
    'rowLen','rowWid','moisture','fullYield','fullMoisture','fullUninsRate','farm_no'].forEach(id=>{
     const el=document.getElementById(id); if(el){el.value='';el.classList.remove('filled');}
@@ -1193,7 +1242,7 @@ function fillCaptureTemplate(){
   const sd=document.getElementById('surveyDate')?.value||'';
   const fn=(document.getElementById('farm_no')?.value||'').trim();
   document.getElementById('cap-date-disp').textContent   = sd||'';
-  document.getElementById('cap-farmno-disp').textContent = fn?'농지번호: '+fn:'';
+  document.getElementById('cap-farmno-disp').textContent = fn ? '농지번호: '+fn+(_farmNoSeq>0?'('+_farmNoSeq+')':'') : '';
 
   document.getElementById('cap-crop').textContent = info.label;
   const ay=parseFloat((document.getElementById('avgYield')?.value||'').replace(/,/g,''));
@@ -1288,7 +1337,7 @@ async function saveImage(){
     try{
       const _label=CROP_INFO[crop].label;
       const _rec={id:Date.now(),crop:_label,cropDetail:_label,category:'논작물',
-        farmNo:(document.getElementById('farm_no')?.value||'').trim(),
+        farmNo:(document.getElementById('farm_no')?.value||'').trim()+(_farmNoSeq>0?'('+_farmNoSeq+')':''),
         surveyDate:document.getElementById('surveyDate')?.value||'',
         pct:document.getElementById('result-pct')?.textContent||'-',
         filename:`${_label}피해율_${stamp}.png`,savedAt:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
