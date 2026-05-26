@@ -1056,12 +1056,11 @@ function calc(){
   const unitAvgR3=round3(avgYield/insArea);
   const survYield=Math.round(unitYield*surveyArea)+Math.round(unitAvgR3*(otherArea+harvArea));
 
-  // 병충해 감수량 = ROUND(Σ(중량g×손해정도×인정비율) / 표본면적(㎡) × 조사대상(㎡) / 1,000)
-  const bugNumer=bugRows.reduce((s,r)=>{
+  // 병충해 감수량 = Σ 구간별 ROUND(중량×손해×인정 / 표본면적 × 조사대상 / 1,000)
+  const bugLoss=tA>0&&surveyArea>0?bugRows.reduce((s,r)=>{
     const w=parseFloat(r.weight)||0, rate=(parseFloat(r.rate)||0)/100, g=GRADE_RATE[r.grade]||0;
-    return s+(w*rate*g);
-  },0);
-  const bugLoss=tA>0&&surveyArea>0?Math.round(bugNumer/tA*surveyArea/1000):0;
+    return s+(w&&rate&&g?Math.round(w*rate*g/tA*surveyArea/1000):0);
+  },0):0;
 
   // 미보상감수량 = ROUND((평년-조사수확량) × 미보상비율)
   const rawLoss=Math.max(0,effAvg-survYield);
@@ -1350,8 +1349,7 @@ async function saveImage(){
     const _rawLoss=Math.max(0,_effAvg-_survY);
     const _uninsLoss=Math.round(_rawLoss*_uninsR);
     // 병충해감수량 = Σ(중량×손해×인정) / 표본면적 × 조사대상 / 1000
-    const _bugNumer=bugRows.reduce((s,r)=>{const w=parseFloat(r.weight)||0,rate=(parseFloat(r.rate)||0)/100,g=GRADE_RATE[r.grade]||0;return s+w*rate*g;},0);
-    const _bugLossKg=_tA>0&&_survA>0?Math.round(_bugNumer/_tA*_survA/1000):0;
+    const _bugLossKg=_tA>0&&_survA>0?bugRows.reduce((s,r)=>{const w=parseFloat(r.weight)||0,rate=(parseFloat(r.rate)||0)/100,g=GRADE_RATE[r.grade]||0;return s+(w&&rate&&g?Math.round(w*rate*g/_tA*_survA/1000):0);},0):0;
 
     document.getElementById('cap-pct').textContent=document.getElementById('result-pct').textContent||'-';
     document.getElementById('cap-unins').textContent=(document.getElementById('unins_rate').value||'0')+'%';
