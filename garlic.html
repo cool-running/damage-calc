@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8"><!-- build:1777075660 -->
+<meta charset="UTF-8"><!-- build:1777075661 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#185FA5">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1083,8 +1083,9 @@ function calcTotals(){
     const n=parseFloat(s.norm)||0,d8=parseFloat(s.d80)||0,d5=parseFloat(s.d50)||0;
     tL+=l; tW+=w; tN+=n; t80+=d8; t50+=d5;
     tA += round2(l*w);                        // ROUND2 면적
-    tEff += trunc2((n + d8*0.2 + d5)*cc);     // TRUNC2 유효중량
+    tEff += round2((n + d8*0.2 + d5)*cc);     // ROUND2 유효중량
   }
+  tA = round2(tA);                            // 부동소수점 보정
   document.getElementById('t-len').textContent=tL.toFixed(2)+'m';
   document.getElementById('t-wid').textContent=tW.toFixed(2)+'m';
   document.getElementById('t-norm').textContent=tN.toLocaleString();
@@ -1185,7 +1186,7 @@ function calc(){
   // ⑤ 피해율        = FLOOR((평년 - 조사수확량 - 미보상감수량) / 평년, 소수4자리)
   const trunc2 = v => Math.trunc(v * 100) / 100;
   const round2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
-  const round3 = v => Math.round((v + Number.EPSILON) * 1000) / 1000;
+  const round4 = v => Math.round((v + Number.EPSILON) * 10000) / 10000;
 
   let tA=0, tEff=0;
   for(const s of samples){
@@ -1194,6 +1195,7 @@ function calc(){
     tA += round2(l * w);                          // ② ROUND2 면적
     tEff += round2((n + d8*0.2 + d5) * cc);       // ① ROUND2 유효중량
   }
+  tA = round2(tA);                                // 부동소수점 보정
 
   if(tA<=0||tEff<=0){
     resultBox.className='result-box pending';
@@ -1203,8 +1205,8 @@ function calc(){
     return;
   }
 
-  // ③ 비대지수 반영 후 ROUND3 (전산 표시값과 동일)
-  const unitYield = round3(tEff * (1 + growIdx) / 1000 / tA);
+  // ③ 비대지수 반영 후 ROUND4 (전산과 동일)
+  const unitYield = round4(tEff * (1 + growIdx) / 1000 / tA);
   // ④ ROUND 조사수확량 (전산과 동일)
   const m2Avg = insArea>0 ? Math.round(avgYield/insArea*10000)/10000 : 0;
   const totalYield = Math.round(unitYield * surveyArea + m2Avg*(otherArea+harvArea));
