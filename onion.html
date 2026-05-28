@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0"><!-- build:1777075661 -->
+<meta http-equiv="Expires" content="0"><!-- build:1777075662 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#185FA5">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1067,9 +1067,9 @@ function calc(){
 
   // ── 전산 공식 적용 ──────────────────────────────
   // ① ROUND2 유효중량  ② ROUND2 면적
-  // ③ ROUND4 단위면적당  ④ ROUND 조사수확량  ⑤ ROUND 피해율
+  // ③ ROUND3 단위면적당  ④ ROUND 조사수확량  ⑤ ROUND 피해율
   const round2 = v => Math.round((v + Number.EPSILON)*100)/100;
-  const round4 = v => Math.round((v + Number.EPSILON)*10000)/10000;
+  const round3 = v => Math.round((v + Number.EPSILON)*1000)/1000;
 
   let tA=0, tEff=0;
   for(const s of samples){
@@ -1086,10 +1086,10 @@ function calc(){
     return;
   }
 
-  // ③ 비대지수 반영 후 ROUND4 적용 (전산과 동일)
-  const unitYield = round4(tEff * (1 + growIdx) / 1000 / tA);
+  // ③ 비대지수 반영 후 ROUND3 적용 (전산과 동일)
+  const unitYield = round3(tEff * (1 + growIdx) / 1000 / tA);
   // ④ ROUND 조사수확량 (시스템과 동일: FLOOR 아닌 ROUND)
-  const m2Avg = insArea>0 ? Math.round(avgYield/insArea*10000)/10000 : 0;
+  const m2Avg = insArea>0 ? avgYield/insArea : 0;
   const totalYield = Math.round(unitYield * surveyArea + m2Avg*(otherArea+harvArea));
   const estYield = tEff/1000/tA * growIdx * surveyArea; // 표시용
 
