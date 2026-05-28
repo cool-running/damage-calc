@@ -186,6 +186,12 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-name">감자</div>
       <div class="crop-desc">수확량 조사</div>
     </div>
+    <div class="crop-card done" onclick="go('minipumpkin')">
+      <span class="badge badge-done">완성</span>
+      <div class="crop-icon">🎃</div>
+      <div class="crop-name">단호박</div>
+      <div class="crop-desc">수확량 조사</div>
+    </div>
   </div>
 </div>
 
@@ -288,7 +294,7 @@ function go(page){
   const map={
     garlic:'./garlic.html', onion:'./onion.html', bean:'./bean.html',
     sweetpotato:'./sweetpotato.html', red_bean:'./red_bean.html', tea:'./tea.html',
-    potato:'./potato.html',
+    potato:'./potato.html', minipumpkin:'./minipumpkin.html',
     apple:'./apple.html', apple_multi:'./apple_multi.html',
     fruit:'./fruit.html', rice:'./rice.html',
     wheat_barley_oat:'./wheat_barley_oat.html',
@@ -302,6 +308,7 @@ function go(page){
 // ── 저장목록 ──────────────────────────────────────
 let currentFilter='all';
 const CROP_ICONS={
+  '단호박':'🎃',
   '마늘':'🧄','양파':'🧅','콩':'🫘','고구마':'🍠','팥':'🫘','감자':'🥔',
   '벼':'🌾','밀':'🍞','보리':'🌿','귀리':'🥣',
   '착과수':'🍎',
@@ -344,7 +351,26 @@ function fmtDateLabel(iso){
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
 }
 function loadHistory(){
-  try{ return JSON.parse(localStorage.getItem('save_history')||'[]'); }catch(_){ return []; }
+  try{
+    const main = JSON.parse(localStorage.getItem('save_history')||'[]');
+    // 단호박 기록 통합
+    const pump = JSON.parse(localStorage.getItem('pumpkin_history')||'[]');
+    const converted = pump.map(r=>({
+      id: 'pump_'+(r.farm_no||'')+'_'+(r.survey_date||r.saved_at||''),
+      crop: '단호박',
+      cropDetail: '단호박',
+      category: '밭작물',
+      farmNo: r.farm_no ? r.farm_no+'번지' : '',
+      pct: r.pct||'-',
+      savedAt: r.survey_date||new Date().toISOString().substring(0,10),
+      _pumpkin: true
+    }));
+    // 중복 제거 후 합치기
+    const existIds = new Set(main.map(r=>r.id));
+    const merged = [...main, ...converted.filter(r=>!existIds.has(r.id))];
+    merged.sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
+    return merged;
+  }catch(_){ return []; }
 }
 function loadImgCache(){
   try{ return JSON.parse(localStorage.getItem('save_img_cache')||'[]'); }catch(_){ return []; }
