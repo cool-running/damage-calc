@@ -1213,6 +1213,14 @@ async function saveImage(){
       if(_ei>-1) _hist.splice(_ei,1);
       _hist.unshift(_rec); if(_hist.length>200) _hist.splice(200);
       localStorage.setItem('save_history',JSON.stringify(_hist));
+      // 미리보기 이미지 캐시 저장
+      try{
+        const _imgCache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
+        const _imgRec={id:_rec.id, img:canvas.toDataURL('image/jpeg',0.7)};
+        _imgCache.unshift(_imgRec);
+        if(_imgCache.length>50) _imgCache.splice(50);
+        localStorage.setItem('save_img_cache',JSON.stringify(_imgCache));
+      }catch(_){}
     }catch(_){}
     document.getElementById('save-overlay').classList.add('show');
   }catch(e){ alert('저장 중 오류가 발생했어요.'); }
