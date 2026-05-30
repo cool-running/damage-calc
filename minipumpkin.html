@@ -957,18 +957,6 @@ function saveHistory(){
   if(ei>=0) records[ei]=record; else records.push(record);
   if(records.length>30) records=records.slice(-30);
   try{localStorage.setItem('pumpkin_history',JSON.stringify(records));}catch(e){}
-  // index.html 저장목록에도 등록
-  try{
-    const sKey='save_history';
-    const sId='pump_'+(farmNo||'')+'_'+(surveyDate||'');
-    let sAll=JSON.parse(localStorage.getItem(sKey)||'[]');
-    const si=sAll.findIndex(r=>r.id===sId);
-    const sRec={id:sId,crop:'단호박',cropDetail:'단호박',category:'밭작물',
-      farmNo:farmNo?farmNo+'번지':'',pct:pct,
-      savedAt:surveyDate||(new Date().toISOString().substring(0,10)),_pumpkin:true};
-    if(si>=0) sAll[si]=sRec; else sAll.push(sRec);
-    localStorage.setItem(sKey,JSON.stringify(sAll));
-  }catch(e){}
 }
 
 // ── 초기화 ───────────────────────────────────────────────────
@@ -1196,32 +1184,47 @@ async function saveImage(){
   try{
     fillCaptureTemplate();
     const canvas=await html2canvas(document.getElementById('capture-template'),{backgroundColor:'#f3f4f6',scale:2,useCORS:true,windowWidth:430});
+    const _farmNo=(document.getElementById('farm_no')?.value||'').trim();
+    const _surveyDate=document.getElementById('survey_date')?.value||'';
+    const _pct=document.getElementById('result-pct')?.textContent||'-';
+    const _hist=JSON.parse(localStorage.getItem('save_history')||'[]');
+    const _imgCache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
+    // 농지번호 기준 기존 레코드 확인
+    const _ei=_farmNo?_hist.findIndex(r=>r.crop==='단호박'&&r.farmNo===_farmNo):-1;
+    if(_ei>-1){
+      const _existing=_hist[_ei];
+      const _isChanged=_existing.pct!==_pct;
+      const _msg=_isChanged
+        ? `농지번호 ${_farmNo}의 기존 기록이 있습니다.
+피해율: ${_existing.pct} → ${_pct}
+
+덮어쓰시겠습니까?`
+        : `농지번호 ${_farmNo}의 기록이 이미 있습니다 (피해율: ${_existing.pct}).
+
+덮어쓰시겠습니까?`;
+      if(!confirm(_msg)) return;
+      // 기존 이미지 캐시도 삭제
+      const _ici=_imgCache.findIndex(c=>String(c.id)===String(_existing.id));
+      if(_ici>-1) _imgCache.splice(_ici,1);
+      _hist.splice(_ei,1);
+    }
+    // 저장
     const now=new Date();
     const stamp=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    const _id=Date.now();
     const link=document.createElement('a');
     link.download=`단호박피해율_${stamp}.png`;
     link.href=canvas.toDataURL('image/png'); link.click();
-    try{
-      const _farmNo=(document.getElementById('farm_no')?.value||'').trim();
-      const _rec={id:Date.now(),crop:'단호박',cropDetail:'단호박',category:'밭작물',farmNo:_farmNo,
-        surveyDate:document.getElementById('survey_date')?.value||'',
-        pct:document.getElementById('result-pct')?.textContent||'-',
-        filename:`단호박피해율_${stamp}.png`,
-        savedAt:(()=>{const d=new Date();return fmt(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
-      const _hist=JSON.parse(localStorage.getItem('save_history')||'[]');
-      const _ei=_rec.farmNo?_hist.findIndex(r=>r.crop===_rec.crop&&r.farmNo===_rec.farmNo):-1;
-      if(_ei>-1) _hist.splice(_ei,1);
-      _hist.unshift(_rec); if(_hist.length>200) _hist.splice(200);
-      localStorage.setItem('save_history',JSON.stringify(_hist));
-      // 미리보기 이미지 캐시 저장
-      try{
-        const _imgCache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
-        const _imgRec={id:_rec.id, img:canvas.toDataURL('image/jpeg',0.7)};
-        _imgCache.unshift(_imgRec);
-        if(_imgCache.length>50) _imgCache.splice(50);
-        localStorage.setItem('save_img_cache',JSON.stringify(_imgCache));
-      }catch(_){}
-    }catch(_){}
+    const _rec={id:_id,crop:'단호박',cropDetail:'단호박',category:'밭작물',
+      farmNo:_farmNo, surveyDate:_surveyDate, pct:_pct,
+      filename:`단호박피해율_${stamp}.png`,
+      savedAt:(()=>{const d=new Date();return fmt(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
+    _hist.unshift(_rec); if(_hist.length>200) _hist.splice(200);
+    localStorage.setItem('save_history',JSON.stringify(_hist));
+    // 미리보기 이미지 캐시
+    _imgCache.unshift({id:_id, img:canvas.toDataURL('image/jpeg',0.7)});
+    if(_imgCache.length>50) _imgCache.splice(50);
+    localStorage.setItem('save_img_cache',JSON.stringify(_imgCache));
     document.getElementById('save-overlay').classList.add('show');
   }catch(e){ alert('저장 중 오류가 발생했어요.'); }
 }
