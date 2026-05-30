@@ -1189,8 +1189,9 @@ async function saveImage(){
     const _pct=document.getElementById('result-pct')?.textContent||'-';
     const _hist=JSON.parse(localStorage.getItem('save_history')||'[]');
     const _imgCache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
-    // 농지번호 기준 기존 레코드 확인
-    const _ei=_farmNo?_hist.findIndex(r=>r.crop==='단호박'&&r.farmNo===_farmNo):-1;
+    // 농지번호 정규화 (숫자만 추출해서 비교)
+    const _normFarm = n => (n||'').replace(/[^0-9]/g,'');
+    const _ei=_farmNo?_hist.findIndex(r=>r.crop==='단호박'&&_normFarm(r.farmNo)===_normFarm(_farmNo)):-1;
     if(_ei>-1){
       const _existing=_hist[_ei];
       const _isChanged=_existing.pct!==_pct;
@@ -1216,7 +1217,7 @@ async function saveImage(){
     link.download=`단호박피해율_${stamp}.png`;
     link.href=canvas.toDataURL('image/png'); link.click();
     const _rec={id:_id,crop:'단호박',cropDetail:'단호박',category:'밭작물',
-      farmNo:_farmNo, surveyDate:_surveyDate, pct:_pct,
+      farmNo:_farmNo.replace(/[^0-9]/g,''), surveyDate:_surveyDate, pct:_pct,
       filename:`단호박피해율_${stamp}.png`,
       savedAt:(()=>{const d=new Date();return fmt(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
     _hist.unshift(_rec); if(_hist.length>200) _hist.splice(200);
