@@ -59,7 +59,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .legend{display:flex;gap:12px;padding:8px 16px;background:var(--card);border-bottom:0.5px solid var(--border)}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
 .dot-inp{width:10px;height:10px;border-radius:2px;background:white;border:1.5px solid var(--binp)}
-.dot-filled{width:10px;height:10px;border-radius:2px;background:#e8faf3;border:1.5px solid var(--green)}
+.dot-filled{width:10px;height:10px;border-radius:2px;background:#eaf3e0;border:1.5px solid var(--green)}
 .dot-auto{width:10px;height:10px;border-radius:2px;background:var(--auto);border:0.5px solid var(--border)}
 
 .content{padding:12px 12px 40px}
@@ -76,7 +76,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;text-align:center;transition:background .15s,border-color .15s}
 select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;text-align:center;cursor:pointer;transition:background .15s,border-color .15s}
 input.inp::placeholder{color:var(--hint);text-align:center}
-input.inp.filled,select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
+input.inp.filled,select.inp.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;-webkit-appearance:none;text-align:center}
 
 /* 조사일자 날짜 전체 표시 */
@@ -117,8 +117,8 @@ tbody td{padding:3px 2px;border-bottom:0.5px solid #eee;text-align:center;vertic
 tfoot td{padding:6px 1px;background:#f3efe8;font-weight:700;font-size:11px;text-align:center;border-top:1.5px solid var(--border)}
 tbody td input{width:100%;height:34px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:13px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text);transition:background .15s,border-color .15s}
 tbody td select{width:100%;height:34px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:11px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text);cursor:pointer}
-tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
-tbody td select.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
+tbody td input.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
+tbody td select.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
 tbody td input.filled.mobile-focus,tbody td input.filled:focus{background:#dceeff!important;color:#185FA5!important;border-color:var(--blue)!important}
 
 /* 표본 버튼 */
@@ -866,11 +866,11 @@ function renderBugTable(){
   if(bugYn!=='yes'){ document.getElementById('bug-body').innerHTML=''; updateBugTotals(); return; }
   document.getElementById('bug-body').innerHTML=bugRows.map((r,i)=>{
     const nv=r.name&&r.grade?`${r.name}|${r.grade}`:'';
-    const filledSel='background:#e8faf3;border-color:var(--green);color:#000;font-weight:700';
+    const filledSel='background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700';
     const normSel='background:#fffbeb;border-color:#d1a060;color:var(--text)';
-    const filledBug='background:#e8faf3;border-color:var(--green);color:#000;font-weight:700';
+    const filledBug='background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700';
     const normBug='background:#fff9f0;border-color:#f0c080;color:var(--text)';
-    const filledRate='background:#e8faf3;border-color:var(--green);color:#000;font-weight:700';
+    const filledRate='background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700';
     const normRate='background:#fff9f0;border-color:#f0c080;color:var(--text)';
     return `<tr>
       <td style="padding:2px">
@@ -919,7 +919,7 @@ function renderBugTable(){
       <td style="padding:2px">
         <input type="text" value="${r.weight?Number(r.weight).toLocaleString():''}" inputmode="decimal"
           class="${r.weight?'filled':''}"
-          style="height:32px;${r.weight?'background:#e8faf3;border-color:var(--green)':'background:#fffbf0;border-color:#f0c080'}"
+          style="height:32px;${r.weight?'background:#eaf3e0;border-color:var(--green)':'background:#fffbf0;border-color:#f0c080'}"
           oninput="onCommaInput(this);bugRows[${i}].weight=this.value.replace(/,/g,'');updateBugTotals()"
           onblur="bugRows[${i}].weight=this.value.replace(/,/g,'');renderBugTable();updateBugTotals();calc();saveState()">
       </td>
@@ -1290,10 +1290,10 @@ async function saveImage(){
     const tbody=document.getElementById('cap-sample-tbody');
     tbody.innerHTML=samples.map((s,i)=>`<tr>
       <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px">${i+1}</td>
-      <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.len||'-'}</td>
-      <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.wid||'-'}</td>
-      <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.norm?Number(s.norm).toLocaleString():'-'}</td>
-      <td style="padding:4px;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.d50?Number(s.d50).toLocaleString():'-'}</td>
+      <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#eaf3e0;font-weight:700">${s.len||'-'}</td>
+      <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#eaf3e0;font-weight:700">${s.wid||'-'}</td>
+      <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#eaf3e0;font-weight:700">${s.norm?Number(s.norm).toLocaleString():'-'}</td>
+      <td style="padding:4px;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#eaf3e0;font-weight:700">${s.d50?Number(s.d50).toLocaleString():'-'}</td>
     </tr>`).join('');
 
     // 3-2 병충해: 행=표본구간, 헤더2행(No|병충해종류|손해정도비율→%), 셀=중량
@@ -1334,7 +1334,7 @@ async function saveImage(){
           ${rates.map((rate,ri)=>{
             const val=cells[rate];
             const isLast=ri===rates.length-1;
-            return `<td style="${isLast?tdBL:tdB};font-weight:${val?'700':'400'};background:${val?'#e8faf3':'#fff'}">${val?val.toLocaleString():''}</td>`;
+            return `<td style="${isLast?tdBL:tdB};font-weight:${val?'700':'400'};background:${val?'#eaf3e0':'#fff'}">${val?val.toLocaleString():''}</td>`;
           }).join('')}
         </tr>`;
       }).join('');
