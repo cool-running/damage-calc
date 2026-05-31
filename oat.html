@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="theme-color" content="#6A3FA0">
+<meta name="theme-color" content="#5B7E3F">
 <title>귀리 피해율 계산기</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
   --blue:#185FA5;--blue2:#378ADD;
-  --auto:#F3F1EA;--border:#D8D6CE;--binp:#378ADD;
+  --auto:#F3F1EA;--border:#D8D6CE;--binp:#7FAD52;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
-  --red:#e24b4a;--green:#1D9E75;
+  --red:#e24b4a;--green:#5B7E3F;--green2:#7FAD52;
   --wheat:#C8860A;
   --barley:#2E7D32;
   --oat:#6A3FA0;
@@ -22,7 +22,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-user-select:none;user-select:none}
 input,textarea{-webkit-user-select:text;user-select:text}
-.header{background:#6A3FA0;color:white;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;transition:background .2s}
+.header{background:#5B7E3F;color:white;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;transition:background .2s}
 .back-btn{width:32px;height:32px;background:rgba(255,255,255,0.15);border:none;border-radius:8px;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .header-icon{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .header h1{font-size:16px;font-weight:600}
@@ -42,12 +42,12 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* 조사방법 탭 */
 .mode-tabs{display:flex;background:var(--card);border-bottom:0.5px solid var(--border);padding:0 12px;gap:6px}
 .mode-tab{flex:1;height:38px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;border-radius:var(--rs);margin:6px 0}
-.mode-tab.on{background:#e8faf3;border-color:var(--green);color:#0d5c35}
+.mode-tab.on{background:#eaf3e0;border-color:var(--green);color:#2d5016}
 
 .legend{display:flex;gap:12px;padding:8px 16px;background:var(--card);border-bottom:0.5px solid var(--border)}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
 .dot-inp{width:10px;height:10px;border-radius:2px;background:white;border:1.5px solid var(--binp)}
-.dot-filled{width:10px;height:10px;border-radius:2px;background:#e8faf3;border:1.5px solid var(--green)}
+.dot-filled{width:10px;height:10px;border-radius:2px;background:#eaf3e0;border:1.5px solid var(--green)}
 .dot-auto{width:10px;height:10px;border-radius:2px;background:var(--auto);border:0.5px solid var(--border)}
 .content{padding:12px 12px 40px}
 .section{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;border:0.5px solid var(--border)}
@@ -60,7 +60,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;transition:background .15s,border-color .15s;text-align:center}
 input.inp:focus,input.inp:focus-visible,input.inp:active{outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(24,95,165,0.2)!important;background:#dceeff!important;color:#185FA5!important}
-input.inp.filled:not(:focus){background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
+input.inp.filled:not(:focus){background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700}
 input.inp.filled:focus{background:#dceeff!important;color:#185FA5!important;border-color:#185FA5!important}
 input.inp.mobile-focus{outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(24,95,165,0.2)!important;background:#dceeff!important;color:#185FA5!important}
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;text-align:center}
@@ -73,7 +73,7 @@ input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);
   display:inline-flex;align-items:center;gap:4px;transition:all .15s;
   -webkit-appearance:none;appearance:none;
 }
-.bigtext-btn.on{ background:var(--blue2);color:#fff;box-shadow:0 2px 8px rgba(55,138,221,0.35); }
+.bigtext-btn.on{ background:#7FAD52;color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35); }
 .bigtext-btn:active{opacity:0.8}
 /* 단위 배지 */
 .unit-badge{
@@ -92,18 +92,18 @@ body.big-text thead th{font-size:12px !important;padding:8px 2px !important;}
 body.big-text tfoot td{font-size:12px !important;padding:8px 1px !important;}
 body.big-text .field{gap:5px !important}
 body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.03em;}
-.result-box{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(24,95,165,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
+.result-box{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(91,126,63,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
 .result-box.pending{background:linear-gradient(135deg,#888 0%,#aaa 100%);border:1.5px solid rgba(255,255,255,0.15);box-shadow:none}
 .save-btn{background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);color:white;border-radius:12px;height:36px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 14px;white-space:nowrap;flex-shrink:0}
 .save-btn:active{background:rgba(255,255,255,0.35)}
 .locked input.inp:not([type=date]),.locked input[type=number]{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.btn-calc{height:46px;border:none;border-radius:12px;background:var(--blue);color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-calc:active{background:#1354a0}
+.btn-calc{height:46px;border:none;border-radius:12px;background:#5B7E3F;color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-calc:active{background:#3d6b2a}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit:active{background:#f0fdf8}
-.btn-calc.active{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);box-shadow:0 4px 14px rgba(24,95,165,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
 .btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
 #save-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center}
 #save-overlay.show{display:flex}
@@ -115,7 +115,7 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
   body{background:white!important;font-size:12px}
   .content{padding:8px!important}
   .section{border:1px solid #ccc!important;margin-bottom:8px!important;break-inside:avoid}
-  .result-box{background:#185FA5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid}
+  .result-box{background:#5B7E3F!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid}
   .result-box.pending{display:none!important}
 }
 </style>
@@ -273,7 +273,7 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
           <button id="btn-sample-minus" onclick="sampleMinus()"
             style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:6px;background:transparent;font-size:16px;color:var(--hint);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">－</button>
           <button id="btn-sample-plus" onclick="samplePlus()"
-            style="width:28px;height:28px;border:1.5px solid var(--binp);border-radius:6px;background:transparent;font-size:16px;color:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">＋</button>
+            style="width:28px;height:28px;border:1.5px solid var(--binp);border-radius:6px;background:transparent;font-size:16px;color:#5B7E3F;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">＋</button>
         </div>
       </div>
       <div id="sample-inputs"></div>
@@ -495,7 +495,7 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
               <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:10px"></td>
               <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:10px"></td>
               <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:10px"></td>
-              <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#e8faf3;color:#0d5c35;font-weight:700;font-size:10px" id="cap-total">-</td>
+              <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#eaf3e0;color:#2d5016;font-weight:700;font-size:10px" id="cap-total">-</td>
             </tr>
           </tbody>
         </table>
@@ -631,9 +631,9 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
 // ── 상수 ──────────────────────────────────────
 const STD_MOISTURE = 0.13; // 밀·보리·귀리 공통
 const CROP_INFO = {
-  wheat:  { icon:'🌾', title:'밀 피해율 계산기',  sub:'논작물 · 밀 수확량조사',  label:'밀',  color:'#C8860A' },
-  barley: { icon:'🌿', title:'보리 피해율 계산기', sub:'논작물 · 보리 수확량조사', label:'보리', color:'#2E7D32' },
-  oat:    { icon:'🥣', title:'귀리 피해율 계산기', sub:'논작물 · 귀리 수확량조사', label:'귀리', color:'#6A3FA0' }
+  wheat:  { icon:'🌾', title:'밀 피해율 계산기',  sub:'논작물 · 밀 수확량조사',  label:'밀',  color:'#5B7E3F' },
+  barley: { icon:'🌿', title:'보리 피해율 계산기', sub:'논작물 · 보리 수확량조사', label:'보리', color:'#5B7E3F' },
+  oat:    { icon:'🥣', title:'귀리 피해율 계산기', sub:'논작물 · 귀리 수확량조사', label:'귀리', color:'#5B7E3F' }
 };
 const STORAGE_KEYS = { wheat:'wheat_state', barley:'barley_state', oat:'oat_state' };
 function getStorageKey(){ return STORAGE_KEYS[crop] || 'wheat_state'; }
@@ -853,9 +853,9 @@ function renderSampleInputs(proper, active){
       <span style="font-size:12px;font-weight:700;color:${isActive?'var(--sub)':'var(--hint)'};text-align:center">${i+1}</span>
       <input type="number" inputmode="decimal" id="sp${i}" ${isActive?'':'disabled'}
         style="width:100%;height:${document.body.classList.contains('big-text')?'52':'40'}px;border:1.5px solid ${bc};border-radius:6px;font-size:${document.body.classList.contains('big-text')?'20':'15'}px;font-weight:${document.body.classList.contains('big-text')?'700':'600'};background:${bg};color:${isActive?'var(--text)':'var(--hint)'};text-align:center;-webkit-appearance:none;box-sizing:border-box"
-        oninput="this.style.background=this.value?'#e8faf3':'white';this.style.borderColor=this.value?'#1D9E75':'#378ADD';this.style.color=this.value?'#0d5c35':'#1a1a1a';debouncedCalc()"
+        oninput="this.style.background=this.value?'#eaf3e0':'white';this.style.borderColor=this.value?'#5B7E3F':'#7FAD52';this.style.color=this.value?'#2d5016':'#1a1a1a';debouncedCalc()"
         onfocus="this.select();this.style.background='#dceeff';this.style.borderColor='#185FA5';this.style.color='#185FA5'"
-        onblur="this.style.background=this.value?'#e8faf3':'white';this.style.borderColor=this.value?'#1D9E75':'#378ADD';this.style.color=this.value?'#0d5c35':'#1a1a1a';calc()" autocomplete="off">
+        onblur="this.style.background=this.value?'#eaf3e0':'white';this.style.borderColor=this.value?'#5B7E3F':'#7FAD52';this.style.color=this.value?'#2d5016':'#1a1a1a';calc()" autocomplete="off">
     </div>`;
   }
   html += '</div>';
@@ -865,7 +865,7 @@ function renderSampleInputs(proper, active){
     const el=document.getElementById('sp'+i);
     if(el && savedVals[i]){
       el.value=savedVals[i];
-      el.style.background='#e8faf3'; el.style.borderColor='#1D9E75'; el.style.color='#0d5c35';
+      el.style.background='#eaf3e0'; el.style.borderColor='#5B7E3F'; el.style.color='#2d5016';
     }
   }
   bindMobileFocusHandlers();
@@ -887,7 +887,7 @@ function calc(){
   const cEl = document.getElementById('contractYn');
   if(insArea>0&&actArea>0){
     cEl.value = isChanged?'유':'무';
-    cEl.style.color = isChanged?'#e24b4a':'#1D9E75';
+    cEl.style.color = isChanged?'#e24b4a':'#5B7E3F';
     cEl.style.fontWeight='700';
   } else { cEl.value=''; cEl.style.color=''; cEl.style.fontWeight=''; }
 
@@ -1199,7 +1199,7 @@ function loadState(){
           s.spVals.forEach((v,i)=>{
             if(i >= restoreCount) return;
             const el=document.getElementById('sp'+i);
-            if(el&&v){ el.value=v; el.style.background='#e8faf3'; el.style.borderColor='#1D9E75'; el.style.color='#0d5c35'; }
+            if(el&&v){ el.value=v; el.style.background='#eaf3e0'; el.style.borderColor='#5B7E3F'; el.style.color='#2d5016'; }
           });
         }
         calc();
@@ -1243,7 +1243,7 @@ function fillCaptureTemplate(){
   document.getElementById('cap-avgYield').textContent = (!isNaN(ay)&&ay>0)?ay.toLocaleString()+' kg':'-';
   const cv=document.getElementById('contractYn').value||'-';
   const cc=document.getElementById('cap-contract');
-  cc.textContent=cv; cc.style.color=cv==='유'?'#e24b4a':'#1D9E75';
+  cc.textContent=cv; cc.style.color=cv==='유'?'#e24b4a':'#5B7E3F';
 
   const fmtA=id=>{ const v=(document.getElementById(id)?.value||'').replace(/,/g,''); const n=parseFloat(v); return (!isNaN(n)&&n>=0)?n.toLocaleString()+' ㎡':'-'; };
   document.getElementById('cap-insArea').textContent   = fmtA('insArea');
@@ -1272,7 +1272,7 @@ function fillCaptureTemplate(){
     const capActive = actualProper > 0 ? actualProper : proper;
     const td=(i)=>{
       const el=document.getElementById('sp'+i); const v=el?(el.value||''):''; const active=i<capActive;
-      const bg=v?'#e8faf3':'#fff'; const color=v?'#0d5c35':'#bbb';
+      const bg=v?'#eaf3e0':'#fff'; const color=v?'#2d5016':'#bbb';
       return `<td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:${bg};font-weight:700;font-size:10px;color:${color}">${active?(v||''):''}</td>`;
     };
     const row=document.getElementById('cap-row18');
@@ -1280,7 +1280,7 @@ function fillCaptureTemplate(){
       let tot=0;
       for(let i=0;i<capActive;i++){const el=document.getElementById('sp'+i);if(el&&el.value)tot+=parseFloat(el.value)||0;}
       row.innerHTML=td(0)+td(1)+td(2)+td(3)+td(4)+td(5)+td(6)+td(7)+
-        `<td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#e8faf3;color:#0d5c35;font-weight:700;font-size:10px">${tot?tot.toLocaleString():'-'}</td>`;
+        `<td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#eaf3e0;color:#2d5016;font-weight:700;font-size:10px">${tot?tot.toLocaleString():'-'}</td>`;
     }
   } else {
     document.getElementById('cap-sec-sample').style.display    ='none';
@@ -1393,7 +1393,7 @@ document.addEventListener('DOMContentLoaded',function(){
           s.spVals.forEach((v,i)=>{
             if(proper2>0&&i>=proper2) return; // 적정 초과 구간값 무시
             const el=document.getElementById('sp'+i);
-            if(el&&v){el.value=v;el.style.background='#e8faf3';el.style.borderColor='#1D9E75';el.style.color='#0d5c35';}
+            if(el&&v){el.value=v;el.style.background='#eaf3e0';el.style.borderColor='#5B7E3F';el.style.color='#2d5016';}
           });
           calc();
         }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#E8923A">
+<meta name="theme-color" content="#5B7E3F">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -53,11 +53,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 <style>
 :root{
-  --or:#E8923A;--or2:#F0A855;--or3:#F7C97A;
-  --auto:#F3F1EA;--border:#D8D6CE;--binp:#F0A855;
+  --green:#5B7E3F;--green2:#7FAD52;
+  --auto:#F3F1EA;--border:#D8D6CE;--binp:#7FAD52;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
-  --red:#e24b4a;--green:#1D9E75;
+  --red:#e24b4a;--blue:#185FA5;
   --r:12px;--rs:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
@@ -65,7 +65,7 @@ input[type=date]{-webkit-touch-callout:default !important;touch-action:manipulat
 body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-user-select:none;user-select:none;padding-bottom:env(safe-area-inset-bottom,50px);visibility:hidden}
 input,textarea{-webkit-user-select:text;user-select:text}
 
-.header{background:var(--or);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px}
+.header{background:var(--green);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px}
 .header-icon{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .header h1{font-size:16px;font-weight:600}
 .header-sub{font-size:11px;opacity:0.75;margin-top:1px}
@@ -90,17 +90,17 @@ input,textarea{-webkit-user-select:text;user-select:text}
 input.inp:not([type=date]){height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:#fff;color:var(--text);width:100%;-webkit-appearance:none;text-align:center;transition:background .15s,border-color .15s}
 input[type=date].inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 4px;font-size:13px;letter-spacing:-0.03em;background:#fff;color:var(--text);-webkit-text-fill-color:var(--text);width:100%;text-align:center;transition:background .15s,border-color .15s;-webkit-appearance:revert;appearance:revert}
 input.inp::placeholder{color:var(--hint);text-align:center}
-input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
+input.inp.filled{background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700}
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;-webkit-appearance:none;text-align:center}
 input.inp:not([type=date]).mobile-focus,input.inp:not([type=date]):focus,
 tbody td input.mobile-focus,tbody td input:focus{
-  outline:none!important;border-color:#E8923A!important;
-  box-shadow:0 0 0 3px rgba(232,146,58,0.18)!important;
-  background:#FEF9F5!important;color:#1a1a1a!important;
+  outline:none!important;border-color:#185FA5!important;
+  box-shadow:0 0 0 3px rgba(24,95,165,0.2)!important;
+  background:#dceeff!important;color:#185FA5!important;
 }
 .reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
-.bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--or2);border-radius:var(--rs);color:var(--or2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;-webkit-appearance:none}
-.bigtext-btn.on{background:var(--or2);color:#fff;box-shadow:0 2px 8px rgba(232,146,58,0.25)}
+.bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--green2);border-radius:var(--rs);color:var(--green2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;-webkit-appearance:none}
+.bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35)}
 
 body.big-text input.inp:not([type=date]){height:52px!important;font-size:20px!important;font-weight:700!important;border-width:2px!important}
 body.big-text input[type=date].inp{height:52px!important;font-size:15px!important;font-weight:700!important;border-width:2px!important;letter-spacing:-0.03em}
@@ -123,11 +123,11 @@ body.big-text .field{gap:5px!important}
 .stbl tbody td.no{font-size:10px;font-weight:700;color:var(--sub);background:#fafafa;border-right:1px solid #eee}
 
 .stbl tbody td input{width:100%;height:32px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:11px;background:#fff;-webkit-appearance:none;color:var(--text);transition:background .15s,border-color .15s}
-.stbl tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
+.stbl tbody td input.filled{background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700}
 
 /* 중량 칸 색상 - 연한 구분 */
 .stbl tbody td.cw1 input,.stbl tbody td.cw2 input,.stbl tbody td.cw3 input{border-color:var(--binp);background:#fff}
-.stbl tbody td.cw1 input.filled,.stbl tbody td.cw2 input.filled,.stbl tbody td.cw3 input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
+.stbl tbody td.cw1 input.filled,.stbl tbody td.cw2 input.filled,.stbl tbody td.cw3 input.filled{background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700}
 
 .stbl tfoot td{padding:6px 2px;background:#f3efe8;font-weight:700;font-size:10px;text-align:center;border-top:1.5px solid var(--border)}
 .stbl tfoot td.v{color:var(--text);font-size:11px}
@@ -135,33 +135,33 @@ body.big-text .field{gap:5px!important}
 .btn-row{display:flex;gap:8px;margin-top:8px}
 .btn-row button{flex:1;height:40px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-del{border:1.5px solid var(--red);background:#FFF5F5;color:var(--red)}
-.btn-add{border:1.5px dashed var(--or2);background:#FAF5EE;color:var(--or)}
+.btn-add{border:1.5px dashed var(--green2);background:#eaf3e0;color:#2d5016}
 
 /* 차수별 단위면적당 요약 칩 */
 
 /* 피해율 칩 */
 
 /* 결과 */
-.result-box{background:linear-gradient(135deg,#E8923A 0%,#F0A855 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(232,146,58,0.32),inset 0 1px 0 rgba(255,255,255,0.2)}
+.result-box{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:#fff;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(91,126,63,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
 .result-box.pending{background:linear-gradient(135deg,#888 0%,#aaa 100%);border:1.5px solid rgba(255,255,255,0.15);box-shadow:none}
 .save-btn{background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);color:#fff;border-radius:12px;height:36px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 14px;white-space:nowrap;flex-shrink:0}
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.btn-calc{height:46px;border:none;border-radius:12px;background:var(--or);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-calc{height:46px;border:none;border-radius:12px;background:var(--green);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:#fff;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-calc.active{background:linear-gradient(135deg,#E8923A,#F0A855);box-shadow:0 4px 14px rgba(232,146,58,0.28)}
-.btn-edit.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#5B7E3F,#7FAD52);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+.btn-edit.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
 .locked input.inp,.locked tbody td input{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px}
 .overlay.show{display:flex}
 .modal{background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:340px;box-shadow:0 18px 40px rgba(0,0,0,0.2)}
-.modal-ok{width:100%;height:46px;border:none;border-radius:12px;background:var(--or);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.modal-ok{width:100%;height:46px;border:none;border-radius:12px;background:var(--green);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
 .modal-btn-row{display:flex;gap:10px}
 .modal-cancel{flex:1;height:46px;border:1.5px solid #d9d9d9;border-radius:12px;background:#f7f7f7;color:#555;font-size:15px;font-weight:700;cursor:pointer}
 .save-modal{background:#fff;border-radius:var(--r);padding:24px 20px;text-align:center;width:260px}
 .save-modal p{font-size:14px;margin-bottom:16px;color:var(--sub)}
-.save-modal .btn-ok{width:100%;height:42px;background:var(--or);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
+.save-modal .btn-ok{width:100%;height:42px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
 .guide{text-align:center;padding:20px 0;font-size:13px;color:var(--hint)}
 
 /* 접이식 섹션 */
@@ -215,7 +215,7 @@ body.big-text .field{gap:5px!important}
       </div>
       <div style="width:20%;flex-shrink:0">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
-          style="width:100%;height:46px;border:1.5px solid var(--or2);border-radius:var(--rs);background:white;color:var(--or);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
+          style="width:100%;height:46px;border:1.5px solid var(--green2);border-radius:var(--rs);background:white;color:var(--green);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
@@ -270,7 +270,7 @@ body.big-text .field{gap:5px!important}
   <!-- ③ 표본구간 조사 -->
   <div class="section">
     <div class="sec-head">
-      <div class="sec-title">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--or)"></span></div>
+      <div class="sec-title">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
       <span style="font-size:10px;color:var(--hint);font-weight:400">길이·폭(m) / 1·2·3차 중량(g)</span>
     </div>
     <div id="sample-guide" class="guide">실경작면적 입력 후 자동으로 구간이 생성됩니다</div>
@@ -319,7 +319,7 @@ body.big-text .field{gap:5px!important}
     <div style="display:flex;align-items:flex-end;position:relative;z-index:2">
       <!-- 탭 버튼 좌측 -->
       <button id="tab-btn-sched" onclick="switchTab('sched')"
-        style="width:90px;height:34px;border:none;border-radius:10px 10px 0 0;background:#E8923A;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all .22s;box-shadow:0 -2px 8px rgba(232,146,58,0.2);margin-right:2px;white-space:nowrap">
+        style="width:90px;height:34px;border:none;border-radius:10px 10px 0 0;background:#5B7E3F;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all .22s;box-shadow:0 -2px 8px rgba(91,126,63,0.2);margin-right:2px;white-space:nowrap">
         📅 조사일정
       </button>
       <button id="tab-btn-qty" onclick="switchTab('qty')"
@@ -436,7 +436,7 @@ body.big-text .field{gap:5px!important}
 <div class="overlay" id="history-overlay">
   <div class="modal" style="max-width:360px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
     <div style="padding:16px 18px 12px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div style="font-size:16px;font-weight:800;color:var(--or)">📋 이전 기록 불러오기</div>
+      <div style="font-size:16px;font-weight:800;color:var(--green)">📋 이전 기록 불러오기</div>
       <button onclick="closeHistoryModal()" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1">✕</button>
     </div>
     <div id="history-list" style="overflow-y:auto;flex:1;padding:10px 12px"></div>
@@ -469,7 +469,7 @@ body.big-text .field{gap:5px!important}
 
 <!-- 캡처 템플릿 -->
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:800px;background:#f3f4f6;padding:0;z-index:-1">
-  <div style="min-height:800px;background:linear-gradient(180deg,#7A3010 0%,#E8923A 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
+  <div style="min-height:800px;background:linear-gradient(180deg,#2d5016 0%,#7FAD52 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
     <div style="height:20px"></div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">
       <div style="font-size:15px;font-weight:700">🎃 단호박 피해율 계산결과</div>
@@ -482,7 +482,7 @@ body.big-text .field{gap:5px!important}
 
       <!-- 1. 기본정보 -->
       <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#E8923A;margin-bottom:8px">1. 기본정보</div>
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">1. 기본정보</div>
         <table style="width:60%;border-collapse:collapse;font-size:11px;border:1px solid #e0e0e0;overflow:hidden;table-layout:fixed">
           <colgroup><col style="width:33%"><col style="width:34%"><col style="width:33%"></colgroup>
           <thead><tr>
@@ -500,7 +500,7 @@ body.big-text .field{gap:5px!important}
 
       <!-- 2. 면적조사 -->
       <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#E8923A;margin-bottom:8px">2. 면적조사</div>
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">2. 면적조사</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid #e0e0e0;overflow:hidden">
           <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
           <thead><tr>
@@ -520,7 +520,7 @@ body.big-text .field{gap:5px!important}
 
       <!-- 3. 조사일정 -->
       <div id="cap-sched-block" style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#E8923A;margin-bottom:8px">3. 조사일정</div>
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">3. 조사일정</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid #e0e0e0;overflow:hidden">
           <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
           <thead><tr>
@@ -541,7 +541,7 @@ body.big-text .field{gap:5px!important}
       <!-- 4. 표본구간 -->
       <!-- 4-1. 표본구간 (1차 중심) -->
       <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#E8923A;margin-bottom:8px" id="cap-sample-title">4-1. 표본구간</div>
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px" id="cap-sample-title">4-1. 표본구간</div>
         <table style="width:100%;border-collapse:collapse;font-size:10px;border:1px solid #e0e0e0;overflow:hidden">
           <colgroup>
             <col style="width:7%"><col style="width:12%"><col style="width:12%">
@@ -586,7 +586,7 @@ body.big-text .field{gap:5px!important}
 
       <!-- 5. 결과 -->
       <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#E8923A;margin-bottom:8px" id="cap-result-title">5. 결과</div>
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px" id="cap-result-title">5. 결과</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid #e0e0e0;overflow:hidden">
           <colgroup><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
           <thead><tr>
@@ -641,7 +641,7 @@ function getProper(area){
 
 // ── 탭 전환 ──────────────────────────────────────────────────
 const TAB_ORDER = ['sched','qty'];
-const TAB_COLORS = { sched:'#E8923A', qty:'#E8923A' };
+const TAB_COLORS = { sched:'#5B7E3F', qty:'#5B7E3F' };
 function switchTab(tab){
   const idx = TAB_ORDER.indexOf(tab);
   const slider = document.getElementById('tab-slider');
@@ -884,9 +884,9 @@ function openHistoryModal(){
       const idx=records.length-1-ri;
       return `<div style="border:1.5px solid #fde8d4;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white"
         onclick="loadHistoryRecord(${idx})"
-        onmouseenter="this.style.background='#fff7f0'" onmouseleave="this.style.background='white'">
+        onmouseenter="this.style.background='#eaf3e0'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:15px;font-weight:800;color:var(--or)">${r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'}</span>
+          <span style="font-size:15px;font-weight:800;color:var(--green)">${r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -897,7 +897,7 @@ function openHistoryModal(){
         </div>
         <div style="margin-top:6px;display:flex;justify-content:flex-end;gap:6px">
           <button onclick="event.stopPropagation();deleteHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:1px solid #ffb3b3;border-radius:6px;background:white;color:#e24b4a;font-size:11px;font-weight:700;cursor:pointer">삭제</button>
-          <button onclick="event.stopPropagation();loadHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:none;border-radius:6px;background:var(--or);color:white;font-size:11px;font-weight:700;cursor:pointer">불러오기</button>
+          <button onclick="event.stopPropagation();loadHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:none;border-radius:6px;background:var(--green);color:white;font-size:11px;font-weight:700;cursor:pointer">불러오기</button>
         </div>
       </div>`;
     }).join('');
