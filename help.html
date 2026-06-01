@@ -33,7 +33,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 .item-body{font-size:13px;color:var(--text);line-height:1.7}
 .badge-blue{display:inline-block;background:#EBF4FF;color:var(--blue);border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700}
 .badge-red{display:inline-block;background:#fff0f0;color:var(--red);border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700}
-.badge-green{display:inline-block;background:#eaf3e0;color:var(--green);border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700}
+.badge-green{display:inline-block;background:#e8faf3;color:var(--green);border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700}
 .warning-box{background:#fff9e6;border:1px solid #FFD966;border-radius:8px;padding:12px;font-size:12px;color:#7A5C00;line-height:1.7;margin-top:8px}
 .disclaimer-box{background:#fff5f5;border:1px solid #fcc;border-radius:8px;padding:14px;font-size:13px;color:#5a0000;line-height:1.8;margin-top:8px}
 .version-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid #eee;font-size:13px}
@@ -160,7 +160,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
         계산하기 버튼을 누르면 <b>피해율 산정에 영향을 주는 필수 항목</b>(평년수확량·실제경작면적·표본구간 등)의
         누락 여부를 자동으로 점검합니다. 미입력 항목이 있으면 <span class="badge-red">⚠️ 팝업</span>으로 안내되며,
         모든 항목이 입력된 경우에만 잠금 모드로 전환됩니다.<br><br>
-        모든 입력한 값은 <span class="badge-green">녹색</span>으로 바뀌며 자동으로 실시간 반영되나,
+        모든 입력한 값은 입력 완료 색상으로 바뀌며 자동으로 실시간 반영되나,
         조사 내용 입력이 끝나면 <b>계산하기</b>를 눌러 결과를 확정하고,
         수정이 필요할 때는 <b>수정하기</b>를 눌러 잠금을 해제하세요.
       </div>
@@ -201,13 +201,10 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
     <div class="sec-title"><span>🎨</span> 입력칸 색상 안내</div>
     <div class="item">
       <div class="item-title" style="display:flex;align-items:center;gap:6px">
-        <div style="width:40px;height:24px;background:#e8faf3;border:1.5px solid #5B7E3F;border-radius:4px;margin-right:2px"></div>
-        <div style="width:40px;height:24px;background:#eaf3e0;border:1.5px solid #5B7E3F;border-radius:4px"></div>
-        <span class="badge-green">녹색</span> 입력 완료
+        <div style="width:40px;height:24px;background:#e8faf3;border:1.5px solid #1D9E75;border-radius:4px"></div>
+        입력 완료
       </div>
-      <div class="item-body">값이 입력된 칸입니다. <b>계산에 반영됩니다.</b><br>
-        <span style="font-size:12px;color:var(--hint)">※ 작물에 따라 연두색 계열로 표시됩니다.</span>
-      </div>
+      <div class="item-body">값이 입력된 칸입니다. <b>계산에 반영됩니다.</b></div>
     </div>
     <div class="item">
       <div class="item-title" style="display:flex;align-items:center;gap:6px">

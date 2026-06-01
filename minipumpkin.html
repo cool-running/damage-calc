@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 <style>
 :root{
-  --green:#5B7E3F;--green2:#7FAD52;
+  --green:#1D9E75;
   --auto:#F3F1EA;--border:#D8D6CE;--binp:#7FAD52;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
@@ -90,7 +90,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 input.inp:not([type=date]){height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:#fff;color:var(--text);width:100%;-webkit-appearance:none;text-align:center;transition:background .15s,border-color .15s}
 input[type=date].inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 4px;font-size:13px;letter-spacing:-0.03em;background:#fff;color:var(--text);-webkit-text-fill-color:var(--text);width:100%;text-align:center;transition:background .15s,border-color .15s;-webkit-appearance:revert;appearance:revert}
 input.inp::placeholder{color:var(--hint);text-align:center}
-input.inp.filled{background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700}
+input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;-webkit-appearance:none;text-align:center}
 input.inp:not([type=date]).mobile-focus,input.inp:not([type=date]):focus,
 tbody td input.mobile-focus,tbody td input:focus{
@@ -100,7 +100,7 @@ tbody td input.mobile-focus,tbody td input:focus{
 }
 .reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
 .bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--green2);border-radius:var(--rs);color:var(--green2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;-webkit-appearance:none}
-.bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35)}
+.bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(29,158,117,0.35)}
 
 body.big-text input.inp:not([type=date]){height:52px!important;font-size:20px!important;font-weight:700!important;border-width:2px!important}
 body.big-text input[type=date].inp{height:52px!important;font-size:15px!important;font-weight:700!important;border-width:2px!important;letter-spacing:-0.03em}
@@ -123,11 +123,11 @@ body.big-text .field{gap:5px!important}
 .stbl tbody td.no{font-size:10px;font-weight:700;color:var(--sub);background:#fafafa;border-right:1px solid #eee}
 
 .stbl tbody td input{width:100%;height:32px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:11px;background:#fff;-webkit-appearance:none;color:var(--text);transition:background .15s,border-color .15s}
-.stbl tbody td input.filled{background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700}
+.stbl tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 
 /* 중량 칸 색상 - 연한 구분 */
 .stbl tbody td.cw1 input,.stbl tbody td.cw2 input,.stbl tbody td.cw3 input{border-color:var(--binp);background:#fff}
-.stbl tbody td.cw1 input.filled,.stbl tbody td.cw2 input.filled,.stbl tbody td.cw3 input.filled{background:#eaf3e0;border-color:var(--green);color:#000;font-weight:700}
+.stbl tbody td.cw1 input.filled,.stbl tbody td.cw2 input.filled,.stbl tbody td.cw3 input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 
 .stbl tfoot td{padding:6px 2px;background:#f3efe8;font-weight:700;font-size:10px;text-align:center;border-top:1.5px solid var(--border)}
 .stbl tfoot td.v{color:var(--text);font-size:11px}
@@ -135,7 +135,7 @@ body.big-text .field{gap:5px!important}
 .btn-row{display:flex;gap:8px;margin-top:8px}
 .btn-row button{flex:1;height:40px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-del{border:1.5px solid var(--red);background:#FFF5F5;color:var(--red)}
-.btn-add{border:1.5px dashed var(--green2);background:#eaf3e0;color:#2d5016}
+.btn-add{border:1.5px dashed var(--green2);background:#e8faf3;color:#0d5c35}
 
 /* 차수별 단위면적당 요약 칩 */
 
@@ -148,8 +148,8 @@ body.big-text .field{gap:5px!important}
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .btn-calc{height:46px;border:none;border-radius:12px;background:var(--green);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:#fff;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-calc.active{background:linear-gradient(135deg,#5B7E3F,#7FAD52);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
-.btn-edit.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#5B7E3F,#7FAD52);box-shadow:0 4px 14px rgba(29,158,117,0.35)}
+.btn-edit.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
 .locked input.inp,.locked tbody td input{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 
@@ -884,7 +884,7 @@ function openHistoryModal(){
       const idx=records.length-1-ri;
       return `<div style="border:1.5px solid #fde8d4;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white"
         onclick="loadHistoryRecord(${idx})"
-        onmouseenter="this.style.background='#eaf3e0'" onmouseleave="this.style.background='white'">
+        onmouseenter="this.style.background='#e8faf3'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
           <span style="font-size:15px;font-weight:800;color:var(--green)">${r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>

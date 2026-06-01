@@ -75,7 +75,7 @@ function bindSampleNextNavigation(){
 </script>
 <style>
 :root{
-  --green:#5B7E3F;--green2:#7FAD52;
+  --green:#1D9E75;
   --auto:#F3F1EA;--border:#D8D6CE;--binp:#7FAD52;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
@@ -96,7 +96,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
 .dot-inp{width:10px;height:10px;border-radius:2px;background:white;border:1.5px solid var(--binp)}
 .dot-auto{width:10px;height:10px;border-radius:2px;background:var(--auto);border:0.5px solid var(--border)}
-.dot-filled{width:10px;height:10px;border-radius:2px;background:#eaf3e0;border:1.5px solid var(--green)}
+.dot-filled{width:10px;height:10px;border-radius:2px;background:#e8faf3;border:1.5px solid var(--green)}
 
 .content{padding:12px 12px 40px}
 .section{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;border:0.5px solid var(--border);box-shadow:0 6px 18px rgba(0,0,0,0.04)}
@@ -113,8 +113,8 @@ input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);pad
 select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;text-align-last:center;direction:ltr}
 input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2)}
 input.inp::placeholder{color:var(--hint);text-align:center}
-input.inp.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
-select.inp.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
+input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
+select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
 input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2);background:#dceeff;color:#185FA5}
 
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;-webkit-appearance:none;text-align:center}
@@ -128,7 +128,7 @@ input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);
   display:inline-flex;align-items:center;gap:4px;transition:all .15s;
   -webkit-appearance:none;appearance:none;
 }
-.bigtext-btn.on{ background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35); }
+.bigtext-btn.on{ background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(29,158,117,0.35); }
 .bigtext-btn:active{opacity:0.8}
 /* 단위 배지 */
 .unit-badge{
@@ -159,7 +159,7 @@ tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000000
 tbody td input.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2);background:#dceeff;color:#185FA5}
 tfoot td{padding:6px 1px;background:#f3efe8;font-weight:700;font-size:10px;text-align:center;border-top:1.5px solid var(--border)}
 tfoot td.v{color:var(--text)}
-.add-btn{width:100%;height:42px;border:2px dashed var(--green2);background:#eaf3e0;border-radius:var(--r);font-size:14px;color:#2d5016;font-weight:800;cursor:pointer;margin-top:8px;transition:all .15s ease}
+.add-btn{width:100%;height:42px;border:2px dashed var(--green2);background:#e8faf3;border-radius:var(--r);font-size:14px;color:#0d5c35;font-weight:800;cursor:pointer;margin-top:8px;transition:all .15s ease}
 .add-btn:active{transform:translateY(1px)}
 .del-sample-btn{width:100%;height:42px;border:2px solid #df5a57;background:#fff4f4;border-radius:var(--r);font-size:14px;color:#c8403d;font-weight:800;cursor:pointer;margin-top:8px;transition:all .15s ease}
 .del-sample-btn:active{transform:translateY(1px)}
@@ -177,8 +177,8 @@ tfoot td.v{color:var(--text)}
 .btn-calc:active{background:#1354a0}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit:active{background:#f0fdf8}
-.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
-.btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(29,158,117,0.35)}
+.btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
 
 .locked input.inp:not([type=date]), .locked select.inp,
 .locked tbody td input{pointer-events:none;opacity:0.72;}
@@ -746,7 +746,7 @@ function calc(){
   const isChanged  = insArea>0 && actArea>0 && Math.abs(areaErrNum)>0.1;
   if(insArea>0 && actArea>0){
     contractEl.value = isChanged ? '원장변경 대상' : '이상무';
-    contractEl.style.color = isChanged ? '#e24b4a' : '#5B7E3F';
+    contractEl.style.color = isChanged ? '#e24b4a' : '#1D9E75';
     contractEl.style.fontWeight = isChanged ? '700' : '600';
   } else {
     contractEl.value = '';
