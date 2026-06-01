@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 <style>
 :root{
-  --green:#1D9E75;
+  --green:#5B7E3F;--green2:#7FAD52;
   --auto:#F3F1EA;--border:#D8D6CE;--binp:#7FAD52;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
@@ -100,7 +100,7 @@ tbody td input.mobile-focus,tbody td input:focus{
 }
 .reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
 .bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--green2);border-radius:var(--rs);color:var(--green2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;-webkit-appearance:none}
-.bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(29,158,117,0.35)}
+.bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35)}
 
 body.big-text input.inp:not([type=date]){height:52px!important;font-size:20px!important;font-weight:700!important;border-width:2px!important}
 body.big-text input[type=date].inp{height:52px!important;font-size:15px!important;font-weight:700!important;border-width:2px!important;letter-spacing:-0.03em}
@@ -135,7 +135,7 @@ body.big-text .field{gap:5px!important}
 .btn-row{display:flex;gap:8px;margin-top:8px}
 .btn-row button{flex:1;height:40px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-del{border:1.5px solid var(--red);background:#FFF5F5;color:var(--red)}
-.btn-add{border:1.5px dashed var(--green2);background:#e8faf3;color:#0d5c35}
+.btn-add{border:1.5px dashed var(--green2);background:#eaf3e0;color:#2d5016}
 
 /* 차수별 단위면적당 요약 칩 */
 
@@ -148,8 +148,8 @@ body.big-text .field{gap:5px!important}
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .btn-calc{height:46px;border:none;border-radius:12px;background:var(--green);color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:#fff;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-calc.active{background:linear-gradient(135deg,#5B7E3F,#7FAD52);box-shadow:0 4px 14px rgba(29,158,117,0.35)}
-.btn-edit.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#5B7E3F,#7FAD52);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+.btn-edit.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
 .locked input.inp,.locked tbody td input{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 
@@ -812,7 +812,7 @@ function calcAll(){
   const cEl=document.getElementById('contract_disp');
   if(insArea>0&&actArea>0){
     cEl.value=isChanged?'원장변경 대상':'이상무';
-    cEl.style.color=isChanged?'#e24b4a':'#1D9E75'; cEl.style.fontWeight='700';
+    cEl.style.color=isChanged?'#e24b4a':'#5B7E3F'; cEl.style.fontWeight='700';
   } else { cEl.value=''; cEl.style.color=''; }
 
   let tA=0,tW1=0,tW2=0,tW3=0;
@@ -884,7 +884,7 @@ function openHistoryModal(){
       const idx=records.length-1-ri;
       return `<div style="border:1.5px solid #fde8d4;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white"
         onclick="loadHistoryRecord(${idx})"
-        onmouseenter="this.style.background='#e8faf3'" onmouseleave="this.style.background='white'">
+        onmouseenter="this.style.background='#eaf3e0'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
           <span style="font-size:15px;font-weight:800;color:var(--green)">${r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
@@ -1058,7 +1058,7 @@ function fillCaptureTemplate(){
   document.getElementById('cap-ins-area').textContent  = insArea.toLocaleString()+' ㎡';
   const capCon = document.getElementById('cap-contract');
   capCon.textContent  = isChanged?'원장변경 대상':'이상무';
-  capCon.style.color  = isChanged?'#e24b4a':'#1D9E75';
+  capCon.style.color  = isChanged?'#e24b4a':'#5B7E3F';
 
   // 2. 면적조사
   document.getElementById('cap-act-area').textContent   = actArea.toLocaleString()+' ㎡';

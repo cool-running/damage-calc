@@ -96,7 +96,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
 .dot-inp{width:10px;height:10px;border-radius:2px;background:white;border:1.5px solid var(--binp)}
 .dot-auto{width:10px;height:10px;border-radius:2px;background:var(--auto);border:0.5px solid var(--border)}
-.dot-filled{width:10px;height:10px;border-radius:2px;background:#eaf3e0;border:1.5px solid var(--green)}
+.dot-filled{width:10px;height:10px;border-radius:2px;background:#e8faf3;border:1.5px solid var(--green)}
 
 .content{padding:12px 12px 40px}
 .section{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;border:0.5px solid var(--border);box-shadow:0 6px 18px rgba(0,0,0,0.04)}
@@ -113,8 +113,8 @@ input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);pad
 select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;text-align-last:center;direction:ltr}
 input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2)}
 input.inp::placeholder{color:var(--hint);text-align:center}
-input.inp.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
-select.inp.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
+input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
+select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
 input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2);background:#dceeff;color:#185FA5}
 
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;-webkit-appearance:none;text-align:center}
@@ -155,7 +155,7 @@ tbody td{padding:3px 2px;border-bottom:0.5px solid #eee;text-align:center;vertic
 tbody td.no{text-align:center;color:var(--sub);font-size:10px;font-weight:600;width:20px}
 tbody td input{width:100%;height:34px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:13px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text);transition:background 0.15s,border-color 0.15s}
 tbody td input:focus{outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(24,95,165,0.2)!important;background:#dceeff!important;color:#185FA5!important}
-tbody td input.filled{background:#eaf3e0;border-color:var(--green);color:#000000;font-weight:700}
+tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
 tbody td input.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2);background:#dceeff;color:#185FA5}
 tfoot td{padding:6px 1px;background:#f3efe8;font-weight:700;font-size:10px;text-align:center;border-top:1.5px solid var(--border)}
 tfoot td.v{color:var(--text)}
@@ -174,7 +174,7 @@ tfoot td.v{color:var(--text)}
 
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .btn-calc{height:46px;border:none;border-radius:12px;background:var(--green);color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-calc:active{background:#1354a0}
+.btn-calc:active{background:#3d6b2a}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit:active{background:#f0fdf8}
 .btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
@@ -465,8 +465,8 @@ tbody td input.filled:focus,tbody td input.filled:focus-visible{
             <th style="padding:7px 4px;background:#9e6835;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">미보상비율</th>
           </tr></thead>
           <tbody><tr>
-            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#eaf3e0;font-weight:700;font-size:12px" id="cap-surv-date">-</td>
-            <td style="padding:7px 4px;text-align:center;background:#eaf3e0;font-weight:700;font-size:12px" id="cap-unins-rate">-</td>
+            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#e8faf3;font-weight:700;font-size:12px" id="cap-surv-date">-</td>
+            <td style="padding:7px 4px;text-align:center;background:#e8faf3;font-weight:700;font-size:12px" id="cap-unins-rate">-</td>
           </tr></tbody>
         </table>
         <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px">3-2. 표본구간</div>
@@ -1080,11 +1080,11 @@ function fillCaptureTemplate(){
     if(hasVal){
       html+=`<tr>
         <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#f8fafc;font-size:12px">${idx+1}</td>
-        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#eaf3e0;font-weight:700;font-size:12px">${vals[0]}</td>
-        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#eaf3e0;font-weight:700;font-size:12px">${vals[1]}</td>
-        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#eaf3e0;font-weight:700;font-size:12px">${fmtN(vals[2])}</td>
-        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#eaf3e0;font-weight:700;font-size:12px">${fmtN(vals[3])}</td>
-        <td style="padding:5px 3px;border-bottom:1px solid #d1d5db;text-align:center;background:#eaf3e0;font-weight:700;font-size:12px">${fmtN(vals[4])}</td>
+        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#e8faf3;font-weight:700;font-size:12px">${vals[0]}</td>
+        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#e8faf3;font-weight:700;font-size:12px">${vals[1]}</td>
+        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#e8faf3;font-weight:700;font-size:12px">${fmtN(vals[2])}</td>
+        <td style="padding:5px 3px;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;text-align:center;background:#e8faf3;font-weight:700;font-size:12px">${fmtN(vals[3])}</td>
+        <td style="padding:5px 3px;border-bottom:1px solid #d1d5db;text-align:center;background:#e8faf3;font-weight:700;font-size:12px">${fmtN(vals[4])}</td>
       </tr>`;
     }
   });

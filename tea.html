@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 <style>
 :root{
-  --green:#1D9E75;
+  --green:#5B7E3F;--green2:#7FAD52;
   --auto:#F3F1EA;--border:#D8D6CE;--binp:#7FAD52;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
@@ -118,7 +118,7 @@ input.inp.filled.mobile-focus,input.inp.filled:focus,input.inp.filled:focus-visi
 /* 버튼 */
 .reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
 .bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--green2);border-radius:var(--rs);color:var(--green2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;-webkit-appearance:none;appearance:none}
-.bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(29,158,117,0.35)}
+.bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35)}
 .bigtext-btn:active{opacity:0.8}
 
 /* 크게보기 모드 */
@@ -162,8 +162,8 @@ tfoot td.v{color:var(--text)}
 .btn-calc:active{background:#3d6b2a}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit:active{background:#f0fdf8}
-.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(29,158,117,0.35)}
-.btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+.btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
 
 /* 입력 잠금 */
 .locked input.inp,.locked tbody td input{pointer-events:none;opacity:0.72}
@@ -344,7 +344,7 @@ tfoot td.v{color:var(--text)}
     </div>
     <div id="sample-btn-row" style="display:none;gap:8px;margin-top:8px">
       <button onclick="removeSample()" style="flex:1;height:42px;border:1.5px solid var(--red);background:#FFF5F5;border-radius:12px;font-size:14px;font-weight:800;color:var(--red);cursor:pointer;transition:all .15s ease">－ 구간 삭제</button>
-      <button onclick="addSample()" style="flex:1;height:42px;border:1.5px dashed var(--green2);background:#e8faf3;border-radius:12px;font-size:14px;font-weight:800;color:#0d5c35;cursor:pointer;transition:all .15s ease">＋ 구간 추가</button>
+      <button onclick="addSample()" style="flex:1;height:42px;border:1.5px dashed var(--green2);background:#eaf3e0;border-radius:12px;font-size:14px;font-weight:800;color:#2d5016;cursor:pointer;transition:all .15s ease">＋ 구간 추가</button>
     </div>
     <div class="sample-info-row">
       <span>표본면적: <strong id="s-area">-</strong></span>
@@ -711,7 +711,7 @@ function calc(){
   const contractEl=document.getElementById('contract_yn_disp');
   if(insArea>0&&actArea>0){
     contractEl.value=isChanged?'원장변경 대상':'이상무';
-    contractEl.style.color=isChanged?'#e24b4a':'#1D9E75';
+    contractEl.style.color=isChanged?'#e24b4a':'#5B7E3F';
     contractEl.style.fontWeight='700';
   } else {
     contractEl.value=''; contractEl.style.color=''; contractEl.style.fontWeight='';

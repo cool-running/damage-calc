@@ -13,7 +13,7 @@
   --auto:#F3F1EA;--border:#D8D6CE;--binp:#7FAD52;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
-  --red:#e24b4a;--green:#1D9E75;
+  --red:#e24b4a;--green:#5B7E3F;--green2:#7FAD52;
   --wheat:#C8860A;
   --barley:#2E7D32;
   --oat:#6A3FA0;
@@ -42,7 +42,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* 조사방법 탭 */
 .mode-tabs{display:flex;background:var(--card);border-bottom:0.5px solid var(--border);padding:0 12px;gap:6px}
 .mode-tab{flex:1;height:38px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;border-radius:var(--rs);margin:6px 0}
-.mode-tab.on{background:#e8faf3;border-color:var(--green);color:#0d5c35}
+.mode-tab.on{background:#e8faf3;border-color:var(--green);color:#000}
 
 .legend{display:flex;gap:12px;padding:8px 16px;background:var(--card);border-bottom:0.5px solid var(--border)}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
@@ -73,7 +73,7 @@ input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);
   display:inline-flex;align-items:center;gap:4px;transition:all .15s;
   -webkit-appearance:none;appearance:none;
 }
-.bigtext-btn.on{ background:#7FAD52;color:#fff;box-shadow:0 2px 8px rgba(29,158,117,0.35); }
+.bigtext-btn.on{ background:#7FAD52;color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35); }
 .bigtext-btn:active{opacity:0.8}
 /* 단위 배지 */
 .unit-badge{
@@ -103,7 +103,7 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
 .btn-calc:active{background:#3d6b2a}
 .btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-edit:active{background:#f0fdf8}
-.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(29,158,117,0.35)}
+.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
 .btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.35)}
 #save-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center}
 #save-overlay.show{display:flex}
@@ -495,7 +495,7 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
               <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:10px"></td>
               <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:10px"></td>
               <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:10px"></td>
-              <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#e8faf3;color:#0d5c35;font-weight:700;font-size:10px" id="cap-total">-</td>
+              <td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#e8faf3;color:#000;font-weight:700;font-size:10px" id="cap-total">-</td>
             </tr>
           </tbody>
         </table>
@@ -853,9 +853,9 @@ function renderSampleInputs(proper, active){
       <span style="font-size:12px;font-weight:700;color:${isActive?'var(--sub)':'var(--hint)'};text-align:center">${i+1}</span>
       <input type="number" inputmode="decimal" id="sp${i}" ${isActive?'':'disabled'}
         style="width:100%;height:${document.body.classList.contains('big-text')?'52':'40'}px;border:1.5px solid ${bc};border-radius:6px;font-size:${document.body.classList.contains('big-text')?'20':'15'}px;font-weight:${document.body.classList.contains('big-text')?'700':'600'};background:${bg};color:${isActive?'var(--text)':'var(--hint)'};text-align:center;-webkit-appearance:none;box-sizing:border-box"
-        oninput="this.style.background=this.value?'#e8faf3':'white';this.style.borderColor=this.value?'#1D9E75':'#7FAD52';this.style.color=this.value?'#000000':'#1a1a1a';debouncedCalc()"
+        oninput="this.style.background=this.value?'#e8faf3':'white';this.style.borderColor=this.value?'var(--green)':'var(--binp)';this.style.color=this.value?'#2d5016':'#1a1a1a';debouncedCalc()"
         onfocus="this.select();this.style.background='#dceeff';this.style.borderColor='#185FA5';this.style.color='#185FA5'"
-        onblur="this.style.background=this.value?'#e8faf3':'white';this.style.borderColor=this.value?'#1D9E75':'#7FAD52';this.style.color=this.value?'#000000':'#1a1a1a';calc()" autocomplete="off">
+        onblur="this.style.background=this.value?'#e8faf3':'white';this.style.borderColor=this.value?'var(--green)':'var(--binp)';this.style.color=this.value?'#2d5016':'#1a1a1a';calc()" autocomplete="off">
     </div>`;
   }
   html += '</div>';
@@ -865,7 +865,7 @@ function renderSampleInputs(proper, active){
     const el=document.getElementById('sp'+i);
     if(el && savedVals[i]){
       el.value=savedVals[i];
-      el.style.background='#e8faf3'; el.style.borderColor='#1D9E75'; el.style.color='#000000';
+      el.style.background='#e8faf3'; el.style.borderColor='var(--green)'; el.style.color='#2d5016';
     }
   }
   bindMobileFocusHandlers();
@@ -887,7 +887,7 @@ function calc(){
   const cEl = document.getElementById('contractYn');
   if(insArea>0&&actArea>0){
     cEl.value = isChanged?'유':'무';
-    cEl.style.color = isChanged?'#e24b4a':'#1D9E75';
+    cEl.style.color = isChanged?'#e24b4a':'#5B7E3F';
     cEl.style.fontWeight='700';
   } else { cEl.value=''; cEl.style.color=''; cEl.style.fontWeight=''; }
 
@@ -1199,7 +1199,7 @@ function loadState(){
           s.spVals.forEach((v,i)=>{
             if(i >= restoreCount) return;
             const el=document.getElementById('sp'+i);
-            if(el&&v){ el.value=v; el.style.background='#e8faf3'; el.style.borderColor='#1D9E75'; el.style.color='#000000'; }
+            if(el&&v){ el.value=v; el.style.background='#e8faf3'; el.style.borderColor='var(--green)'; el.style.color='#2d5016'; }
           });
         }
         calc();
@@ -1243,7 +1243,7 @@ function fillCaptureTemplate(){
   document.getElementById('cap-avgYield').textContent = (!isNaN(ay)&&ay>0)?ay.toLocaleString()+' kg':'-';
   const cv=document.getElementById('contractYn').value||'-';
   const cc=document.getElementById('cap-contract');
-  cc.textContent=cv; cc.style.color=cv==='유'?'#e24b4a':'#1D9E75';
+  cc.textContent=cv; cc.style.color=cv==='유'?'#e24b4a':'#5B7E3F';
 
   const fmtA=id=>{ const v=(document.getElementById(id)?.value||'').replace(/,/g,''); const n=parseFloat(v); return (!isNaN(n)&&n>=0)?n.toLocaleString()+' ㎡':'-'; };
   document.getElementById('cap-insArea').textContent   = fmtA('insArea');
@@ -1272,7 +1272,7 @@ function fillCaptureTemplate(){
     const capActive = actualProper > 0 ? actualProper : proper;
     const td=(i)=>{
       const el=document.getElementById('sp'+i); const v=el?(el.value||''):''; const active=i<capActive;
-      const bg=v?'#e8faf3':'#fff'; const color=v?'#000000':'#bbb';
+      const bg=v?'#e8faf3':'#fff'; const color=v?'#000':'#bbb';
       return `<td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:${bg};font-weight:700;font-size:10px;color:${color}">${active?(v||''):''}</td>`;
     };
     const row=document.getElementById('cap-row18');
@@ -1280,7 +1280,7 @@ function fillCaptureTemplate(){
       let tot=0;
       for(let i=0;i<capActive;i++){const el=document.getElementById('sp'+i);if(el&&el.value)tot+=parseFloat(el.value)||0;}
       row.innerHTML=td(0)+td(1)+td(2)+td(3)+td(4)+td(5)+td(6)+td(7)+
-        `<td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#e8faf3;color:#0d5c35;font-weight:700;font-size:10px">${tot?tot.toLocaleString():'-'}</td>`;
+        `<td style="padding:5px 1px;border:1px solid #d1d5db;text-align:center;background:#e8faf3;color:#000;font-weight:700;font-size:10px">${tot?tot.toLocaleString():'-'}</td>`;
     }
   } else {
     document.getElementById('cap-sec-sample').style.display    ='none';
@@ -1393,7 +1393,7 @@ document.addEventListener('DOMContentLoaded',function(){
           s.spVals.forEach((v,i)=>{
             if(proper2>0&&i>=proper2) return; // 적정 초과 구간값 무시
             const el=document.getElementById('sp'+i);
-            if(el&&v){el.value=v;el.style.background='#e8faf3';el.style.borderColor='#1D9E75';el.style.color='#000000';}
+            if(el&&v){el.value=v;el.style.background='#e8faf3';el.style.borderColor='var(--green)';el.style.color='#000';}
           });
           calc();
         }
