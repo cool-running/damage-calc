@@ -42,17 +42,18 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 
 .tab-slider-wrap{overflow:hidden;width:100%}
 .tab-slider{display:flex;transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);will-change:transform}
-.tab-content{flex:0 0 100%;width:100%;padding:16px 14px 130px;box-sizing:border-box}
+/* 작물 늘어나면 아래 마지막 패딩값(110px) 확대 */
+.tab-content{flex:0 0 100%;width:100%;padding:12px 14px 110px;box-sizing:border-box}
 
-.crop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.crop-grid .crop-card:last-child:nth-child(odd){grid-column:1 / -1;max-width:calc(50% - 6px);margin-left:0}
-.crop-card{background:var(--card);border-radius:var(--r);padding:20px 14px;text-align:center;border:0.5px solid var(--border);cursor:pointer;position:relative;transition:transform 0.1s;touch-action:manipulation}
+.crop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.crop-grid .crop-card:last-child:nth-child(odd){grid-column:1 / -1;max-width:calc(50% - 5px);margin-left:0}
+.crop-card{background:var(--card);border-radius:var(--r);padding:14px 12px;text-align:center;border:0.5px solid var(--border);cursor:pointer;position:relative;transition:transform 0.1s;touch-action:manipulation}
 .crop-card:active{transform:scale(0.97)}
 .crop-card.done{border-color:var(--green)}
 .crop-card.ready{border-color:var(--blue)}
 .crop-card.soon{opacity:0.55;cursor:default}
-.crop-icon{font-size:22px;margin-bottom:10px;line-height:1.4;white-space:nowrap;letter-spacing:2px}
-.crop-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;letter-spacing:-0.02em}
+.crop-icon{font-size:22px;margin-bottom:6px;line-height:1.3;white-space:nowrap;letter-spacing:2px}
+.crop-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;letter-spacing:-0.02em}
 .crop-desc{font-size:12px;color:var(--sub);font-weight:500}
 .badge{position:absolute;top:10px;right:10px;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700}
 .badge-done{background:#e8faf3;color:var(--green)}
