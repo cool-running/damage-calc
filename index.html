@@ -192,6 +192,12 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-name">단호박</div>
       <div class="crop-desc">수확량 조사</div>
     </div>
+    <div class="crop-card done" onclick="go('pepper')">
+      <span class="badge badge-done">완성</span>
+      <div class="crop-icon">🌶️</div>
+      <div class="crop-name">고추</div>
+      <div class="crop-desc">생산비 조사</div>
+    </div>
   </div>
 </div>
 
@@ -294,7 +300,7 @@ function go(page){
   const map={
     garlic:'./garlic.html', onion:'./onion.html', bean:'./bean.html',
     sweetpotato:'./sweetpotato.html', red_bean:'./red_bean.html', tea:'./tea.html',
-    potato:'./potato.html', minipumpkin:'./minipumpkin.html',
+    potato:'./potato.html', minipumpkin:'./minipumpkin.html', pepper:'./pepper.html',
     apple:'./apple.html', apple_multi:'./apple_multi.html',
     fruit:'./fruit.html', rice:'./rice.html',
     wheat_barley_oat:'./wheat_barley_oat.html',
@@ -308,7 +314,7 @@ function go(page){
 // ── 저장목록 ──────────────────────────────────────
 let currentFilter='all';
 const CROP_ICONS={
-  '단호박':'🎃',
+  '단호박':'🎃', '고추':'🌶️',
   '마늘':'🧄','양파':'🧅','콩':'🫘','고구마':'🍠','팥':'🫘','감자':'🥔',
   '벼':'🌾','밀':'🍞','보리':'🌿','귀리':'🥣',
   '착과수':'🍎',
