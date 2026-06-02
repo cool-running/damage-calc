@@ -17,6 +17,18 @@
 <link rel="apple-touch-icon" href="./icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+
+function syncDateDisp(el){
+  const wrap=el.closest('.datewrap'); if(!wrap) return;
+  const has=el.value!=='';
+  wrap.classList.toggle('filled',has);
+  const disp=wrap.querySelector('.date-disp');
+  if(disp){
+    if(has){ disp.textContent=el.value; disp.classList.remove('ph'); }
+    else{ disp.textContent=disp.getAttribute('data-ph')||'년-월-일'; disp.classList.add('ph'); }
+  }
+}
+
 function bindMobileFocusHandlers(){
   document.querySelectorAll('input.inp, select.inp, input.sg-inp, input[type=number], #setup-rows input').forEach(el=>{
     if(el.dataset.mobileFocusBound==='1') return;
@@ -222,6 +234,17 @@ select.inp.filled:focus,select.inp.filled:focus-visible,select.inp.filled:active
 .save-modal{background:white;border-radius:var(--r);padding:24px 20px;text-align:center;width:260px}
 .save-modal p{font-size:14px;margin-bottom:16px;color:var(--sub)}
 .save-modal .btn-ok{width:100%;height:42px;background:var(--blue);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
+
+/* 날짜칸: 보이는 텍스트(가운데정렬) + 위에 겹친 투명 date input */
+.datewrap{position:relative;width:100%}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
+.datewrap .date-disp.ph{color:var(--hint);font-weight:400}
+.datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
+.datewrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
+.datewrap:focus-within .date-disp{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.18)}
+.locked .datewrap{pointer-events:none;opacity:0.72}
+body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 </style>
 </head>
 <body style="visibility:hidden">
@@ -265,7 +288,7 @@ select.inp.filled:focus,select.inp.filled:focus-visible,select.inp.filled:active
       </div>
       <div class="field">
         <label style="font-size:11px;color:var(--sub);font-weight:500">조사일자</label>
-        <input type="date" id="survey_date" class="inp" onchange="this.classList.toggle('filled',this.value!=='');saveState()">
+        <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="syncDateDisp(this);saveState()"></div>
       </div>
     </div>
   </div>
@@ -2431,7 +2454,7 @@ if ('serviceWorker' in navigator) {
 document.addEventListener('DOMContentLoaded', ()=>{
   const _loaded = loadState();
   // 조사일자 항상 오늘 날짜
-  (()=>{ const d=new Date(); const sd=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const el=document.getElementById('survey_date'); if(el){el.value=sd;el.classList.add('filled');} })();
+  (()=>{ const d=new Date(); const sd=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const el=document.getElementById('survey_date'); if(el){el.value=sd;syncDateDisp(el);} })();
   setIntervalCount(intervalCount || 2);
   renderIntervalRows();
   onInput();
@@ -2489,6 +2512,10 @@ document.addEventListener('DOMContentLoaded', function(){
       if(btn){ btn.classList.add('on'); btn.querySelector('span').textContent='원래대로'; }
     }
   }catch(e){}
+});
+
+document.querySelectorAll('.datewrap input[type=date]').forEach(inp=>{
+  inp.addEventListener('click',()=>{ try{ if(inp.showPicker) inp.showPicker(); }catch(e){} });
 });
 </script>
 </body>
