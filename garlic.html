@@ -124,6 +124,16 @@ input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font
 select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
 input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,0.15);background:#dceeff;color:#185FA5}
 
+/* 날짜칸: 보이는 텍스트(가운데정렬) + 위에 겹친 투명 date input */
+.datewrap{position:relative;width:100%}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
+.datewrap .date-disp.ph{color:var(--hint);font-weight:400}
+.datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
+.datewrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
+.datewrap:focus-within .date-disp{border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,0.15);background:#dceeff;color:#185FA5}
+body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
+
 /* 자동 계산 칸 */
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:14px;background:var(--auto);color:var(--sub);width:100%;-webkit-appearance:none;text-align:center}
 
@@ -258,6 +268,7 @@ tfoot td.v{color:var(--text)}
   opacity:0.72;
 }
 .locked input[type=date].inp{ pointer-events:none; opacity:0.72; }
+.locked .datewrap{ pointer-events:none; opacity:0.72; }
 
 /* 계산하기/수정하기 버튼 */
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
@@ -390,7 +401,7 @@ tbody td input.filled:active{
     <div style="display:flex;gap:8px;align-items:flex-end">
       <div class="field" style="width:40%">
         <label>품종</label>
-        <select id="crop" class="inp filled" onchange="markFilled(this);onCropChange()" style="text-align:left;text-align-last:left">
+        <select id="crop" class="inp filled" onchange="markFilled(this);onCropChange()" style="text-align:center;text-align-last:center">
           <option value="garlic_s">마늘 난지형</option>
           <option value="garlic_n">마늘 한지형</option>
         </select>
@@ -486,11 +497,11 @@ tbody td input.filled:active{
     <div class="g2">
       <div class="field">
         <label>조사일자</label>
-        <input type="date" id="survey_date" class="inp" onchange="markFilled(this);calc()" autocomplete="off">
+        <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="markFilled(this);calc()" autocomplete="off"></div>
       </div>
       <div class="field">
         <label>수확예정일</label>
-        <input type="date" id="harvest_date" class="inp" onchange="markFilled(this);calc()" autocomplete="off">
+        <div class="datewrap"><div class="date-disp ph" data-ph="수확예정일">수확예정일</div><input type="date" id="harvest_date" onchange="markFilled(this);calc()" autocomplete="off"></div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:2fr 0.75fr 0.75fr;gap:6px;margin-bottom:8px">
@@ -863,7 +874,19 @@ let samples=[];
 
 // ── 입력 색상 변경 ────────────────────────────────
 function markFilled(el){
-  el.classList.toggle('filled', el.value!=='');
+  const has=el.value!=='';
+  el.classList.toggle('filled', has);
+  if(el.type==='date'){
+    const wrap=el.closest('.datewrap');
+    if(wrap){
+      wrap.classList.toggle('filled',has);
+      const disp=wrap.querySelector('.date-disp');
+      if(disp){
+        if(has){ disp.textContent=el.value; disp.classList.remove('ph'); }
+        else{ disp.textContent=disp.getAttribute('data-ph')||'년-월-일'; disp.classList.add('ph'); }
+      }
+    }
+  }
 }
 
 // ── 표본구간 수 계산 ──────────────────────────────
@@ -1372,6 +1395,7 @@ function resetAll(){
   const farmEl=document.getElementById('farm_no');
   if(farmEl){ farmEl.value=''; farmEl.classList.remove('filled'); }
   document.getElementById('survey_date').value=fmt(new Date());
+  markFilled(document.getElementById('survey_date'));
   document.getElementById('survey_area_disp').value='';
   document.getElementById('area_err_disp').value='';
   document.getElementById('remain_info').value='-';
@@ -1606,7 +1630,8 @@ function loadHistoryRecord(idx){
     if(!el) return;
     const v=r[id]||'';
     el.value=v;
-    el.classList.toggle('filled', v!=='');
+    if(el.type==='date') markFilled(el);
+    else el.classList.toggle('filled', v!=='');
   });
 
   closeHistoryModal();
@@ -1699,7 +1724,8 @@ function loadState(){
       if(s[id]!==undefined && s[id]!==''){
         const el=document.getElementById(id);
         el.value=s[id];
-        el.classList.add('filled');
+        if(el.type==='date') markFilled(el);
+        else el.classList.add('filled');
       }
     });
     if(s.farm_no){
@@ -1743,7 +1769,7 @@ try{
 }catch(e){}
 // 조사일자는 항상 오늘 날짜로 초기화
 document.getElementById('survey_date').value=fmt(new Date());
-document.getElementById('survey_date').classList.add('filled');
+markFilled(document.getElementById('survey_date'));
 if(!loaded){
   // 저장값 없을 때도 기본값 난지형 + filled
   const cropEl=document.getElementById('crop');
@@ -1752,6 +1778,11 @@ if(!loaded){
 }
 
 window.addEventListener('beforeunload', saveState);
+
+// 날짜칸: 칸 어디를 눌러도 달력이 뜨도록 (모바일 호환)
+document.querySelectorAll('.datewrap input[type=date]').forEach(inp=>{
+  inp.addEventListener('click',()=>{ try{ if(inp.showPicker) inp.showPicker(); }catch(e){} });
+});
 
 updateGarlicCols();
 setTimeout(()=>{
