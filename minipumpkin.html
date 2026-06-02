@@ -563,13 +563,13 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
               <th rowspan="2" style="padding:4px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;vertical-align:middle">No</th>
               <th rowspan="2" style="padding:4px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;vertical-align:middle">길이</th>
               <th rowspan="2" style="padding:4px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;vertical-align:middle">폭</th>
-              <th colspan="3" style="padding:4px 2px;background:#a05a18;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">중량(g)</th>
+              <th colspan="3" style="padding:4px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">중량(g)</th>
               <th rowspan="2" style="padding:4px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #e0e0e0;text-align:center;vertical-align:middle">합계(g)</th>
             </tr>
             <tr>
-              <th style="padding:4px 2px;background:#a05a18;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">1차</th>
-              <th style="padding:4px 2px;background:#a05a18;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">2차</th>
-              <th style="padding:4px 2px;background:#a05a18;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">3차</th>
+              <th style="padding:4px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">1차</th>
+              <th style="padding:4px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">2차</th>
+              <th style="padding:4px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center">3차</th>
             </tr>
           </thead>
           <tbody id="cap-sample-tbody"></tbody>
@@ -578,18 +578,18 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 
       <!-- 4-2. 2·3차 수량 (입력된 경우만 표시) -->
       <div id="cap-sample2-block" style="display:none;background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#5B9BD5;margin-bottom:8px">4-2. 차수별 수량</div>
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">4-2. 차수별 수량</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid #e0e0e0;overflow:hidden">
           <colgroup>
             <col style="width:10%"><col style="width:18%"><col style="width:18%"><col style="width:18%"><col style="width:18%"><col style="width:18%">
           </colgroup>
           <thead><tr>
-            <th style="padding:5px 2px;background:#5B9BD5;color:#fff;border-right:1px solid #e0e0e0;text-align:center">No</th>
-            <th style="padding:5px 2px;background:#5B9BD5;color:#fff;border-right:1px solid #e0e0e0;text-align:center">전체갯수</th>
-            <th style="padding:5px 2px;background:#5B9BD5;color:#fff;border-right:1px solid #e0e0e0;text-align:center">1차</th>
-            <th style="padding:5px 2px;background:#5B9BD5;color:#fff;border-right:1px solid #e0e0e0;text-align:center">2차</th>
-            <th style="padding:5px 2px;background:#5B9BD5;color:#fff;border-right:1px solid #e0e0e0;text-align:center">3차</th>
-            <th style="padding:5px 2px;background:#5B9BD5;color:#fff;text-align:center">합계</th>
+            <th style="padding:5px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">No</th>
+            <th style="padding:5px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">전체갯수</th>
+            <th style="padding:5px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">1차</th>
+            <th style="padding:5px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">2차</th>
+            <th style="padding:5px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">3차</th>
+            <th style="padding:5px 2px;background:#5B7E3F;color:#fff;text-align:center">합계</th>
           </tr></thead>
           <tbody id="cap-sample2-tbody"></tbody>
         </table>
@@ -1170,13 +1170,13 @@ function fillCaptureTemplate(){
         </tr>`;
       });
       const sHQ=sQ1+sQ2+sQ3;
-      rows2+=`<tr style="border-top:2px solid #5B9BD5;background:#f0f6fd">
-        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B9BD5">합계</td>
-        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B9BD5">${sQ>0?sQ.toLocaleString():'-'}</td>
-        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B9BD5">${sQ1>0?sQ1.toLocaleString():'-'}</td>
-        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B9BD5">${sQ2>0?sQ2.toLocaleString():'-'}</td>
-        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B9BD5">${sQ3>0?sQ3.toLocaleString():'-'}</td>
-        <td style="padding:5px 2px;text-align:center;font-weight:900;font-size:11px;color:#5B9BD5">${sHQ>0?sHQ.toLocaleString():'-'}</td>
+      rows2+=`<tr style="border-top:2px solid #5B7E3F;background:#f0f6fd">
+        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B7E3F">합계</td>
+        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B7E3F">${sQ>0?sQ.toLocaleString():'-'}</td>
+        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B7E3F">${sQ1>0?sQ1.toLocaleString():'-'}</td>
+        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B7E3F">${sQ2>0?sQ2.toLocaleString():'-'}</td>
+        <td style="padding:5px 2px;text-align:center;font-weight:700;font-size:11px;border-right:1px solid #e0e0e0;color:#5B7E3F">${sQ3>0?sQ3.toLocaleString():'-'}</td>
+        <td style="padding:5px 2px;text-align:center;font-weight:900;font-size:11px;color:#5B7E3F">${sHQ>0?sHQ.toLocaleString():'-'}</td>
       </tr>`;
       document.getElementById('cap-sample2-tbody').innerHTML = rows2;
     } else {
