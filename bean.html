@@ -137,6 +137,16 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
 .reset-actions .cancel{border:1.5px solid #d9d9d9;background:#f7f7f7;color:#555}
 .reset-actions .confirm{border:none;background:#185FA5;color:#fff}
 
+
+/* 날짜칸: 보이는 텍스트(가운데정렬) + 위에 겹친 투명 date input */
+.datewrap{position:relative;width:100%}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
+.datewrap .date-disp.ph{color:var(--hint);font-weight:400}
+.datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
+.datewrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
+.datewrap:focus-within .date-disp{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.15)}
+body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 </style>
 </head>
 <body>
@@ -170,7 +180,7 @@ tbody td input.filled:focus{outline:none!important;border-color:#185FA5!importan
       </div>
       <div class="field" style="flex:2">
         <label>조사일자</label>
-        <input type="date" id="survey_date" class="inp" onchange="markFilled(this)" autocomplete="off">
+        <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="markFilled(this)" autocomplete="off"></div>
       </div>
       <div style="flex-shrink:0">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
@@ -538,7 +548,8 @@ function loadHistoryRecord(idx){
     if(!el) return;
     const v=r[id]||'';
     el.value=v;
-    if(el.classList) el.classList.toggle('filled', v!=='');
+    if(el.type==='date') markFilled(el);
+    else if(el.classList) el.classList.toggle('filled', v!=='');
   });
   _farmNoSeq = r.seq||0;
   _isAmendCase = r.isAmend||false;
@@ -653,7 +664,21 @@ function onCommaInput(el){
   el.value = parts.join('.');
   el.classList.toggle('filled', el.value !== '');
 }
-function markFilled(el){ el.classList.toggle('filled', el.value !== ''); }
+function markFilled(el){
+  const has=el.value!=='';
+  el.classList.toggle('filled', has);
+  if(el.type==='date'){
+    const wrap=el.closest('.datewrap');
+    if(wrap){
+      wrap.classList.toggle('filled',has);
+      const disp=wrap.querySelector('.date-disp');
+      if(disp){
+        if(has){ disp.textContent=el.value; disp.classList.remove('ph'); }
+        else{ disp.textContent=disp.getAttribute('data-ph')||'년-월-일'; disp.classList.add('ph'); }
+      }
+    }
+  }
+}
 
 function setMode(m){
   mode = m;
@@ -943,7 +968,7 @@ function loadState(){
     ['avgYield','insArea','actArea','deadArea','uninsArea','harvArea','uninsRate',
      'fullWeight','fullMoisture','fullUninsRate'].forEach(id=>{
       const el=document.getElementById(id);
-      if(el&&s[id]!==undefined&&s[id]!==''){el.value=s[id];el.classList.add('filled');}
+      if(el&&s[id]!==undefined&&s[id]!==''){el.value=s[id];if(el.type==='date')markFilled(el);else el.classList.add('filled');}
     });
     if(s.farm_no){const el=document.getElementById('farm_no');if(el){el.value=s.farm_no;el.classList.add('filled');}}
     if(s.samples&&s.samples.length>0){samples=s.samples;renderSamples();}
@@ -1089,7 +1114,7 @@ document.getElementById('survey_date').value = (()=>{
   const d=new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 })();
-document.getElementById('survey_date').classList.add('filled');
+markFilled(document.getElementById('survey_date'));
 setTimeout(()=>{ if(mode==='sample') calc(); else calcFull(); }, 50);
 window.addEventListener('beforeunload', saveState);
 
@@ -1112,6 +1137,10 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('bigtext-label').textContent='원래대로';
     }
   }catch(e){}
+});
+
+document.querySelectorAll('.datewrap input[type=date]').forEach(inp=>{
+  inp.addEventListener('click',()=>{ try{ if(inp.showPicker) inp.showPicker(); }catch(e){} });
 });
 </script>
 </body>
