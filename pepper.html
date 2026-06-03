@@ -142,7 +142,7 @@ table.smp tr.rowodd input.filled{background:var(--fill-bg)}
 .smp-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
 .scell{background:#f6f7f3;border:1px solid #e3e1d9;border-radius:6px;text-align:center;position:relative;height:38px}
 .scell .cl{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;font-weight:600;pointer-events:none;transition:none;word-break:keep-all;line-height:1.15;padding:0 2px;text-align:center;flex-direction:column}
-.scell .ci{position:absolute;top:0;left:0;width:100%;height:100%;border:none;background:transparent;text-align:center;font-size:14px;font-weight:800;color:transparent;-webkit-appearance:none;padding:0}
+.scell .ci{position:absolute;left:0;right:0;bottom:4px;top:auto;height:auto;line-height:1;border:none;background:transparent;text-align:left;font-size:14px;font-weight:800;color:transparent;-webkit-appearance:none;padding:0 0 0 8px}
 .scell .ci::placeholder{color:transparent}
 /* 값 있으면 라벨 숨기고 숫자만 */
 .scell.has .cl{opacity:0}
@@ -154,7 +154,7 @@ table.smp tr.rowodd input.filled{background:var(--fill-bg)}
 /* 편집 중엔 라벨 숨기고 입력 숫자만 표시 */
 .scell:focus-within{background:#dceeff;border:1.5px solid var(--blue)}
 .scell:focus-within .cl{opacity:0}
-.scell:focus-within .ci{color:var(--blue);padding-top:0}
+.scell:focus-within .ci{color:var(--blue)}
 body.big-text .scell{height:46px!important}
 body.big-text .scell .cl{font-size:14px!important}
 body.big-text .scell .ci{font-size:18px!important}
