@@ -494,6 +494,12 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
       <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
         <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">4. 손해정도비율 조사</div>
         <table style="width:100%;border-collapse:collapse;font-size:9px;border:1px solid #e0e0e0;table-layout:fixed">
+          <colgroup>
+            <col style="width:6.5%"><col style="width:7.5%"><col style="width:7%">
+            <col style="width:6.4%"><col style="width:6.4%"><col style="width:6.4%"><col style="width:6.4%"><col style="width:6.4%">
+            <col style="width:6.4%"><col style="width:6.4%"><col style="width:6.4%"><col style="width:6.4%"><col style="width:6.4%">
+            <col style="width:6.5%"><col style="width:8%">
+          </colgroup>
           <thead id="cap-smp-head"></thead>
           <tbody id="cap-smp-body"></tbody>
         </table>
@@ -1073,36 +1079,36 @@ function fillCaptureTemplate(){
   $('cap-ins-area').textContent=fmtArea(st.insArea)+(st.insArea?' ㎡':'');
   $('cap-act-area').textContent=fmtArea(st.actArea)+(st.actArea?' ㎡':'');
   $('cap-dmg-area').textContent=fmtArea(st.dmgArea)+(st.dmgArea?' ㎡':'');
-  // 4. 손해정도 표본표 (앱과 동일한 2줄 격자)
-  let hh='<tr><th rowspan="2" style="padding:3px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">표본</th>'+
-    '<th rowspan="2" style="padding:3px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">이랑</th>'+
-    '<th rowspan="2" style="padding:3px 1px;background:#5B7E3F;color:#d8ecc4;border:0.5px solid #3f5a2b">정상</th>'+
-    '<th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">10</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">20</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">30</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">40</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">50</th>'+
-    '<th rowspan="2" style="padding:3px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">평가제외</th>'+
-    '<th rowspan="2" style="padding:3px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">계</th></tr>'+
-    '<tr><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">60</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">70</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">80</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">90</th><th style="padding:2px 1px;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b">100</th></tr>';
+  // 4. 손해정도 표본표 (가로 한줄: 정상·10~100·평가제외·계)
+  const thS='padding:4px 0;background:#5B7E3F;color:#fff;border:0.5px solid #3f5a2b;font-size:9px';
+  let hh='<tr><th style="'+thS+'">표본</th>'+
+    '<th style="'+thS+'">이랑</th>'+
+    '<th style="padding:4px 0;background:#5B7E3F;color:#d8ecc4;border:0.5px solid #3f5a2b;font-size:9px">정상</th>'+
+    '<th style="'+thS+'">10</th><th style="'+thS+'">20</th><th style="'+thS+'">30</th><th style="'+thS+'">40</th><th style="'+thS+'">50</th>'+
+    '<th style="'+thS+'">60</th><th style="'+thS+'">70</th><th style="'+thS+'">80</th><th style="'+thS+'">90</th><th style="'+thS+'">100</th>'+
+    '<th style="'+thS+'">제외</th>'+
+    '<th style="'+thS+'">계</th></tr>';
   $('cap-smp-head').innerHTML=hh;
-  const cell='padding:3px 0;border:0.5px solid #e0e0e0;text-align:center';
+  const cell='padding:4px 0;border:0.5px solid #e0e0e0;text-align:center;font-size:10px';
   const dash=v=>num(v)>0?v:'·';
   let bb='';
   st.samples.forEach((s,r)=>{
     let row=num(s.normal)+num(s.dead); s.d.forEach(v=>row+=num(v));
-    bb+='<tr><td rowspan="2" style="'+cell+';background:#f7f9f3;font-weight:700">'+(r+1)+'</td>'+
-        '<td rowspan="2" style="'+cell+';background:#f7f9f3;font-weight:700">'+(s.rang||'·')+'</td>'+
-        '<td rowspan="2" style="'+cell+';font-weight:700">'+dash(s.normal)+'</td>';
-    TOP.forEach(di=>{ bb+='<td style="'+cell+'">'+dash(s.d[di])+'</td>'; });
-    bb+='<td rowspan="2" style="'+cell+'">'+dash(s.dead)+'</td>'+
-        '<td rowspan="2" style="'+cell+';background:#eef3e7;font-weight:800">'+(row>0?row:'·')+'</td></tr><tr>';
-    BOT.forEach(di=>{ bb+='<td style="'+cell+'">'+dash(s.d[di])+'</td>'; });
-    bb+='</tr>';
+    bb+='<tr><td style="'+cell+';background:#f7f9f3;font-weight:700">'+(r+1)+'</td>'+
+        '<td style="'+cell+';background:#f7f9f3;font-weight:700">'+(s.rang||'·')+'</td>'+
+        '<td style="'+cell+';font-weight:700">'+dash(s.normal)+'</td>';
+    s.d.forEach(v=>{ bb+='<td style="'+cell+'">'+dash(v)+'</td>'; });
+    bb+='<td style="'+cell+'">'+dash(s.dead)+'</td>'+
+        '<td style="'+cell+';background:#eef3e7;font-weight:800">'+(row>0?row:'·')+'</td></tr>';
   });
-  if(!bb) bb='<tr><td colspan="10" style="padding:10px;text-align:center">-</td></tr>';
-  // 합계행
-  let colTop=[0,0,0,0,0],dead=0,all=0,normalSum=0;
-  st.samples.forEach(s=>{ normalSum+=num(s.normal); dead+=num(s.dead); let row=num(s.normal)+num(s.dead); s.d.forEach((v,k)=>{row+=num(v);}); all+=row; [0,1,2,3,4].forEach(k=>{colTop[k]+=num(s.d[k])+num(s.d[k+5]);}); });
+  if(!bb) bb='<tr><td colspan="15" style="padding:10px;text-align:center;font-size:10px">-</td></tr>';
+  // 합계행 (10~100 각 열별)
+  let colAll=[0,0,0,0,0,0,0,0,0,0],dead=0,all=0,normalSum=0;
+  st.samples.forEach(s=>{ normalSum+=num(s.normal); dead+=num(s.dead); let row=num(s.normal)+num(s.dead); s.d.forEach((v,k)=>{row+=num(v); colAll[k]+=num(v);}); all+=row; });
   if(st.samples.length){
-    bb+='<tr style="background:#FAEEDA;color:#7a4a06;font-weight:800"><td colspan="3" style="'+cell+';border-color:#e9d4a8">계</td>';
-    colTop.forEach(c=>{ bb+='<td style="'+cell+';border-color:#e9d4a8">'+(c||'·')+'</td>'; });
+    bb+='<tr style="background:#FAEEDA;color:#7a4a06;font-weight:800"><td colspan="2" style="'+cell+';border-color:#e9d4a8">계</td>';
+    bb+='<td style="'+cell+';border-color:#e9d4a8">'+(normalSum||'·')+'</td>';
+    colAll.forEach(c=>{ bb+='<td style="'+cell+';border-color:#e9d4a8">'+(c||'·')+'</td>'; });
     bb+='<td style="'+cell+';border-color:#e9d4a8">'+(dead||'·')+'</td><td style="'+cell+';border-color:#e9d4a8">'+(all||'·')+'</td></tr>';
   }
   $('cap-smp-body').innerHTML=bb;
