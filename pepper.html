@@ -142,12 +142,15 @@ table.smp tr.rowodd input.filled{background:var(--fill-bg)}
 .smp-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
 .scell{background:#f6f7f3;border:1px solid #e3e1d9;border-radius:6px;text-align:center;position:relative;height:38px}
 .scell .cl{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;font-weight:600;pointer-events:none;transition:none;word-break:keep-all;line-height:1.15;padding:0 2px;text-align:center;flex-direction:column}
-.scell .ci{position:absolute;top:0;left:0;width:100%;height:100%;border:none;background:transparent;text-align:center;font-size:15px;font-weight:800;color:transparent;-webkit-appearance:none;padding:0}
+.scell .ci{position:absolute;top:0;left:0;width:100%;height:100%;border:none;background:transparent;text-align:center;font-size:14px;font-weight:800;color:transparent;-webkit-appearance:none;padding:0}
 .scell .ci::placeholder{color:transparent}
 /* 값 있으면 라벨 숨기고 숫자만 */
 .scell.has .cl{opacity:0}
 .scell.has .ci{color:#1a1a1a}
 .scell.has{background:var(--fill-bg);border:1.5px solid var(--fill-bd)}
+/* 입력 완료 시 우측상단 라벨 뱃지 */
+.scell-badge{display:none;position:absolute;top:2px;right:3px;font-size:9px;font-weight:700;color:#9a9a92;line-height:1;pointer-events:none;z-index:2}
+.scell.has .scell-badge{display:block}
 /* 편집 중엔 라벨 숨기고 입력 숫자만 표시 */
 .scell:focus-within{background:#dceeff;border:1.5px solid var(--blue)}
 .scell:focus-within .cl{opacity:0}
@@ -155,6 +158,7 @@ table.smp tr.rowodd input.filled{background:var(--fill-bg)}
 body.big-text .scell{height:46px!important}
 body.big-text .scell .cl{font-size:14px!important}
 body.big-text .scell .ci{font-size:18px!important}
+body.big-text .scell-badge{font-size:11px!important}
 /* 칩 방식 */
 .chip-head{display:flex;justify-content:space-between;align-items:center;margin:4px 0 9px}
 .chip-nav{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
@@ -664,8 +668,10 @@ function renderSamples(){
       const isDead=(c.key==='dead');
       const lcls='';
       const labelHtml=isDead?'평가제외(기고사)':c.label;
+      const badgeHtml=isDead?'제외':c.label;
       h+='<div class="scell'+has+lcls+'" onclick="focusCell(this)">'+
          '<div class="cl">'+labelHtml+'</div>'+
+         '<span class="scell-badge">'+badgeHtml+'</span>'+
          '<input inputmode="numeric" class="ci" data-r="'+r+'" data-key="'+c.key+'" value="'+(v||'')+'" placeholder="" oninput="onCell(this)">'+
          '</div>';
     });
