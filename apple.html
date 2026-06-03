@@ -2312,7 +2312,7 @@ async function saveImage() {
       const after   = perTree>0&&st>0 ? Math.round(perTree*st) : 0;
       totalSampleN  += sN; totalSampleSum += sSum; totalAfterSum += after;
       totalProperSum += properN;  // 품종별 적정표본 합산
-      const bg = vi%2?'#f8f9fa':'#fff';
+      const bg = vi%2?'#fff':'#f5f6f8';
       return `<tr style="background:${bg}">
         ${td(v.name||`품종${vi+1}`,bg,true)}
         ${td(v.age||'-')}
@@ -2381,15 +2381,16 @@ async function saveImage() {
         let body = '';
         for(let i=0; i<rows.length; i++){
           const s = rows[i];
+          const vbg = (s.vi % 2 === 0) ? '#f5f6f8' : '#fff';
           const isFirst = (i === 0) || (rows[i-1].vi !== s.vi);
           let span = 1;
           if(isFirst){ let j=i+1; while(j<rows.length && rows[j].vi===s.vi){ span++; j++; } }
           body += `<tr>`;
           if(isFirst){
-            body += `<td rowspan="${span}" style="border:1px solid #c7ccd1;background:#fff;text-align:center;padding:4px 3px;font-size:${fs-1}px;font-weight:700;color:#185FA5;white-space:nowrap">${s.name}</td>`;
+            body += `<td rowspan="${span}" style="border:1px solid #c7ccd1;background:${vbg};text-align:center;padding:4px 3px;font-size:${fs-1}px;font-weight:700;color:#185FA5;white-space:nowrap">${s.name}</td>`;
           }
-          body += `<td style="border:1px solid #c7ccd1;background:#185FA5;color:#fff;text-align:center;padding:3px 2px;font-size:${fs-1}px;font-weight:700">${s.no}번</td>`;
-          body += `<td style="border:1px solid #c7ccd1;background:#fff;text-align:center;padding:4px 3px;font-size:${fs}px;font-weight:700;color:#111">${s.val.toLocaleString()}</td>`;
+          body += `<td style="border:1px solid #c7ccd1;background:${vbg};color:#111;text-align:center;padding:3px 2px;font-size:${fs-1}px;font-weight:700">${s.no}번</td>`;
+          body += `<td style="border:1px solid #c7ccd1;background:${vbg};text-align:center;padding:4px 3px;font-size:${fs}px;font-weight:700;color:#111">${s.val.toLocaleString()}</td>`;
           body += `</tr>`;
         }
         blocksHtml += `<table style="border-collapse:collapse;table-layout:fixed;margin:0 8px 8px 0;vertical-align:top">
