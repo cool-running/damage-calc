@@ -2302,7 +2302,7 @@ async function saveImage() {
       const after   = perTree>0&&st>0 ? Math.round(perTree*st) : 0;
       totalSampleN  += sN; totalSampleSum += sSum; totalAfterSum += after;
       totalProperSum += properN;  // 품종별 적정표본 합산
-      const bg = vi%2?'#fff':'#f5f6f8';
+      const bg = vi%2?'#fff':'#eceef2';
       return `<tr style="background:${bg}">
         ${td(v.name||`품종${vi+1}`,bg,true)}
         ${td(v.age||'-')}
@@ -2314,7 +2314,7 @@ async function saveImage() {
         ${td(properN>0?properN:'-')}
         ${td(sSum>0?Math.round(sSum).toLocaleString():'-')}
         ${td(perTree>0?perTree.toFixed(4):'-')}
-        ${td(after>0?after.toLocaleString():'-','#e8faf3',true,'#0d5c35')}
+        ${td(after>0?after.toLocaleString():'-','#DCEAF8',true,'#0F4C81')}
       </tr>`;
     }).join('');
 
@@ -2325,18 +2325,18 @@ async function saveImage() {
     const totalUninsAlive = varieties.reduce((s,v)=>s+(v.uninsAlive||0),0);
     const totalReg2 = varieties.reduce((s,v)=>s+(v.reg||0),0);
     const totalActual2 = varieties.reduce((s,v)=>s+(v.actual||0),0);
-    const tfootRow = `<tr style="background:#e8edf2">
-      ${td('합 계','#e8edf2',true)}
-      ${td('')}
-      ${td(totalReg2>0?totalReg2.toLocaleString():'-')}
-      ${td(totalActual2>0?totalActual2.toLocaleString():'-')}
-      ${td(totalDead)}${td(totalUnable)}${td(totalUninsDead)}${td(totalUninsAlive)}
-      ${td(totalSurvey>0?totalSurvey.toLocaleString():'-','#dbeafe',true,'#185FA5')}
-      ${td(totalSampleN>0?totalSampleN:'-','#e8edf2',true)}
-      ${td(totalProperSum>0?totalProperSum:'-')}
-      ${td(totalSampleSum>0?Math.round(totalSampleSum).toLocaleString():'-','#e8edf2',true)}
-      ${td(totalPerTree>0?totalPerTree.toFixed(4):'-')}
-      ${td(totalAfterSum>0?totalAfterSum.toLocaleString():'-','#d1fae5',true,'#0d5c35')}
+    const tfootRow = `<tr style="background:#F5ECD9">
+      ${td('합 계','#F5ECD9',true,'#7a5b1e')}
+      ${td('','#F5ECD9')}
+      ${td(totalReg2>0?totalReg2.toLocaleString():'-','#F5ECD9',true,'#7a5b1e')}
+      ${td(totalActual2>0?totalActual2.toLocaleString():'-','#F5ECD9',true,'#7a5b1e')}
+      ${td(totalDead,'#F5ECD9',false,'#7a5b1e')}${td(totalUnable,'#F5ECD9',false,'#7a5b1e')}${td(totalUninsDead,'#F5ECD9',false,'#7a5b1e')}${td(totalUninsAlive,'#F5ECD9',false,'#7a5b1e')}
+      ${td(totalSurvey>0?totalSurvey.toLocaleString():'-','#EFE2C4',true,'#185FA5')}
+      ${td(totalSampleN>0?totalSampleN:'-','#F5ECD9',true,'#7a5b1e')}
+      ${td(totalProperSum>0?totalProperSum:'-','#F5ECD9',true,'#7a5b1e')}
+      ${td(totalSampleSum>0?Math.round(totalSampleSum).toLocaleString():'-','#F5ECD9',true,'#7a5b1e')}
+      ${td(totalPerTree>0?totalPerTree.toFixed(4):'-','#F5ECD9',true,'#7a5b1e')}
+      ${td(totalAfterSum>0?totalAfterSum.toLocaleString():'-','#EFE2C4',true,'#0F4C81')}
     </tr>`;
 
     document.getElementById('cap-tree-tbody').innerHTML = treeRows;
@@ -2369,9 +2369,11 @@ async function saveImage() {
         const rows = flat.filter(s => s.no >= lo && s.no <= hi);
         if(rows.length === 0) continue;
         let body = '';
+        let blockSum = 0;
         for(let i=0; i<rows.length; i++){
           const s = rows[i];
-          const vbg = (s.vi % 2 === 0) ? '#f5f6f8' : '#fff';
+          blockSum += s.val;
+          const vbg = (s.vi % 2 === 0) ? '#eceef2' : '#fff';
           const isFirst = (i === 0) || (rows[i-1].vi !== s.vi);
           let span = 1;
           if(isFirst){ let j=i+1; while(j<rows.length && rows[j].vi===s.vi){ span++; j++; } }
@@ -2383,6 +2385,10 @@ async function saveImage() {
           body += `<td style="border:1px solid #c7ccd1;background:${vbg};text-align:center;padding:4px 3px;font-size:${fs}px;font-weight:700;color:#111">${s.val.toLocaleString()}</td>`;
           body += `</tr>`;
         }
+        body += `<tr>
+          <td colspan="2" style="border:1px solid #c7ccd1;background:#F5ECD9;text-align:center;padding:4px 3px;font-size:${fs-1}px;font-weight:700;color:#7a5b1e">착과수 합계</td>
+          <td style="border:1px solid #c7ccd1;background:#F5ECD9;text-align:center;padding:4px 3px;font-size:${fs}px;font-weight:800;color:#7a5b1e">${Math.round(blockSum).toLocaleString()}</td>
+        </tr>`;
         blocksHtml += `<table style="border-collapse:collapse;table-layout:fixed;margin:0 8px 8px 0;vertical-align:top">
           <colgroup><col style="width:${nameW}px"><col style="width:${noW}px"><col style="width:${valW}px"></colgroup>
           <tr><th style="${thS}">품종명</th><th style="${thS}">번호</th><th style="${thS}">착과수</th></tr>
