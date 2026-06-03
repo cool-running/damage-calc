@@ -1120,12 +1120,43 @@ function fillCaptureTemplate(){
   $('cap-final').textContent=nj===null?'-':fmtPct(Math.max(0,nj-gnj));
   $('cap-unins').textContent=(st.uninsRate||'0')+'%';
 }
+function saveToHistoryList(imgData){
+  try{
+    const pct=$('result-pct').textContent.trim();
+    const id=Date.now();
+    let hist=[]; try{hist=JSON.parse(localStorage.getItem('save_history')||'[]');}catch(e){}
+    // 같은 작물+농지번호+조사일이면 기존 기록 갱신(덮어쓰기)
+    let oldId=null;
+    if(st.farm_no){
+      const idx=hist.findIndex(r=>r.crop==='고추'&&r.farmNo===st.farm_no&&(r.savedAt||'').startsWith(st.survey_date||''));
+      if(idx>=0){ oldId=hist[idx].id; hist.splice(idx,1); }
+    }
+    hist.unshift({
+      id:id, crop:'고추', cropDetail:'고추', category:'밭작물',
+      farmNo:st.farm_no||'', pct:pct,
+      savedAt:(st.survey_date||todayStr())+'T'+new Date().toTimeString().slice(0,8)
+    });
+    if(hist.length>200) hist=hist.slice(0,200);
+    localStorage.setItem('save_history',JSON.stringify(hist));
+    // 이미지 캐시 (최대 15건, 오래된 것부터 삭제)
+    let imgs=[]; try{imgs=JSON.parse(localStorage.getItem('save_img_cache')||'[]');}catch(e){}
+    if(oldId!=null) imgs=imgs.filter(c=>String(c.id)!==String(oldId));
+    imgs.unshift({id:id,img:imgData});
+    while(imgs.length>15) imgs.pop();
+    try{ localStorage.setItem('save_img_cache',JSON.stringify(imgs)); }
+    catch(e){ // 용량 초과 시 오래된 이미지 비우며 재시도
+      while(imgs.length>1){ imgs.pop(); try{localStorage.setItem('save_img_cache',JSON.stringify(imgs));break;}catch(_){} }
+    }
+  }catch(e){}
+}
 function saveImage(){
   fillCaptureTemplate();
   html2canvas(document.getElementById('capture-template'),{scale:2,backgroundColor:'#f3f4f6',windowWidth:430}).then(cv=>{
+    const dataUrl=cv.toDataURL('image/png');
     const a=document.createElement('a');
     a.download='고추_'+(st.farm_no||'')+'_'+(st.survey_date||'')+'.png';
-    a.href=cv.toDataURL('image/png');a.click();
+    a.href=dataUrl;a.click();
+    saveToHistoryList(dataUrl);
     document.getElementById('saved-overlay').style.display='flex';
   });
 }
