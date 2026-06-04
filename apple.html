@@ -2313,18 +2313,20 @@ async function saveImage() {
       totalSampleN  += sN; totalSampleSum += sSum; totalAfterSum += after;
       totalProperSum += properN;  // 품종별 적정표본 합산
       const bg = vi%2?'#fff':'#eceef2';
+      const emA = vi%2?'#EBF4FF':'#dde6f2';   // 조사대상 강조 (행 톤에 맞춤)
+      const emB = vi%2?'#DCEAF8':'#cdddee';   // 착과수 강조 (행 톤에 맞춤)
       return `<tr style="background:${bg}">
         ${td(v.name||`품종${vi+1}`,bg,true)}
-        ${td(v.age||'-')}
-        ${td(v.reg>0?v.reg.toLocaleString():'-')}
-        ${td(v.actual>0?v.actual.toLocaleString():'-')}
-        ${td(v.dead||0)}${td(v.unable||0)}${td(v.uninsDead||0)}${td(v.uninsAlive||0)}
-        ${td(st>0?st.toLocaleString():'-','#EBF4FF',true,'#185FA5')}
-        ${td(sN>0?sN:'-')}
-        ${td(properN>0?properN:'-')}
-        ${td(sSum>0?Math.round(sSum).toLocaleString():'-')}
-        ${td(perTree>0?perTree.toFixed(4):'-')}
-        ${td(after>0?after.toLocaleString():'-','#DCEAF8',true,'#0F4C81')}
+        ${td(v.age||'-',bg)}
+        ${td(v.reg>0?v.reg.toLocaleString():'-',bg)}
+        ${td(v.actual>0?v.actual.toLocaleString():'-',bg)}
+        ${td(v.dead||0,bg)}${td(v.unable||0,bg)}${td(v.uninsDead||0,bg)}${td(v.uninsAlive||0,bg)}
+        ${td(st>0?st.toLocaleString():'-',emA,true,'#185FA5')}
+        ${td(sN>0?sN:'-',bg)}
+        ${td(properN>0?properN:'-',bg)}
+        ${td(sSum>0?Math.round(sSum).toLocaleString():'-',bg)}
+        ${td(perTree>0?perTree.toFixed(4):'-',bg)}
+        ${td(after>0?after.toLocaleString():'-',emB,true,'#0F4C81')}
       </tr>`;
     }).join('');
 
