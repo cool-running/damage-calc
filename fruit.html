@@ -470,7 +470,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
   <div style="background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 12%,#f3f4f6 12%,#f3f4f6 100%);padding:0 20px 20px;box-sizing:border-box">
     <div style="height:18px"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:800;letter-spacing:0.04em" id="cap-title">사과 적과후착과수 조사결과</div>
+      <div style="font-size:15px;font-weight:800;letter-spacing:0.04em" id="cap-title">포복자 착과수 조사결과</div>
       <div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap">
         <span id="cap-date-disp"></span><span id="cap-farmno-disp" style="margin-left:10px"></span>
       </div>
@@ -2270,14 +2270,14 @@ async function saveImage() {
       : { canvasW:960, tdFs:8,  tdPad:'3px 2px', thPad:'4px 2px', sampleCols:12, sampleCellW:50 };
 
     // ── 헤더바
-    document.getElementById('cap-title').textContent  = `${cropName} 적과후착과수 조사결과`;
+    document.getElementById('cap-title').textContent  = `${cropName} 착과수 조사결과`;
     const _survDate = document.getElementById('survey_date')?.value || '';
     const _farmNo = (document.getElementById('farm_no')?.value || '').trim();
     const _capDate = document.getElementById('cap-date-disp');
     const _capFarm = document.getElementById('cap-farmno-disp');
     if(_capDate) _capDate.textContent = _survDate || '';
     if(_capFarm) _capFarm.textContent = _farmNo ? '| 농지번호 ' + _farmNo : '';
-    document.getElementById('cap-avg').textContent    = avgFruit>0 ? avgFruit.toLocaleString()+'개' : '-';
+    document.getElementById('cap-avg').textContent    = avgFruit>0 ? avgFruit.toLocaleString()+'kg' : '-';
     document.getElementById('cap-reg').textContent    = totalReg>0 ? totalReg.toLocaleString()+'주' : '-';
     document.getElementById('cap-survey').textContent = totalSurvey>0 ? totalSurvey.toLocaleString()+'주' : '-';
     document.getElementById('cap-rate').textContent   = avgFruit>0 ? (rate*100).toFixed(2)+'%' : '-';
