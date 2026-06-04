@@ -231,6 +231,8 @@ select.inp.filled:focus,select.inp.filled:focus-visible,select.inp.filled:active
 /* 팝업 */
 #save-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center}
 #save-overlay.show{display:flex}
+#history-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:380;align-items:center;justify-content:center;padding:16px}
+#history-overlay.show{display:flex}
 .save-modal{background:white;border-radius:var(--r);padding:24px 20px;text-align:center;width:260px}
 .save-modal p{font-size:14px;margin-bottom:16px;color:var(--sub)}
 .save-modal .btn-ok{width:100%;height:42px;background:var(--blue);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
@@ -280,15 +282,19 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     <button onclick="openResetModal()" style="height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);font-size:13px;font-weight:600;color:var(--red);cursor:pointer">전체 초기화</button>
   </div>
   <div class="section">
-    <div class="g2">
-      <div class="field">
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div class="field" style="flex:0 0 40%;min-width:0">
         <label style="font-size:11px;color:var(--sub);font-weight:500">농지번호 4자리</label>
         <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
           maxlength="4" oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
       </div>
-      <div class="field">
+      <div class="field" style="flex:0 0 40%;min-width:0">
         <label style="font-size:11px;color:var(--sub);font-weight:500">조사일자</label>
         <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="syncDateDisp(this);saveState()"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <button onclick="openHistoryModal()" title="이전 기록 불러오기"
+          style="width:100%;height:40px;background:transparent;border:1.5px solid var(--blue2);border-radius:var(--rs);color:var(--blue2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;-webkit-appearance:none;appearance:none">📋</button>
       </div>
     </div>
   </div>
@@ -566,6 +572,20 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     <div style="display:flex;gap:10px">
       <button onclick="document.getElementById('reset-overlay').style.display='none'" style="flex:1;height:46px;border:1.5px solid #d9d9d9;border-radius:12px;background:#f7f7f7;color:#555;font-size:15px;font-weight:700;cursor:pointer">취소</button>
       <button onclick="document.getElementById('reset-overlay').style.display='none';resetAll()" style="flex:1;height:46px;border:none;border-radius:12px;background:#185FA5;color:#fff;font-size:15px;font-weight:700;cursor:pointer">초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- 이전 기록 모달 -->
+<div id="history-overlay">
+  <div style="background:#fff;border-radius:18px;width:100%;max-width:360px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 18px 40px rgba(0,0,0,0.2)">
+    <div style="padding:18px 18px 12px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:16px;font-weight:800;color:var(--blue)">📋 이전 기록 불러오기</div>
+      <button onclick="closeHistoryModal()" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div id="history-list" style="overflow-y:auto;flex:1;padding:10px 12px"></div>
+    <div style="padding:12px 18px;border-top:1px solid #eee">
+      <button onclick="closeHistoryModal()" style="width:100%;height:42px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-size:14px;font-weight:700;cursor:pointer">닫기</button>
     </div>
   </div>
 </div>
@@ -2150,13 +2170,15 @@ function loadState(){
 
 function resetAll() {
   intervalData = Array.from({length:10}, ()=>({reg:0, actual:0, dead:0, unable:0, uninsDead:0, uninsAlive:0, treeOpen:false}));
-  setIntervalCount(2, true);
+  // 품종 입력값을 먼저 초기화한 뒤 화면을 다시 그려야 이전 품종명이 남지 않음
   for(const crop of Object.keys(allData)){
     allData[crop].avgFruit = '';
     allData[crop].varieties = [EMPTY_VARIETY()];
     allData[crop].calcDone = false;
   }
   varieties = allData[currentCrop].varieties;
+  setIntervalCount(2, true);
+  renderIntervalRows();
   const _afEl = document.getElementById('avg_fruit');
   if(_afEl){ _afEl.value = ''; _afEl.classList.remove('filled'); }
   document.getElementById('result-section').classList.remove('show');
@@ -2177,6 +2199,84 @@ function resetAll() {
     const _farm = document.getElementById('farm_no');
     if(_farm) _farm.focus();
   }, 300);
+}
+
+// ── 이전 기록 불러오기 ────────────────────────────
+function saveHistory(){
+  try{
+    saveState(); // 현재 상태를 apple_multi_v2 에 동기화
+    const stateRaw = localStorage.getItem('apple_multi_v2');
+    if(!stateRaw) return;
+    const farmNo = (document.getElementById('farm_no')?.value||'').trim();
+    const surveyDate = document.getElementById('survey_date')?.value||'';
+    const totalTxt = (document.getElementById('r-total')?.textContent||'').trim();
+    const rateTxt = (document.getElementById('result-rate')?.textContent||'').trim();
+    const rec = {
+      id: Date.now(),
+      farm_no: farmNo,
+      survey_date: surveyDate,
+      total: totalTxt,
+      rate: rateTxt,
+      state: stateRaw,
+      saved_at: new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/ /g,'')
+    };
+    let records=[];
+    try{records=JSON.parse(localStorage.getItem('apple_history')||'[]');}catch(e){}
+    const ei = farmNo ? records.findIndex(r=>r.farm_no===farmNo && r.survey_date===surveyDate) : -1;
+    if(ei>=0) records[ei]=rec; else records.push(rec);
+    if(records.length>30) records=records.slice(-30);
+    localStorage.setItem('apple_history', JSON.stringify(records));
+  }catch(e){}
+}
+
+function openHistoryModal(){
+  const list=document.getElementById('history-list');
+  let records=[];
+  try{records=JSON.parse(localStorage.getItem('apple_history')||'[]');}catch(e){}
+  if(records.length===0){
+    list.innerHTML='<div style="text-align:center;color:#aaa;padding:30px 0;font-size:14px">저장된 기록이 없습니다</div>';
+  } else {
+    list.innerHTML=records.slice().reverse().map((r,ri)=>{
+      const idx=records.length-1-ri;
+      return `<div style="border:1.5px solid #d6e4f5;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white"
+        onclick="loadHistoryRecord(${idx})"
+        onmouseenter="this.style.background='#eaf2fc'" onmouseleave="this.style.background='white'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:15px;font-weight:800;color:var(--blue)">${r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'}</span>
+          <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:#555">🍎 착과수 ${r.total||'-'}</span>
+          <span style="font-size:12px;color:#555">📊 착과율 ${r.rate&&r.rate!=='- -'?r.rate:'-'}</span>
+          <span style="font-size:12px;color:#555">🗓 ${r.survey_date||'-'}</span>
+        </div>
+        <div style="margin-top:6px;display:flex;justify-content:flex-end;gap:6px">
+          <button onclick="event.stopPropagation();deleteHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:1px solid #ffb3b3;border-radius:6px;background:white;color:#e24b4a;font-size:11px;font-weight:700;cursor:pointer">삭제</button>
+          <button onclick="event.stopPropagation();loadHistoryRecord(${idx})" style="height:26px;padding:0 10px;border:none;border-radius:6px;background:var(--blue);color:white;font-size:11px;font-weight:700;cursor:pointer">불러오기</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('history-overlay').classList.add('show');
+}
+function closeHistoryModal(){ document.getElementById('history-overlay').classList.remove('show'); }
+
+function loadHistoryRecord(idx){
+  let records=[];
+  try{records=JSON.parse(localStorage.getItem('apple_history')||'[]');}catch(e){}
+  const r=records[idx]; if(!r||!r.state) return;
+  try{ localStorage.setItem('apple_multi_v2', r.state); }catch(e){}
+  // 불러올 때는 저장 당시의 조사일자를 그대로 복원
+  try{ sessionStorage.setItem('apple_load_date', r.survey_date||''); }catch(e){}
+  location.reload();
+}
+
+function deleteHistoryRecord(idx){
+  let records=[];
+  try{records=JSON.parse(localStorage.getItem('apple_history')||'[]');}catch(e){}
+  records.splice(idx,1);
+  try{localStorage.setItem('apple_history',JSON.stringify(records));}catch(e){}
+  openHistoryModal();
 }
 
 // ── 계산하기 / 수정하기 모드 ─────────────────────
@@ -2347,7 +2447,7 @@ async function saveImage() {
       ${td(totalSampleN>0?totalSampleN:'-','#F5ECD9',true,'#7a5b1e')}
       ${td(totalProperSum>0?totalProperSum:'-','#F5ECD9',true,'#7a5b1e')}
       ${td(totalSampleSum>0?Math.round(totalSampleSum).toLocaleString():'-','#F5ECD9',true,'#7a5b1e')}
-      ${td(totalPerTree>0?totalPerTree.toFixed(4):'-','#F5ECD9',true,'#7a5b1e')}
+      ${td('-','#F5ECD9',true,'#7a5b1e')}
       ${td(totalAfterSum>0?totalAfterSum.toLocaleString():'-','#EFE2C4',true,'#0F4C81')}
     </tr>`;
 
@@ -2453,6 +2553,7 @@ async function saveImage() {
       localStorage.setItem('save_history', JSON.stringify(_hist));
       _saveImgCache(_rec.id, _dataUrl);
     }catch(_){}
+    try{ saveHistory(); }catch(_){}
     document.getElementById('save-overlay').classList.add('show');
   } catch(e) {
     showToast('저장 중 오류가 발생했어요');
@@ -2469,7 +2570,7 @@ if ('serviceWorker' in navigator) {
 document.addEventListener('DOMContentLoaded', ()=>{
   const _loaded = loadState();
   // 조사일자 항상 오늘 날짜
-  (()=>{ const d=new Date(); const sd=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); const el=document.getElementById('survey_date'); if(el){el.value=sd;syncDateDisp(el);} })();
+  (()=>{ let sd; let _ld=null; try{_ld=sessionStorage.getItem('apple_load_date');}catch(e){} if(_ld!==null){ sd=_ld; try{sessionStorage.removeItem('apple_load_date');}catch(e){} } else { const d=new Date(); sd=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); } const el=document.getElementById('survey_date'); if(el){el.value=sd;syncDateDisp(el);} })();
   setIntervalCount(intervalCount || 2);
   renderIntervalRows();
   onInput();
