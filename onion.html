@@ -368,8 +368,8 @@ tbody td input.filled:active{
       <div class="field" style="width:40%">
         <label>농지번호 4자리</label>
         <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호 4자리"
-          maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);checkDupFarmNo(this.value)"
-          oninput="markFilled(this)" onchange="" autocomplete="off">
+          maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);checkDupFarmNo(this.value);markFilled(this)"
+          autocomplete="off">
       </div>
       <div style="width:40%"></div>
       <div style="width:20%;flex-shrink:0">
