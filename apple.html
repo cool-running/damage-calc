@@ -85,6 +85,9 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 .header-icon{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .header h1{font-size:15px;font-weight:600}
 .header-sub{font-size:11px;opacity:0.75;margin-top:1px}
+.hdr-state{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,0.92);border:1px solid rgba(255,255,255,0.6);white-space:nowrap;transition:all .15s}
+.hdr-state.unlocked{color:#137a4d}
+.hdr-state.locked{color:#c0392b}
 
 /* 범례 */
 .legend{display:flex;gap:12px;padding:8px 16px;background:var(--card);border-bottom:0.5px solid var(--border)}
@@ -254,10 +257,11 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 <div class="header">
   <button class="back-btn" onclick="location.href='./index.html'">‹</button>
   <div class="header-icon">🍎</div>
-  <div>
+  <div style="flex:1">
     <h1>과수4종 적과후착과수 계산기</h1>
     <div class="header-sub">사과 · 배 · 단감 · 떫은감</div>
   </div>
+  <div class="hdr-state unlocked" id="hdrState">🔓 수정 중</div>
 </div>
 
 <div class="legend">
@@ -945,7 +949,6 @@ function vibrate(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern)
 
 function calcTreeResult(silent=false) {
   if(!silent) vibrate([30, 40, 60]);
-  vibrate([30, 40, 60]);
   // 입력 잠금
   const rows1 = document.getElementById('interval-rows-1');
   const icntBtns = document.querySelectorAll('[id^="icnt-"]');
@@ -960,6 +963,7 @@ function calcTreeResult(silent=false) {
 }
 
 function setEditModeFromTree() {
+  vibrate([12]);
   // 잠금 해제
   const rows1 = document.getElementById('interval-rows-1');
   const icntBtns = document.querySelectorAll('[id^="icnt-"]');
@@ -2163,6 +2167,7 @@ function loadState(){
       document.querySelector('.content')?.classList.add('locked');
       document.getElementById('btn-calc')?.classList.add('active');
       document.getElementById('btn-edit')?.classList.remove('active');
+      setLockBadge(true);
     }, 0);
     return true;
   }catch(e){ return false; }
@@ -2268,6 +2273,7 @@ function loadHistoryRecord(idx){
   try{ localStorage.setItem('apple_multi_v2', r.state); }catch(e){}
   // 불러올 때는 저장 당시의 조사일자를 그대로 복원
   try{ sessionStorage.setItem('apple_load_date', r.survey_date||''); }catch(e){}
+  try{ sessionStorage.setItem('show_load_toast','1'); }catch(e){}
   location.reload();
 }
 
@@ -2314,7 +2320,6 @@ function _checkCalcMissing(){
 
 function setCalcMode(silent=false){
   if(!silent) vibrate([30, 40, 60]);
-  vibrate([30, 40, 60]);
   // 유효성 검사 먼저 — 통과해야만 잠금
   const _missing = _checkCalcMissing();
   if(_missing.length > 0){
@@ -2326,6 +2331,7 @@ function setCalcMode(silent=false){
   document.querySelectorAll('.content').forEach(el => el.classList.add('locked'));
   document.getElementById('btn-calc').classList.add('active');
   document.getElementById('btn-edit').classList.remove('active');
+  setLockBadge(true);
   doCalc(true, true);
   saveState();
 }
@@ -2335,10 +2341,19 @@ function setEditMode(){
   document.getElementById('mode-section-0')?.classList.remove('locked');
   document.getElementById('btn-edit').classList.add('active');
   document.getElementById('btn-calc').classList.remove('active');
+  setLockBadge(false);
+  vibrate([12]);
   saveState();
 }
+function setLockBadge(locked){
+  var hs=document.getElementById('hdrState');
+  if(hs){ hs.textContent=locked?'🔒 잠금':'🔓 수정 중'; hs.className='hdr-state '+(locked?'locked':'unlocked'); }
+}
+
 function lockInputs(){ setCalcMode(); }
 function unlockInputs(){ setEditMode(); }
+
+document.addEventListener('DOMContentLoaded',function(){ try{ if(sessionStorage.getItem('show_load_toast')==='1'){ sessionStorage.removeItem('show_load_toast'); setTimeout(function(){ if(typeof showToast==='function') showToast('불러왔습니다'); },300); } }catch(e){} });
 
 // ── 갤러리 저장 ───────────────────────────────────
 
