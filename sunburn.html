@@ -385,7 +385,13 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 
   <!-- 낙과 표본조사 -->
   <div class="section">
-    <div class="sec-title">🍎 일소(낙과) 표본조사 <span class="tag">표본주수 3주</span></div>
+    <div class="sec-title" style="justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:6px">🍎 일소(낙과) 표본조사 <span class="tag" id="sampTag">표본주수 3주</span></span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <button id="btnSampMinus" onclick="sampMinus()" style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:6px;background:transparent;font-size:16px;color:var(--hint);cursor:not-allowed;opacity:0.4;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">－</button>
+        <button id="btnSampPlus" onclick="sampPlus()" style="width:28px;height:28px;border:1.5px solid var(--binp);border-radius:6px;background:transparent;font-size:16px;color:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">＋</button>
+      </span>
+    </div>
     <input type="hidden" id="sampleN" value="3">
     <div id="sampRows"></div>
   </div>
@@ -469,6 +475,42 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
   </div>
 </div>
 
+<!-- 표본주 삭제 확인 -->
+<div class="overlay" id="sampConfirmOverlay">
+  <div class="modal">
+    <div style="font-size:28px;text-align:center;margin-bottom:4px">🗑️</div>
+    <h3>표본주 삭제</h3>
+    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px"><span id="sampConfirmNum">0</span>번 표본주를 삭제할까요?<br><span style="color:var(--red);font-weight:700">입력된 값도 함께 삭제됩니다.</span></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button onclick="closeSampPopup('sampConfirmOverlay')" style="height:44px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-weight:700;cursor:pointer">취소</button>
+      <button onclick="closeSampPopup('sampConfirmOverlay');doSampMinus()" style="height:44px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;cursor:pointer">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 표본주 삭제 불가 -->
+<div class="overlay" id="sampDelOverlay">
+  <div class="modal">
+    <div style="font-size:28px;text-align:center;margin-bottom:4px">🚫</div>
+    <h3>삭제 불가</h3>
+    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px">적정 표본주수 <strong style="color:var(--blue)">3주</strong>로<br>더 이상 삭제할 수 없습니다.</p>
+    <button onclick="closeSampPopup('sampDelOverlay')" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-weight:700;cursor:pointer">확인</button>
+  </div>
+</div>
+
+<!-- 표본주 추가 확인 -->
+<div class="overlay" id="sampAddOverlay">
+  <div class="modal">
+    <div style="font-size:28px;text-align:center;margin-bottom:4px">⚠️</div>
+    <h3>표본주 추가</h3>
+    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px">적정 표본주수 <strong style="color:var(--blue)">3주</strong>를<br>이미 충족하고 있습니다.<br><span style="color:var(--red);font-weight:700">그래도 추가하시겠습니까?</span></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button onclick="closeSampPopup('sampAddOverlay')" style="height:44px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-weight:700;cursor:pointer">취소</button>
+      <button onclick="closeSampPopup('sampAddOverlay');doSampAdd()" style="height:44px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;cursor:pointer">추가</button>
+    </div>
+  </div>
+</div>
+
 <!-- 갤러리 저장용 캡처 템플릿 -->
 <div id="captureBox" style="position:fixed;left:-99999px;top:0;width:430px;background:#f3f4f6;padding:0;z-index:-1"></div>
 
@@ -533,6 +575,7 @@ function buildSampleRows(savedFall, savedVar){
     '<td><div class="samp-total-box" id="sampTotalBox">0</div></td></tr>'+
     '</tbody></table>';
   sumSamples();
+  syncSampUI();
 }
 function sumSamples(){
   var s=0; document.querySelectorAll('#sampRows .samp-fall').forEach(function(i){ s+=parseFloat((i.value||'').replace(/,/g,''))||0; });
@@ -540,6 +583,45 @@ function sumSamples(){
   return s;
 }
 function getSamples(){ var o={}; document.querySelectorAll('#sampRows .samp-fall').forEach(function(i){ o[i.dataset.idx]=i.value; }); return o; }
+
+/* ── 표본주 추가/삭제 ── (적정 3주 이하 삭제 불가) */
+var MINSAMP=3, MAXSAMP=30;
+function syncSampUI(){
+  var n=parseInt(num('sampleN'))||0;
+  var tag=document.getElementById('sampTag'); if(tag) tag.textContent='표본주수 '+n+'주';
+  var minus=document.getElementById('btnSampMinus');
+  if(minus){
+    if(n<=MINSAMP){ minus.style.borderColor='var(--border)'; minus.style.color='var(--hint)'; minus.style.cursor='not-allowed'; minus.style.opacity='0.4'; }
+    else { minus.style.borderColor='var(--red)'; minus.style.color='var(--red)'; minus.style.cursor='pointer'; minus.style.opacity='1'; }
+  }
+}
+function closeSampPopup(id){ var el=document.getElementById(id); if(el) el.classList.remove('show'); }
+function sampMinus(){
+  var n=parseInt(num('sampleN'))||0;
+  if(n<=MINSAMP){ document.getElementById('sampDelOverlay').classList.add('show'); return; }
+  document.getElementById('sampConfirmNum').textContent=n;
+  document.getElementById('sampConfirmOverlay').classList.add('show');
+}
+function doSampMinus(){
+  var n=parseInt(num('sampleN'))||0;
+  if(n<=MINSAMP) return;
+  document.getElementById('sampleN').value=n-1;
+  buildSampleRows();        /* 마지막 행 자동 제거(값 함께 삭제) */
+  liveUpdate(); saveState();
+}
+function sampPlus(){
+  var n=parseInt(num('sampleN'))||0;
+  if(n>=MAXSAMP){ showToast('표본주는 최대 '+MAXSAMP+'주까지 가능합니다'); return; }
+  if(n>=MINSAMP){ document.getElementById('sampAddOverlay').classList.add('show'); return; }
+  doSampAdd();
+}
+function doSampAdd(){
+  var n=parseInt(num('sampleN'))||0;
+  if(n>=MAXSAMP) return;
+  document.getElementById('sampleN').value=n+1;
+  buildSampleRows();        /* 빈 행 한 줄 추가 */
+  liveUpdate(); saveState();
+}
 
 /* 품목별 품종 목록 (목록에 없으면 '직접입력' 선택 후 입력) */
 var PUMJONG={
