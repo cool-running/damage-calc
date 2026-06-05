@@ -1083,7 +1083,7 @@ function saveToSharedHistory(imgDataUrl){
     var removed=[];
     /* 동일 농지번호의 기존 '일소' 기록만 덮어쓰기 (다른 작물 기록은 보존) */
     if(farmNo){ hist=hist.filter(function(r){ var dup=(r.src==='sunburn'&&r.farmNo===farmNo); if(dup) removed.push(String(r.id)); return !dup; }); }
-    hist.unshift({ id:id, src:'sunburn', savedAt:savedAt, crop:'일소', cropDetail:fruit+' 일소피해', farmNo:farmNo, pct:pct, category:'과수' });
+    hist.unshift({ id:id, src:'sunburn', savedAt:savedAt, crop:'일소', cropDetail:fruit+' 일소', farmNo:farmNo, pct:pct, category:'과수' });
     if(hist.length>200) hist=hist.slice(0,200);
     localStorage.setItem('save_history', JSON.stringify(hist));
     var cache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
