@@ -96,6 +96,9 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .header-icon{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .header h1{font-size:16px;font-weight:600}
 .header-sub{font-size:11px;opacity:0.75;margin-top:1px}
+.hdr-state{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,0.92);border:1px solid rgba(255,255,255,0.6);white-space:nowrap;transition:all .15s}
+.hdr-state.unlocked{color:#137a4d}
+.hdr-state.locked{color:#c0392b}
 
 .legend{display:flex;gap:12px;padding:8px 16px;background:var(--card);border-bottom:0.5px solid var(--border)}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
@@ -379,10 +382,11 @@ tbody td input.filled:active{
 <div class="header">
   <button class="back-btn" onclick="location.href='./index.html'">‹</button>
   <div class="header-icon">🧅</div>
-  <div>
+  <div style="flex:1">
     <h1>마늘 피해율계산기</h1>
     <div class="header-sub">밭작물 · 수확량 조사</div>
   </div>
+  <div class="hdr-state unlocked" id="hdrState">🔓 수정 중</div>
 </div>
 
 <div class="legend">
@@ -1318,21 +1322,28 @@ function setCalcMode(silent=false){
   document.querySelector('.content').classList.add('locked');
   document.getElementById('btn-calc').classList.add('active');
   document.getElementById('btn-edit').classList.remove('active');
+  setLockBadge(true);
   saveState();
   saveToHistory(); // 이전 기록에 저장
 }
-function setEditMode(){
+function setEditMode(silent){
   _isLocked = false;
   document.querySelector('.content').classList.remove('locked');
   document.getElementById('btn-edit').classList.add('active');
   document.getElementById('btn-calc').classList.remove('active');
+  setLockBadge(false);
+  if(!silent) vibrate([12]);
   saveState();
+}
+function setLockBadge(locked){
+  var hs=document.getElementById('hdrState');
+  if(hs){ hs.textContent=locked?'🔒 잠금':'🔓 수정 중'; hs.className='hdr-state '+(locked?'locked':'unlocked'); }
 }
 function lockInputs(){
   setCalcMode();
 }
 function unlockInputs(){
-  setEditMode();
+  setEditMode(true);
 }
 
 function showDeleteLimitModal(){
@@ -1740,6 +1751,7 @@ function loadState(){
       document.querySelector('.content')?.classList.add('locked');
       document.getElementById('btn-calc')?.classList.add('active');
       document.getElementById('btn-edit')?.classList.remove('active');
+      setLockBadge(true);
     }, 0);
     return true;
   }catch(e){ return false; }
