@@ -27,6 +27,9 @@ input,select,textarea{-webkit-user-select:text;user-select:text}
 .header-icon{width:30px;height:30px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px}
 .header h1{font-size:16px;font-weight:700}
 .header-sub{font-size:11px;opacity:0.78;margin-top:1px}
+.hdr-state{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,0.92);border:1px solid rgba(255,255,255,0.6);white-space:nowrap;transition:all .15s}
+.hdr-state.unlocked{color:#137a4d}
+.hdr-state.locked{color:#c0392b}
 
 .legend{display:flex;gap:12px;padding:8px 16px;background:var(--card);border-bottom:0.5px solid var(--border)}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
@@ -210,7 +213,8 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
 <div class="header">
   <button class="back-btn" onclick="location.href='./index.html'">‹</button>
   <div class="header-icon">🌶️</div>
-  <div><h1>고추 피해율계산기</h1><div class="header-sub">밭작물 · 생산비보장 · 누적피해율 방식</div></div>
+  <div style="flex:1"><h1>고추 피해율계산기</h1><div class="header-sub">밭작물 · 생산비보장 · 누적피해율 방식</div></div>
+  <div class="hdr-state unlocked" id="hdrState">🔓 수정 중</div>
 </div>
 
 <div class="legend">
@@ -941,13 +945,16 @@ function setMode(m){
       $('need-overlay').style.display='flex';
       return; // 계산모드 진입 막음
     }
-    vibrate([35]);
+    vibrate([30,40,60]);
+  } else {
+    vibrate([12]);
   }
   mode=m;
   $('btn-edit').classList.toggle('active',m==='edit');
   $('btn-calc').classList.toggle('active',m==='calc');
   $('result').classList.toggle('pending',m!=='calc');
   document.querySelector('.content').classList.toggle('locked',m==='calc');
+  setLockBadge(m==='calc');
   if(m==='calc') saveHistory();
   calc();
 }
@@ -998,6 +1005,18 @@ function openHistoryModal(){
   $('history-overlay').classList.add('show');
 }
 function closeHistoryModal(){$('history-overlay').classList.remove('show');}
+function setLockBadge(locked){
+  var hs=document.getElementById('hdrState');
+  if(hs){ hs.textContent=locked?'🔒 잠금':'🔓 수정 중'; hs.className='hdr-state '+(locked?'locked':'unlocked'); }
+}
+function showToast(m){
+  var t=document.createElement('div');
+  t.textContent=m;
+  t.style.cssText='position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  document.body.appendChild(t);
+  requestAnimationFrame(function(){ t.style.opacity='0.95'; });
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },250); },2000);
+}
 function loadHistoryRecord(idx){
   let recs=[];try{recs=JSON.parse(localStorage.getItem(HKEY)||'[]');}catch(e){}
   const r=recs[idx];if(!r)return;
@@ -1005,6 +1024,7 @@ function loadHistoryRecord(idx){
   delete st.pct;delete st.saved_at;
   closeHistoryModal();
   persist();loadForm();
+  showToast('불러왔습니다');
 }
 function deleteHistoryRecord(idx){
   let recs=[];try{recs=JSON.parse(localStorage.getItem(HKEY)||'[]');}catch(e){}
