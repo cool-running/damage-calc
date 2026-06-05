@@ -1072,8 +1072,8 @@ function saveImage(){
 /* 메인 index.html 저장목록(save_history / save_img_cache) 연동 */
 function saveToSharedHistory(imgDataUrl){
   if(!LAST) return;
-  var fruit=document.getElementById('crop').value||'사과';
-  var farmNo=document.getElementById('farmNo').value||'';
+  var farmFull=document.getElementById('farmNo').value||'';
+  var farm4=(farmFull.replace(/[^0-9]/g,'').slice(-4))||farmFull;   /* 농지번호 뒤 4자리 */
   var pct=(LAST.afterCnt>0?(LAST.admitCnt/LAST.afterCnt*100):0).toFixed(2)+'%';
   var n=new Date(), p=function(x){return ('0'+x).slice(-2);};
   var savedAt=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+'T'+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
@@ -1082,8 +1082,8 @@ function saveToSharedHistory(imgDataUrl){
     var hist=JSON.parse(localStorage.getItem('save_history')||'[]');
     var removed=[];
     /* 동일 농지번호의 기존 '일소' 기록만 덮어쓰기 (다른 작물 기록은 보존) */
-    if(farmNo){ hist=hist.filter(function(r){ var dup=(r.src==='sunburn'&&r.farmNo===farmNo); if(dup) removed.push(String(r.id)); return !dup; }); }
-    hist.unshift({ id:id, src:'sunburn', savedAt:savedAt, crop:'일소', cropDetail:fruit+' 일소', farmNo:farmNo, pct:pct, category:'과수' });
+    if(farmFull){ hist=hist.filter(function(r){ var dup=(r.src==='sunburn' && (r.fullFarmNo||r.farmNo)===farmFull); if(dup) removed.push(String(r.id)); return !dup; }); }
+    hist.unshift({ id:id, src:'sunburn', savedAt:savedAt, crop:'일소', cropDetail:'일소', farmNo:farm4, fullFarmNo:farmFull, pct:pct, category:'과수' });
     if(hist.length>200) hist=hist.slice(0,200);
     localStorage.setItem('save_history', JSON.stringify(hist));
     var cache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
