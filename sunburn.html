@@ -136,8 +136,14 @@ body.big-text input.auto{height:52px !important;font-size:18px !important;font-w
 .samp-table .th-supj-row{display:flex;gap:5px}
 .samp-table .th-su{flex:0 0 62px;text-align:center}
 .samp-table .th-pj{flex:1;text-align:center}
-/* 셀렉트 선택값 가운데정렬 — 네이티브 렌더링(appearance:auto)은 가운데정렬을 무시하므로 커스텀 화살표 사용 */
-#method,#product,#prevAcc,#disaster,
+/* 메인 셀렉트: 화살표 제거 + 중앙정렬 (고추 방식) */
+#method,#product,#prevAcc,#disaster{
+  -webkit-appearance:none !important;appearance:none !important;
+  text-align:center;text-align-last:center;
+  background-image:none;
+  padding-left:6px;padding-right:6px;
+}
+/* 표본 표 셀렉트는 기존 화살표 유지 */
 .samp-table select.samp-sukgi,.samp-table select.samp-pumjong-sel{
   -webkit-appearance:none !important;appearance:none !important;
   text-align:center;text-align-last:center;
@@ -145,9 +151,9 @@ body.big-text input.auto{height:52px !important;font-size:18px !important;font-w
   background-repeat:no-repeat;background-position:right 6px center;padding-right:18px;padding-left:18px;
 }
 .samp-table select.samp-sukgi{padding-right:14px;padding-left:6px}
-/* 가입상품: '적과전종합Ⅱ'(7자)가 3열 좁은 칸에서 잘리지 않게 폰트·패딩 축소 */
-#product{font-size:12px;letter-spacing:-0.03em;padding-left:8px;padding-right:14px}
-body.big-text #product{font-size:14px !important;letter-spacing:-0.04em;padding-left:6px;padding-right:13px}
+/* 가입상품: '적과전종합Ⅱ'(7자) 잘림 방지 (화살표 제거로 여유 확보, 폰트만 소폭 축소·중앙) */
+#product{font-size:13px;letter-spacing:-0.02em;padding-left:6px;padding-right:6px}
+body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-left:4px;padding-right:4px}
 
 .grade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .grade-cell label{font-size:10.5px;text-align:center;display:block;margin-bottom:3px;color:var(--sub);font-weight:700}
