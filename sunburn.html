@@ -269,8 +269,9 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
       </div>
       <div class="field">
         <label>조사방식</label>
-        <select class="inp filled" id="method" onchange="mark(this);saveState()">
+        <select class="inp filled" id="method" onchange="mark(this);applyMethod();saveState()">
           <option value="표본조사" selected>표본조사</option>
+          <option value="전수조사">전수조사</option>
         </select>
       </div>
     </div>
@@ -388,17 +389,24 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="hint" style="color:#374151;font-weight:700;font-size:11.5px;word-break:keep-all;line-height:1.5;display:flex;gap:4px;align-items:flex-start"><span style="flex:0 0 auto">※</span><span>조사대상주수는 자동산정되나 수정 가능<br>수확완료 · 수확불능 · 고사 · 미보상주수는 금차+과거 <b style="color:#c0392b">누계</b>로 입력</span></div>
   </div>
 
-  <!-- 낙과 표본조사 -->
+  <!-- 낙과 표본/전수 조사 -->
   <div class="section">
     <div class="sec-title" style="justify-content:space-between">
-      <span style="display:flex;align-items:center;gap:6px">🍎 일소(낙과) 표본조사 <span class="tag" id="sampTag">표본주수 3주</span></span>
-      <span style="display:flex;align-items:center;gap:6px">
+      <span style="display:flex;align-items:center;gap:6px"><span id="sampSecTitle">🍎 일소(낙과) 표본조사</span> <span class="tag" id="sampTag">표본주수 3주</span></span>
+      <span style="display:flex;align-items:center;gap:6px" id="sampBtns">
         <button id="btnSampMinus" onclick="sampMinus()" style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:6px;background:transparent;font-size:16px;color:var(--hint);cursor:not-allowed;opacity:0.4;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">－</button>
         <button id="btnSampPlus" onclick="sampPlus()" style="width:28px;height:28px;border:1.5px solid var(--binp);border-radius:6px;background:transparent;font-size:16px;color:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">＋</button>
       </span>
     </div>
     <input type="hidden" id="sampleN" value="3">
     <div id="sampRows"></div>
+    <div id="censusMode" style="display:none">
+      <div class="field">
+        <label>전체 낙과수 <span class="unit">(개)</span></label>
+        <input class="inp" id="totalFall" type="text" inputmode="numeric" oninput="onComma(this);liveUpdate();saveState()">
+      </div>
+      <div class="hint" style="color:#374151;font-weight:700;font-size:11.5px;word-break:keep-all;line-height:1.5;display:flex;gap:4px;align-items:flex-start;margin-top:6px"><span style="flex:0 0 auto">※</span><span>전수조사는 농지 내 <b>전체 낙과수</b>를 직접 입력합니다. (표본주수·조사대상주수 곱셈 없이 입력값이 곧 낙과피해과실수)</span></div>
+    </div>
   </div>
 
   <!-- 낙과 피해구성조사 -->
@@ -523,7 +531,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 
 <script>
 var KEY_STATE='sunburn_state', KEY_HIST='sunburn_history', KEY_BIG='sunburn_bigtext';
-var FIELDS=['crop','farmNo','surveyDate','method','afterCnt','avgCnt','product','prevAcc','disaster','prevManual','joinTree','realTree','surveyTarget','targetOv','harvestDone','harvestImposs','deadTree','deadNC','aliveNC','sampleN','g0','g50','g80','g100'];
+var FIELDS=['crop','farmNo','surveyDate','method','afterCnt','avgCnt','product','prevAcc','disaster','prevManual','joinTree','realTree','surveyTarget','targetOv','harvestDone','harvestImposs','deadTree','deadNC','aliveNC','sampleN','totalFall','g0','g50','g80','g100'];
 var LAST=null;
 
 function num(id){ var v=(document.getElementById(id).value||'').toString().replace(/,/g,''); var n=parseFloat(v); return isNaN(n)?0:n; }
@@ -554,6 +562,18 @@ function revertTarget(){
   refreshTarget();
   if(typeof liveUpdate==='function' && !document.getElementById('content').classList.contains('locked')) liveUpdate();
   saveState();
+}
+
+/* ── 조사방식: 표본조사 / 전수조사 토글 ── */
+function isCensus(){ var e=document.getElementById('method'); return e && e.value==='전수조사'; }
+function applyMethod(){
+  var census=isCensus();
+  var title=document.getElementById('sampSecTitle'); if(title) title.textContent= census ? '🍎 일소(낙과) 전수조사' : '🍎 일소(낙과) 표본조사';
+  var tag=document.getElementById('sampTag'); if(tag) tag.style.display = census ? 'none' : '';
+  var btns=document.getElementById('sampBtns'); if(btns) btns.style.display = census ? 'none' : 'flex';
+  var rows=document.getElementById('sampRows'); if(rows) rows.style.display = census ? 'none' : '';
+  var cm=document.getElementById('censusMode'); if(cm) cm.style.display = census ? 'block' : 'none';
+  if(typeof liveUpdate==='function' && !document.getElementById('content').classList.contains('locked')) liveUpdate();
 }
 function fmt(n){ return (Math.round(n)).toLocaleString('en-US'); }
 function fmt1(n){ return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:4}); }
@@ -775,10 +795,12 @@ function liveUpdate(){
   var dmgRatio=gradeSum>0?(g50*0.5+g80*0.8+g100*1)/gradeSum*100:0;
   var prevRate=calcPrevRate().rate;
   var target=getSurveyTarget();
+  var census=isCensus();
   var fd=document.getElementById('autoFallDmg'), ar=document.getElementById('autoAdmitRate'), ac=document.getElementById('autoAdmitCnt');
   var box=document.getElementById('resultBox'), mR=document.getElementById('mRate'), rH=document.getElementById('rbHero');
-  if(afterCnt>0 && realTree>0 && sampleN>0 && target>0){
-    var fallDamage=Math.round((fallSum/sampleN)*target);
+  var ready = census ? (afterCnt>0 && num('totalFall')>0) : (afterCnt>0 && realTree>0 && sampleN>0 && target>0);
+  if(ready){
+    var fallDamage = census ? num('totalFall') : Math.round((fallSum/sampleN)*target);
     var covered=fallDamage>afterCnt*0.06;
     var admitRate=Math.max(0,dmgRatio-prevRate);
     var admitCnt=covered?Math.round(fallDamage*admitRate/100):0;
@@ -814,6 +836,7 @@ function restoreState(){
   syncDate();
   document.querySelectorAll('.inp').forEach(mark);
   refreshTarget();
+  applyMethod();
   updateGrade();
   refreshPrevUI();
   liveUpdate();
@@ -846,6 +869,7 @@ function doReset(){
   refreshPrevUI();
   document.querySelectorAll('.inp').forEach(mark);
   refreshTarget();
+  applyMethod();
   document.getElementById('autoFallDmg').value='-';
   document.getElementById('autoAdmitRate').value='-';
   document.getElementById('autoAdmitCnt').value='-';
@@ -922,16 +946,24 @@ function calc(silent){
   var sampleN=num('sampleN'), fallSum=sumSamples();
   var g0=num('g0'),g50=num('g50'),g80=num('g80'),g100=num('g100');
 
+  var census=isCensus();
   if(afterCnt<=0){ if(!silent) showToast('적과후착과수를 입력하세요'); return; }
   if(realTree<=0){ if(!silent) showToast('실제결과주수를 입력하세요'); return; }
-  if(sampleN<=0){ if(!silent) showToast('표본주수를 입력하세요'); return; }
+  if(!census && sampleN<=0){ if(!silent) showToast('표본주수를 입력하세요'); return; }
 
   var target=getSurveyTarget();
   if(target<=0){ if(!silent) showToast('조사대상주수가 0 이하입니다'); return; }
 
   var perTreeCnt=afterCnt/target;
-  var perTreeFall=fallSum/sampleN;
-  var fallDamage=Math.round(perTreeFall*target);
+  var perTreeFall, fallDamage;
+  if(census){
+    fallSum=num('totalFall'); perTreeFall=0;
+    fallDamage=num('totalFall');
+    if(fallDamage<=0){ if(!silent) showToast('전체 낙과수를 입력하세요'); return; }
+  }else{
+    perTreeFall=fallSum/sampleN;
+    fallDamage=Math.round(perTreeFall*target);
+  }
   var gradeSum=g0+g50+g80+g100;
   var dmgRatio=gradeSum>0?(g50*0.5+g80*0.8+g100*1)/gradeSum*100:0;
   var sixPct=afterCnt*0.06;
@@ -940,7 +972,7 @@ function calc(silent){
   var admitCnt=covered?Math.round(fallDamage*admitRate/100):0;
 
   LAST={ afterCnt:afterCnt, joinTree:joinTree, realTree:realTree, target:target, perTreeCnt:perTreeCnt,
-    sampleN:sampleN, fallSum:fallSum, perTreeFall:perTreeFall, fallDamage:fallDamage, dmgRatio:dmgRatio,
+    census:census, sampleN:sampleN, fallSum:fallSum, perTreeFall:perTreeFall, fallDamage:fallDamage, dmgRatio:dmgRatio,
     sixPct:sixPct, covered:covered, prevRate:prevRate, admitRate:admitRate, admitCnt:admitCnt };
 
   var box=document.getElementById('resultBox');
@@ -1017,10 +1049,19 @@ function buildCapture(){
   var order=[], grp={};
   varis.forEach(function(name,i){ var key=name||'미입력'; if(!(key in grp)){ grp[key]={fall:0,count:0}; order.push(key); } grp[key].fall+=(samps[i]||0); grp[key].count+=1; });
   var multi=order.length>1;
+  var census=L.census;
 
-  // 헤더: 조사대상주수 / 표본주수
+  // 헤더: 조사대상주수 / 표본주수(or 전수)
   function headBox(k,v){ return '<div style="flex:1;background:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#555">'+k+'</span><span style="font-size:15px;font-weight:900;color:#185FA5">'+v+'</span></div>'; }
-  var headLine='<div style="display:flex;gap:10px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('표본주수',fmt(L.sampleN)+' 주')+'</div>';
+  var headLine = census
+    ? '<div style="display:flex;gap:10px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('전체 낙과수',fmt(L.fallDamage)+' 개')+'</div>'
+    : '<div style="display:flex;gap:10px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('표본주수',fmt(L.sampleN)+' 주')+'</div>';
+
+  // 전수조사 카드 (census 전용)
+  var cCensus=card('전수조사',
+    tbl('<colgroup><col style="width:40%"><col style="width:30%"><col style="width:30%"></colgroup>'+
+      '<thead><tr><th style="'+TH+'">조사대상주수</th><th style="'+TH+'">전체 낙과수</th><th style="'+THl+'">낙과피해과실수</th></tr></thead>'+
+      '<tbody><tr><td style="'+TG+'">'+fmt(L.target)+' 주</td><td style="'+TG+'">'+fmt(L.fallDamage)+' 개</td><td style="'+TGl+'">'+fmt(L.fallDamage)+' 개</td></tr></tbody>'));
 
   // 1) 표본조사
   var t1='';
@@ -1079,7 +1120,7 @@ function buildCapture(){
         '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">'+
           '<span style="font-size:14px;font-weight:800;color:#fff">조사일자 '+date+'</span>'+
           '<span style="font-size:14px;font-weight:800;color:#fff">농지번호 '+farmNo+'</span></div></div>'+
-      '<div style="display:flex;flex-direction:column;gap:12px">'+headLine+c1+c2+c3+c4+foot+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:12px">'+headLine+(census?cCensus:(c1+c2))+c3+c4+foot+'</div>'+
     '</div></div>';
 }
 function saveImage(){
@@ -1142,6 +1183,7 @@ function saveToSharedHistory(imgDataUrl){
     document.querySelectorAll('.inp').forEach(mark);
   }
   refreshTarget();
+  applyMethod();
   /* 조사일자는 항상 오늘 날짜로 (마늘 참고) */
   document.getElementById('surveyDate').value=todayStr();
   syncDate();
