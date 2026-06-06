@@ -789,15 +789,22 @@ function addSample(){
   samples.push({len:'',wid:'',w1:'',w2:'',w3:'',totalQty:'',q1:'',q2:'',q3:''});
   renderSamples(); saveState();
 }
+function getSurveyArea(){
+  const actArea  = toNum(document.getElementById('act_area'));
+  const deadArea = parseFloat(document.getElementById('dead_area').value)||0;
+  const otherArea= parseFloat(document.getElementById('other_area').value)||0;
+  const harvArea = toNum(document.getElementById('harv_area'));
+  return Math.max(0, actArea-deadArea-otherArea-harvArea);
+}
 function removeSample(){
-  const needed=getProper(toNum(document.getElementById('act_area')));
+  const needed=getProper(getSurveyArea());
   if(samples.length<=needed){ document.getElementById('delete-limit-overlay').classList.add('show'); return; }
   samples.pop(); renderSamples(); calcTotals(); saveState();
 }
 
 // ── 면적 변경 ─────────────────────────────────────────────────
 function onActAreaChange(){
-  const needed=getProper(toNum(document.getElementById('act_area')));
+  const needed=getProper(getSurveyArea());
   while(samples.length<needed) samples.push({len:'',wid:'',w1:'',w2:'',w3:'',totalQty:'',q1:'',q2:'',q3:''});
   renderSamples(); calcAll(); saveState();
 }
