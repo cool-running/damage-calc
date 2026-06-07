@@ -102,6 +102,8 @@ tbody td input.mobile-focus,tbody td input:focus{
   background:#dceeff!important;color:#185FA5!important;
 }
 .reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
+.qty-reset-btn{flex-shrink:0;height:28px;padding:0 10px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;-webkit-appearance:none}
+.qty-reset-btn:active{background:var(--red);color:#fff}
 .bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--green2);border-radius:var(--rs);color:var(--green2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s;-webkit-appearance:none}
 .bigtext-btn.on{background:var(--green2);color:#fff;box-shadow:0 2px 8px rgba(91,126,63,0.35)}
 
@@ -376,9 +378,12 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 
           <!-- 수량입력 패널 -->
           <div id="tab-panel-qty" style="min-width:100%;padding:14px;box-sizing:border-box">
-            <div style="font-size:11px;color:var(--sub);margin-bottom:8px;line-height:1.6">
-              전체수량 = 구간 내 총 개수 / 수확수량 = 차수별 수확 개수<br>
-              <span style="color:var(--hint);font-size:10px">1·2·3차 수확 합계가 전체수량에 도달하면 조사 완료</span>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+              <div style="font-size:11px;color:var(--sub);line-height:1.6">
+                전체수량 = 구간 내 총 개수 / 수확수량 = 차수별 수확 개수<br>
+                <span style="color:var(--hint);font-size:10px">1·2·3차 수확 합계가 전체수량에 도달하면 조사 완료</span>
+              </div>
+              <button type="button" class="qty-reset-btn" onclick="openQtyResetModal()">↺ 수량 초기화</button>
             </div>
             <table style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed">
               <colgroup>
@@ -469,6 +474,18 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     <div class="modal-btn-row">
       <button class="modal-cancel" onclick="document.getElementById('reset-overlay').classList.remove('show')">취소</button>
       <button class="modal-ok" style="flex:1;height:46px" onclick="document.getElementById('reset-overlay').classList.remove('show');resetAll()">초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- 팝업: 수량 초기화 확인 -->
+<div class="overlay" id="qty-reset-overlay">
+  <div class="modal">
+    <div style="font-size:18px;font-weight:800;color:#333;text-align:center;margin-bottom:10px">수량 초기화</div>
+    <div style="font-size:14px;line-height:1.65;color:#666;text-align:center;margin-bottom:20px">전체수량·1·2·3차 수량을<br>모두 초기화할까요?<br><span style="font-size:12px;color:var(--hint)">면적·중량 등 다른 값은 그대로 유지돼요.</span></div>
+    <div class="modal-btn-row">
+      <button class="modal-cancel" onclick="document.getElementById('qty-reset-overlay').classList.remove('show')">취소</button>
+      <button class="modal-ok" style="flex:1;height:46px" onclick="document.getElementById('qty-reset-overlay').classList.remove('show');resetQty()">초기화</button>
     </div>
   </div>
 </div>
@@ -782,6 +799,21 @@ function updateQtyRemain(i){
     else                html=`<span class="qty-remain qty-left">${remain}개</span>`;
   }
   row.cells[5].innerHTML=html||'-';
+}
+
+// ── 수량 초기화 (전체수량·1·2·3차만 비움) ──────────────────────
+function openQtyResetModal(){
+  if(_isLocked){ showToast('잠금 상태에서는 초기화할 수 없어요'); return; }
+  const hasQty = samples.some(s=>s.totalQty||s.q1||s.q2||s.q3);
+  if(!hasQty){ showToast('초기화할 수량이 없어요'); return; }
+  document.getElementById('qty-reset-overlay').classList.add('show');
+}
+function resetQty(){
+  samples.forEach(s=>{ s.totalQty=''; s.q1=''; s.q2=''; s.q3=''; });
+  renderQty();
+  saveState();
+  try{ if(navigator.vibrate) navigator.vibrate([12]); }catch(e){}
+  showToast('수량을 초기화했어요');
 }
 
 // ── 추가/삭제 ────────────────────────────────────────────────
