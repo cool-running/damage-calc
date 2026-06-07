@@ -87,6 +87,9 @@ input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shado
 input.inp.filled{background:#e8faf3;border-color:var(--green);color:#0d5c35}
 select.inp.filled{background:#e8faf3;border-color:var(--green);color:#0d5c35;font-weight:700}
 input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.18);background:#dceeff;color:var(--blue)}
+/* 조사대상주수 직접수정(오버라이드) — '수정됨' 라벨과 같은 amber 톤 */
+input.inp.target-edited{background:#fff4e8;border-color:var(--amber);color:#9a3412}
+input.inp.target-edited:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(194,65,12,0.18);background:#ffe9d6;color:#9a3412}
 input.inp::placeholder{color:var(--hint);font-weight:500;opacity:1}
 input.inp::-webkit-input-placeholder{color:var(--hint);font-weight:500}
 input.inp:-ms-input-placeholder{color:var(--hint);font-weight:500}
@@ -551,16 +554,23 @@ function autoTarget(){ return num('realTree')-num('harvestDone')-num('harvestImp
 function isTargetOv(){ var e=document.getElementById('targetOv'); return e&&e.value==='1'; }
 function getSurveyTarget(){ return isTargetOv()? num('surveyTarget') : autoTarget(); }
 function showTargetBadge(on){ var b=document.getElementById('targetBadge'); if(b) b.style.display=on?'inline-block':'none'; }
+/* 오버라이드 상태에 따라 칸 색 전환: 수정=amber, 자동=일반 filled */
+function styleTarget(){
+  var el=document.getElementById('surveyTarget'); if(!el) return;
+  if(isTargetOv()){ el.classList.add('target-edited'); el.classList.remove('filled'); }
+  else { el.classList.remove('target-edited'); mark(el); }
+}
 /* 실제결과·공제칸이 바뀔 때: 오버라이드면 값 유지, 아니면 자동값 재반영 */
 function refreshTarget(){
   var el=document.getElementById('surveyTarget'); if(!el) return;
-  if(!isTargetOv()){ var a=autoTarget(); el.value = (num('realTree')>0)? String(a) : ''; mark(el); }
+  if(!isTargetOv()){ var a=autoTarget(); el.value = (num('realTree')>0)? String(a) : ''; }
   showTargetBadge(isTargetOv());
+  styleTarget();
 }
 /* 사용자가 조사대상주수 칸을 직접 입력 → 오버라이드 ON */
 function onTargetInput(el){
   document.getElementById('targetOv').value='1';
-  mark(el); showTargetBadge(true);
+  showTargetBadge(true); styleTarget();
   if(typeof liveUpdate==='function' && !document.getElementById('content').classList.contains('locked')) liveUpdate();
   saveState();
 }
