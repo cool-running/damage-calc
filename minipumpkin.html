@@ -1260,7 +1260,7 @@ function fillCaptureTemplate(){
 
 async function saveImage(){
   if(document.getElementById('result-section').classList.contains('pending')){
-    alert('계산 결과가 없어요. 계산하기를 먼저 눌러주세요.'); return;
+    showToast('계산 결과가 없어요. 계산하기를 먼저 눌러주세요.'); return;
   }
   try{
     fillCaptureTemplate();
@@ -1269,7 +1269,6 @@ async function saveImage(){
     const _surveyDate=document.getElementById('survey_date')?.value||'';
     const _pct=document.getElementById('result-pct')?.textContent||'-';
     const _hist=JSON.parse(localStorage.getItem('save_history')||'[]');
-    const _imgCache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
     // 농지번호 정규화 (숫자만 추출해서 비교)
     const _normFarm = n => (n||'').replace(/[^0-9]/g,'');
     const _ei=_farmNo?_hist.findIndex(r=>r.crop==='단호박'&&_normFarm(r.farmNo)===_normFarm(_farmNo)):-1;
@@ -1277,17 +1276,9 @@ async function saveImage(){
       const _existing=_hist[_ei];
       const _isChanged=_existing.pct!==_pct;
       const _msg=_isChanged
-        ? `농지번호 ${_farmNo}의 기존 기록이 있습니다.
-피해율: ${_existing.pct} → ${_pct}
-
-덮어쓰시겠습니까?`
-        : `농지번호 ${_farmNo}의 기록이 이미 있습니다 (피해율: ${_existing.pct}).
-
-덮어쓰시겠습니까?`;
+        ? `농지번호 ${_farmNo}의 기존 기록이 있습니다.\n피해율: ${_existing.pct} → ${_pct}\n\n덮어쓰시겠습니까?`
+        : `농지번호 ${_farmNo}의 기록이 이미 있습니다 (피해율: ${_existing.pct}).\n\n덮어쓰시겠습니까?`;
       if(!confirm(_msg)) return;
-      // 기존 이미지 캐시도 삭제
-      const _ici=_imgCache.findIndex(c=>String(c.id)===String(_existing.id));
-      if(_ici>-1) _imgCache.splice(_ici,1);
       _hist.splice(_ei,1);
     }
     // 저장
@@ -1302,18 +1293,22 @@ async function saveImage(){
       filename:`단호박피해율_${stamp}.png`,
       savedAt:(()=>{const d=new Date();return fmt(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
     _hist.unshift(_rec); if(_hist.length>200) _hist.splice(200);
-    localStorage.setItem('save_history',JSON.stringify(_hist));
-    // 미리보기 이미지 캐시
-    _imgCache.unshift({id:_id, img:canvas.toDataURL('image/jpeg',0.7)});
-    if(_imgCache.length>50) _imgCache.splice(50);
-    localStorage.setItem('save_img_cache',JSON.stringify(_imgCache));
+    try{
+      localStorage.setItem('save_history',JSON.stringify(_hist));
+    }catch(e){
+      // 용량 초과 시 오래된 기록 절반 정리 후 재시도
+      _hist.splice(Math.floor(_hist.length/2));
+      try{localStorage.setItem('save_history',JSON.stringify(_hist));}catch(e2){}
+    }
     document.getElementById('save-overlay').classList.add('show');
-  }catch(e){ alert('저장 중 오류가 발생했어요.'); }
+  }catch(e){ showToast('저장 중 오류가 발생했어요'); }
 }
 
 
 
 // ── 초기 실행 ────────────────────────────────────────────────
+// save_img_cache는 사용되지 않는 데이터 — 누적된 용량 정리
+try{ localStorage.removeItem('save_img_cache'); }catch(e){}
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
   caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));
