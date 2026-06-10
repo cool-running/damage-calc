@@ -495,6 +495,19 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
   </div>
 </div>
 
+<!-- 팝업: 덮어쓰기 확인 -->
+<div class="overlay" id="overwrite-overlay">
+  <div class="modal">
+    <div style="font-size:30px;text-align:center;margin-bottom:8px">📝</div>
+    <div style="font-size:18px;font-weight:800;color:#333;text-align:center;margin-bottom:10px">이미 저장된 기록이 있어요</div>
+    <div id="overwrite-msg" style="font-size:14px;line-height:1.7;color:#666;text-align:center;margin-bottom:20px"></div>
+    <div class="modal-btn-row">
+      <button class="modal-cancel" id="overwrite-cancel">취소</button>
+      <button class="modal-ok" style="flex:1;height:46px" id="overwrite-ok">덮어쓰기</button>
+    </div>
+  </div>
+</div>
+
 <!-- 캡처 템플릿 -->
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:800px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="min-height:800px;background:linear-gradient(180deg,#2d5016 0%,#7FAD52 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
@@ -1260,6 +1273,19 @@ function fillCaptureTemplate(){
   document.getElementById('cap-unins').textContent     = capULoss.toLocaleString()+' kg';
 }
 
+function customConfirm(html){
+  return new Promise(resolve=>{
+    const ov=document.getElementById('overwrite-overlay');
+    document.getElementById('overwrite-msg').innerHTML=html;
+    ov.classList.add('show');
+    const ok=document.getElementById('overwrite-ok');
+    const cancel=document.getElementById('overwrite-cancel');
+    const done=(v)=>{ ov.classList.remove('show'); ok.onclick=null; cancel.onclick=null; resolve(v); };
+    ok.onclick=()=>done(true);
+    cancel.onclick=()=>done(false);
+  });
+}
+
 async function saveImage(){
   if(document.getElementById('result-section').classList.contains('pending')){
     showToast('계산 결과가 없어요. 계산하기를 먼저 눌러주세요.'); return;
@@ -1277,10 +1303,11 @@ async function saveImage(){
     if(_ei>-1){
       const _existing=_hist[_ei];
       const _isChanged=_existing.pct!==_pct;
+      const _esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
       const _msg=_isChanged
-        ? `농지번호 ${_farmNo}의 기존 기록이 있습니다.\n피해율: ${_existing.pct} → ${_pct}\n\n덮어쓰시겠습니까?`
-        : `농지번호 ${_farmNo}의 기록이 이미 있습니다 (피해율: ${_existing.pct}).\n\n덮어쓰시겠습니까?`;
-      if(!confirm(_msg)) return;
+        ? `농지번호 <b style="color:var(--green)">${_esc(_farmNo)}</b>의 기존 기록이 있습니다.<br>피해율 <b>${_esc(_existing.pct)}</b> → <b style="color:var(--red)">${_esc(_pct)}</b><br><br>덮어쓰시겠습니까?`
+        : `농지번호 <b style="color:var(--green)">${_esc(_farmNo)}</b>의 기록이 이미 있습니다.<br>(피해율 <b>${_esc(_existing.pct)}</b>)<br><br>덮어쓰시겠습니까?`;
+      if(!(await customConfirm(_msg))) return;
       _hist.splice(_ei,1);
     }
     // 저장
