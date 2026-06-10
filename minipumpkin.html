@@ -1191,8 +1191,10 @@ function fillCaptureTemplate(){
     </tr>`;
   });
   const sumAll=sumW1+sumW2+sumW3;
+  const sumArea=Math.round(tA*100)/100;
   rows+=`<tr style="border-top:2px solid #5B7E3F;background:#fef3e8">
-    <td colspan="3" style="padding:4px 2px;text-align:center;font-weight:700;font-size:10px;border-right:1px solid #e0e0e0;color:#5B7E3F">합계</td>
+    <td style="padding:4px 2px;text-align:center;font-weight:700;font-size:10px;border-right:1px solid #e0e0e0;color:#5B7E3F">합계</td>
+    <td colspan="2" style="padding:4px 2px;text-align:center;font-weight:700;font-size:10px;border-right:1px solid #e0e0e0;color:#5B7E3F">${sumArea>0?sumArea.toLocaleString()+' ㎡':'-'}</td>
     <td style="padding:4px 2px;border-right:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px;color:#5B7E3F">${sumW1>0?sumW1.toLocaleString():'-'}</td>
     <td style="padding:4px 2px;border-right:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px;color:#5B7E3F">${sumW2>0?sumW2.toLocaleString():'-'}</td>
     <td style="padding:4px 2px;border-right:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px;color:#5B7E3F">${sumW3>0?sumW3.toLocaleString():'-'}</td>
