@@ -259,9 +259,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
   <div class="header-icon">🍎</div>
   <div style="flex:1">
     <h1>포복자 착과수 계산기</h1>
-    <div class="header-sub">포도 · 복숭아 · 자두 <span style="opacity:0.7">v2</span></div>
+    <div class="header-sub">포도 · 복숭아 · 자두 <span style="opacity:0.7">v3</span></div>
   </div>
-  <div class="hdr-state unlocked" id="hdrState">🔓 수정 중</div>
+  <div class="hdr-state unlocked" id="hdrState"><span style="font-size:16px;line-height:1">🔓</span><span>수정 중</span></div>
 </div>
 
 <div class="legend">
@@ -2347,7 +2347,7 @@ function lockInputs(){ setCalcMode(); }
 function unlockInputs(){ setEditMode(); }
 function setLockBadge(locked){
   var hs=document.getElementById('hdrState');
-  if(hs){ hs.textContent=locked?'🔒 잠금':'🔓 수정 중'; hs.className='hdr-state '+(locked?'locked':'unlocked'); }
+  if(hs){ hs.innerHTML=locked?'<span style="font-size:16px;line-height:1">🔒</span><span>잠금</span>':'<span style="font-size:16px;line-height:1">🔓</span><span>수정 중</span>'; hs.className='hdr-state '+(locked?'locked':'unlocked'); }
 }
 
 document.addEventListener('DOMContentLoaded',function(){ try{ if(sessionStorage.getItem('show_load_toast')==='1'){ sessionStorage.removeItem('show_load_toast'); setTimeout(function(){ if(typeof showToast==='function') showToast('불러왔습니다'); },300); } }catch(e){} });
