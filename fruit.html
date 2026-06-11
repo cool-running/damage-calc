@@ -964,13 +964,21 @@ function calcTreeResult(silent=false) {
 
 function setEditModeFromTree() {
   vibrate([12]);
-  // 잠금 해제
+  // 전체 잠금 해제 + 헤더 배지 갱신
+  _isLocked = false;
+  document.querySelectorAll('.content').forEach(el => el.classList.remove('locked'));
+  document.getElementById('mode-section-0')?.classList.remove('locked');
+  document.getElementById('btn-edit')?.classList.add('active');
+  document.getElementById('btn-calc')?.classList.remove('active');
+  setLockBadge(false);
+  // 나무조사 입력 잠금 해제
   const rows1 = document.getElementById('interval-rows-1');
   const icntBtns = document.querySelectorAll('[id^="icnt-"]');
   if(rows1) rows1.style.pointerEvents = '';
   icntBtns.forEach(b => b.style.pointerEvents = '');
   window._treeCalcDone = false;
   showToast('수정 가능합니다');
+  saveState();
 }
 // 천단위 구분 입력
 function toNum(el){ return el ? parseFloat((el.value||'').replace(/,/g,''))||0 : 0; }
