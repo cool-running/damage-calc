@@ -164,10 +164,10 @@ body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-
 .grade-100 label{color:var(--red)}
 
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 12px}
-.btn-calc{height:48px;border:none;border-radius:12px;background:var(--blue);color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-calc.active{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);box-shadow:0 4px 14px rgba(24,95,165,0.35)}
-.btn-edit{height:48px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer}
-.btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.3)}
+/* 색상 이동: 두 버튼 모두 평소엔 흰 배경+파란 외곽선, 활성 버튼만 파란색이 채워져 파란색이 한쪽→다른쪽으로 이동 */
+.btn-edit,.btn-calc{height:48px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;border:2px solid var(--blue);background:#fff;color:var(--blue);transition:all .2s}
+.btn-edit.active,.btn-calc.active{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(24,95,165,0.35)}
+.btn-edit:active,.btn-calc:active{transform:translateY(1px)}
 .locked .section input.inp:not([type=date]),.locked .section select.inp,.locked .seg-btn,.locked .samp-cell input{pointer-events:none;opacity:0.78}
 
 .result-box{background:linear-gradient(135deg,#6b7280 0%,#8a929d 100%);border-radius:18px;padding:16px 16px 14px;margin-bottom:10px;color:white;box-shadow:0 8px 28px rgba(90,98,110,0.4),inset 0 1px 0 rgba(255,255,255,0.2)}
