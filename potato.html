@@ -139,10 +139,10 @@ tbody td input.filled.mobile-focus,tbody td input.filled:focus{background:#dceef
 
 /* 계산/수정 */
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.btn-calc{height:46px;border:none;border-radius:12px;background:var(--green);color:white;font-size:15px;font-weight:700;cursor:pointer}
-.btn-edit{height:46px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer}
-.btn-calc.active{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);box-shadow:0 4px 14px rgba(91,126,63,0.35)}
-.btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+/* 녹색 이동: 두 버튼 모두 평소엔 흰 배경+녹색 외곽선, 활성 버튼만 녹색이 채워져 녹색이 한쪽→다른쪽으로 이동 */
+.btn-edit,.btn-calc{height:46px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;border:2px solid var(--green);background:#fff;color:var(--green);transition:all .2s}
+.btn-edit.active,.btn-calc.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+.btn-edit:active,.btn-calc:active{transform:translateY(1px)}
 .locked input.inp,.locked select.inp,.locked tbody td input,.locked tbody td select{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 
