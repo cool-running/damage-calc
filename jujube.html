@@ -276,7 +276,7 @@ body.big-text .scell .ci{font-size:19px!important}
       </div>
       <div class="field">
         <label>미보상비율</label><span class="unit-badge">%</span>
-        <input type="number" id="unins_rate" class="inp" inputmode="decimal" oninput="markFilled(this)" onblur="calc()" autocomplete="off">
+        <input type="text" id="unins_rate" class="inp" inputmode="decimal" oninput="markFilled(this)" onblur="calc()" autocomplete="off">
       </div>
     </div>
     <div class="auto-strip" style="margin:0">
@@ -1500,7 +1500,9 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(scr)return;
       if(ev.cancelable)ev.preventDefault();   // 칸 자체의 기본 커서 배치 차단
       el.focus();
-      setTimeout(()=>selAll(el),50);
+      const v0=el.value;
+      // 상단 sticky 칸은 키보드/스크롤로 선택이 풀릴 수 있어 여러 번 재선택 (단, 계속 포커스 중이고 값이 안 바뀐 경우만)
+      [0,60,160,300].forEach(d=>setTimeout(()=>{ if(document.activeElement===el&&el.value===v0) selAll(el); },d));
     },{passive:false});
     // PC(마우스·키보드)·Enter 이동 등 비터치 포커스
     el.addEventListener('focus',()=>{ if(!isTouch) setTimeout(()=>selAll(el),0); });
