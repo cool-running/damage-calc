@@ -582,7 +582,7 @@ function renderVarieties(){
       let treeHtml='';
       const offset=varieties.slice(0,i).reduce((s,vv)=>s+(vv.trees?vv.trees.length:0),0);
       v.trees.forEach((t,ti)=>{
-        treeHtml+=`<div class="scell-outer"><div class="snum">${offset+ti+1}</div><div class="scell ${t!==''?'has':''}"><input class="ci" inputmode="decimal" enterkeyhint="next" value="${t}" oninput="onTreeC(${i},${ti},this)" onfocus="ovFocus(this)" onblur="ovBlur(this)" onkeydown="navKey(event,this)"></div></div>`;
+        treeHtml+=`<div class="scell-outer"><div class="snum">${offset+ti+1}</div><div class="scell ${t!==''?'has':''}"><input class="ci" inputmode="decimal" enterkeyhint="next" value="${t}" oninput="onTreeC(${i},${ti},this)" onkeydown="navKey(event,this)"></div></div>`;
       });
       fruitHtml=`
       <div class="tree-head">
@@ -596,8 +596,8 @@ function renderVarieties(){
       <div class="warn" id="v-warn-${i}">⚠ 표본주가 적정표본수보다 부족합니다</div>
       ${ap&&!prevAp?`<div class="subtitle">과중조사 (품종 60개 이상)</div>
         <div class="g3">
-          <div class="field"><label>표본 과실수</label><span class="unit-badge">개</span><input class="inp wt-inp ${v.fcount!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.fcount}" oninput="onF(${i},'fcount',this)" onfocus="ovFocus(this)" onblur="ovBlur(this)" onkeydown="navKey(event,this)"></div>
-          <div class="field"><label>총 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${v.fweight!==''?'filled':''}" inputmode="decimal" enterkeyhint="next" value="${v.fweight}" oninput="onFWeight(${i},this)" onfocus="ovFocus(this)" onblur="ovBlur(this)" onkeydown="navKey(event,this)"></div>
+          <div class="field"><label>표본 과실수</label><span class="unit-badge">개</span><input class="inp wt-inp ${v.fcount!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.fcount}" oninput="onF(${i},'fcount',this)" onkeydown="navKey(event,this)"></div>
+          <div class="field"><label>총 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${v.fweight!==''?'filled':''}" inputmode="decimal" enterkeyhint="next" value="${v.fweight}" oninput="onFWeight(${i},this)" onkeydown="navKey(event,this)"></div>
           <div class="field"><label style="color:var(--sub)">개당과중</label><input class="auto" id="v-w-${i}" readonly></div>
         </div>`
       :ap&&prevAp?`<div class="subtitle" style="display:flex;align-items:center;gap:6px">
@@ -792,12 +792,6 @@ function focusNextInput(el){
   if(i>=0&&i+1<all.length){const n=all[i+1];n.focus();}
   else{el.blur();}
 }
-/* 사용자가 직접 탭한 경우에만 비우기. 진입/자동이동(프로그램적 포커스)은 기존 값 유지 */
-window.__ovTap=false;
-['pointerdown','mousedown','touchstart'].forEach(function(ev){document.addEventListener(ev,function(){window.__ovTap=true;},true);});
-['pointerup','mouseup','touchend'].forEach(function(ev){document.addEventListener(ev,function(){setTimeout(function(){window.__ovTap=false;},0);},true);});
-function ovFocus(el){ if(!window.__ovTap)return; try{el.select();if(el.setSelectionRange)el.setSelectionRange(0,(el.value||'').length);}catch(e){} }   /* 탭 시 전체선택(내용 보이고 덮어쓰기 쉽게). 진입/자동이동은 선택 안함 */
-function ovBlur(el){}  /* 미사용 */
 function navKey(e,el){ if(e.key==='Enter'||e.key==='Next'||e.keyCode===13){ e.preventDefault(); focusNextInput(el); } }
 function addVariety(){if(_locked||(_phase!=='tree'&&!_expandAll))return;if(varieties.length>=6){showToast('품종은 최대 6개까지');return;}varieties.push(newVariety());renderVarieties();calc();saveState();}
 function delVariety(i){if(_locked||(_phase!=='tree'&&!_expandAll))return;if(varieties.length<=1){showToast('최소 1개 품종이 필요합니다');return;}varieties.splice(i,1);renderVarieties();calc();saveState();}
@@ -869,11 +863,10 @@ function computeAll(){
     if(fc>0&&fruitWeightByCat['ap']===undefined)fruitWeightByCat['ap']=r2(fw/fc);
   });
 
-  let totalApplied=0,totalYield=0,totalUninsLoss=0,anyShort=false,totalProper=0;
+  let totalApplied=0,totalYield=0,totalUninsLoss=0,anyShort=false;
   rows.forEach(r=>{
     const v=r.v;
     const proper=r.survey>0&&totalSurvey>0?Math.ceil(sampN*r.survey/totalSurvey):0;
-    totalProper+=proper;   // 품종별 올림 배분 합계(=전산 전체 표본주수). 별표 기준값 sampN과 다를 수 있음
     const N=totalL>0?r4(avgYield*r.L/totalL):0;            // 정상분배 평년
     /* 원장변경 재산정: 적용평년 = 평년 × (주당표준×실결) ÷ 가입표준합계
        — 가입주수 0인 신규 품종(수령 추가)도 실결 기준으로 평년이 배분됨 */
@@ -915,7 +908,7 @@ function computeAll(){
   totalUninsLoss=Math.round(rawUninsLoss);                           // 화면 표시는 정수 kg 반올림(202)
   totalYield=Math.floor(totalYield);                                 // 화면 표시는 정수 kg 버림(96)
 
-  return {avgYield,uninsRate,rows,totalSurvey,sampN,totalProper,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
+  return {avgYield,uninsRate,rows,totalSurvey,sampN,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
 }
 
 /* ───────── 품종별 비교 요약표 ───────── */
@@ -950,7 +943,7 @@ function renderCompare(R){
     body+=`<tr><td class="rowlabel vlab">${label}</td><td>${regN}</td><td>${actN}</td><td>${surN}</td><td>${spN}</td><td class="intv">${ivN}</td></tr>`;
   });
   if(n>1){
-    body+=`<tr class="sumrow"><td class="rowlabel">합계</td><td>${R.totalReg?R.totalReg.toLocaleString():'-'}</td><td>${R.totalActual?R.totalActual.toLocaleString():'-'}</td><td>${R.totalSurvey?R.totalSurvey.toLocaleString():'-'}</td><td>${R.totalProper?R.totalProper+'주':'-'}</td><td>-</td></tr>`;
+    body+=`<tr class="sumrow"><td class="rowlabel">합계</td><td>${R.totalReg?R.totalReg.toLocaleString():'-'}</td><td>${R.totalActual?R.totalActual.toLocaleString():'-'}</td><td>${R.totalSurvey?R.totalSurvey.toLocaleString():'-'}</td><td>${R.sampN?R.sampN+'주':'-'}</td><td>-</td></tr>`;
   }
 
   tbl.innerHTML=cols+'<thead>'+head+'</thead><tbody>'+body+'</tbody>';
@@ -1031,7 +1024,7 @@ function renderSampleSummary(R){
 function calc(){
   const R=computeAll();
   $('t-survey').value=R.totalSurvey?R.totalSurvey.toLocaleString():'';
-  $('t-sampleN').value=R.totalProper?R.totalProper+'주':'';
+  $('t-sampleN').value=R.sampN?R.sampN+'주':'';
   $('t-reg').value=R.totalReg?R.totalReg.toLocaleString()+'주':'';
   $('t-actual').value=R.totalActual?R.totalActual.toLocaleString()+'주':'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);
@@ -1177,7 +1170,7 @@ function loadState(){
 
 /* ───────── 이력 ───────── */
 let _pendingRec=null,_pendingEi=-1;
-function _varType(v){if(!v||!v.cat)return null;if('DEFGH'.includes(v.cat))return '사과대추';let g=v.group||'';if(g==='jc')g='bj';return g==='jr'?'재래':'복조';}
+function _varType(v){if(!v.cat)return null;if('DEFGH'.includes(v.cat))return '사과대추';let g=v.group||'';if(g==='jc')g='bj';return g==='jr'?'재래':'복조';}
 function _doSaveHistory(rec,ei){
   let recs=[];try{recs=JSON.parse(localStorage.getItem('jujube_history')||'[]');}catch(e){}
   if(ei>=0)recs.splice(ei,1);   // 기존 위치 제거 후 맨뒤(최신)에 추가
@@ -1233,20 +1226,16 @@ function openHistoryModal(){
 function closeHistoryModal(){$('historyModal').style.display='none';}
 function loadHistory(idx){
   let recs=[];try{recs=JSON.parse(localStorage.getItem('jujube_history')||'[]');}catch(e){}
-  const r=recs[idx];if(!r){showToast('기록을 찾을 수 없습니다');return;}
-  closeHistoryModal();   /* 먼저 닫아, 이후 오류가 나도 '모달은 떠있는데 반응 없음'으로 보이지 않게 */
-  try{
+  const r=recs[idx];if(!r)return;
   $('farm_no').value=r.farm||'';markFilled($('farm_no'));
   $('avg_yield').value=r.avg||'';markFilled($('avg_yield'));
   $('unins_rate').value=r.unins||'';markFilled($('unins_rate'));
   $('survey_date').value=r.date||'';syncDate($('survey_date'));
-  const src=Array.isArray(r.varieties)&&r.varieties.length?r.varieties:[{}];
-  varieties=src.map(v=>{const nv=Object.assign(newVariety(),(v&&typeof v==='object')?v:{});if(!Array.isArray(nv.trees))nv.trees=(typeof nv.trees==='string'&&nv.trees.trim()!=='')?nv.trees.split(',').map(s=>s.trim()):[];return nv;});
+  varieties=(r.varieties||[newVariety()]).map(v=>Object.assign(newVariety(),v));
   if(_locked)setEditMode(true);
   // 불러온 기록은 표본 착과조사까지 끝난 상태로 본다
-  _phase=varieties.some(v=>Array.isArray(v.trees)&&v.trees.some(t=>String(t).trim()!==''))?'fruit':'tree';
-  renderVarieties();setPhaseUI();calc();saveState();showToast('불러왔습니다');
-  }catch(err){showToast('불러오기 오류: '+(err&&err.message?err.message:String(err)));}
+  _phase=varieties.some(v=>v.trees&&v.trees.some(t=>String(t).trim()!==''))?'fruit':'tree';
+  renderVarieties();setPhaseUI();calc();closeHistoryModal();showToast('불러왔습니다');
 }
 function deleteHistory(idx){
   let recs=[];try{recs=JSON.parse(localStorage.getItem('jujube_history')||'[]');}catch(e){}
@@ -1494,7 +1483,39 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('hdrState').className='hdr-state locked';$('hdrState').textContent='🔒 잠금';
   }
   window.addEventListener('resize',()=>{try{calc();}catch(e){}});
-  /* 전역 select-all 제거: 선택 툴바(복사/공유/모두선택) 방지. 입력칸은 ovFocus로 비우고 ovBlur로 복원 */
+  // ── 입력칸 포커스 (마늘 방식, 요소별 바인딩) ──
+  // 칸의 touchend에서 직접 기본동작을 막고(preventDefault) 포커스→전체선택.
+  // 요소별로 바인딩해야 입력칸 자체의 기본 커서 배치가 확실히 차단되어 전체선택이 유지됨
+  // (안드로이드 잘라내기/복사 툴바도 뜨지 않음). 화면 재렌더 시 새 칸은 MutationObserver로 자동 바인딩.
+  const selAll=el=>{ try{ el.select(); }catch(_){ try{ el.setSelectionRange(0,(el.value||'').length); }catch(__){} } };
+  const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  function bindFocusEl(el){
+    if(!el||el.tagName!=='INPUT'||el.dataset.mfBound)return;
+    if(el.readOnly||el.disabled||['date','checkbox','radio','button'].includes(el.type))return;
+    el.dataset.mfBound='1';
+    let sx=0,sy=0,scr=false;
+    el.addEventListener('touchstart',ev=>{const t=ev.touches[0];sx=t.clientX;sy=t.clientY;scr=false;},{passive:true});
+    el.addEventListener('touchmove',ev=>{const t=ev.touches[0];if(Math.abs(t.clientX-sx)>6||Math.abs(t.clientY-sy)>6)scr=true;},{passive:true});
+    el.addEventListener('touchend',ev=>{
+      if(scr)return;
+      if(ev.cancelable)ev.preventDefault();   // 칸 자체의 기본 커서 배치 차단
+      el.focus();
+      setTimeout(()=>selAll(el),50);
+    },{passive:false});
+    // PC(마우스·키보드)·Enter 이동 등 비터치 포커스
+    el.addEventListener('focus',()=>{ if(!isTouch) setTimeout(()=>selAll(el),0); });
+  }
+  function bindAllFocus(){ document.querySelectorAll('input').forEach(bindFocusEl); }
+  bindAllFocus();
+  try{
+    new MutationObserver(muts=>{
+      for(const m of muts) m.addedNodes.forEach(n=>{
+        if(n.nodeType!==1)return;
+        if(n.tagName==='INPUT') bindFocusEl(n);
+        if(n.querySelectorAll) n.querySelectorAll('input').forEach(bindFocusEl);
+      });
+    }).observe(document.body,{childList:true,subtree:true});
+  }catch(_){}
 });
 </script>
 </body>
