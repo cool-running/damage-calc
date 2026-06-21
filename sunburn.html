@@ -1012,8 +1012,8 @@ function calc(silent){
   document.getElementById('saveBtn').disabled=false;
 
   document.getElementById('content').classList.add('locked');
-  document.getElementById('btnCalc').classList.remove('active');
-  document.getElementById('btnEdit').classList.add('active');
+  document.getElementById('btnCalc').classList.add('active');
+  document.getElementById('btnEdit').classList.remove('active');
   setLockUI(true);
   if(!silent){
     saveState(); saveToHistory({crop:document.getElementById('crop').value, fallDamage:fallDamage, fallRate:(afterCnt>0?(fallDamage/afterCnt*100):0).toFixed(2), admitCnt:admitCnt, admitRate:admitRate.toFixed(2), pctOfAfter:pctOfAfter.toFixed(2)});
@@ -1023,8 +1023,8 @@ function calc(silent){
 }
 function edit(silent){
   document.getElementById('content').classList.remove('locked');
-  document.getElementById('btnCalc').classList.add('active');
-  document.getElementById('btnEdit').classList.remove('active');
+  document.getElementById('btnCalc').classList.remove('active');
+  document.getElementById('btnEdit').classList.add('active');
   setLockUI(false);
   if(!silent) vibrate([12]);
   saveState();

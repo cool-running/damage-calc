@@ -344,8 +344,8 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
-    <button onclick="setEditModeFromTree()" id="btn-edit-tree" style="height:48px;border:2px solid var(--green);border-radius:var(--rs);background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer">✏️ 수정하기</button>
-    <button onclick="calcTreeResult()" style="height:48px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer">🌿 나무조사 계산하기</button>
+    <button onclick="setEditModeFromTree()" id="btn-edit-tree" style="height:48px;border:2px solid var(--blue);border-radius:var(--rs);background:#fff;color:var(--blue);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s">✏️ 수정하기</button>
+    <button onclick="calcTreeResult()" id="btn-calc-tree" style="height:48px;background:var(--blue);color:#fff;border:2px solid var(--blue);border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s">🌿 나무조사 계산하기</button>
   </div>
 
 </div>
@@ -946,8 +946,22 @@ function closeTree(i) {
 function openResetModal(){ document.getElementById('reset-overlay').style.display='flex'; }
 function vibrate(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){} }
 
+// 나무조사 계산하기 ↔ 수정하기 버튼 파란색 이동 (활성 버튼만 파란색 채움)
+function updateTreeBtnState(editing){
+  const calcBtn = document.getElementById('btn-calc-tree');
+  const editBtn = document.getElementById('btn-edit-tree');
+  const active = {background:'var(--blue)', color:'#fff', borderColor:'var(--blue)'};
+  const inactive = {background:'#fff', color:'var(--blue)', borderColor:'var(--blue)'};
+  const a = editing ? editBtn : calcBtn;   // 파란색이 채워질 버튼
+  const b = editing ? calcBtn : editBtn;   // 흰색이 될 버튼
+  if(a){ a.style.background=active.background; a.style.color=active.color; a.style.borderColor=active.borderColor; }
+  if(b){ b.style.background=inactive.background; b.style.color=inactive.color; b.style.borderColor=inactive.borderColor; }
+}
+
 function calcTreeResult(silent=false) {
   if(!silent) vibrate([30, 40, 60]);
+  // 계산하기 → 계산하기 파란색, 수정하기 흰색
+  updateTreeBtnState(false);
   // 입력 잠금
   const rows1 = document.getElementById('interval-rows-1');
   const icntBtns = document.querySelectorAll('[id^="icnt-"]');
@@ -963,6 +977,8 @@ function calcTreeResult(silent=false) {
 
 function setEditModeFromTree() {
   vibrate([12]);
+  // 수정하기 → 수정하기 파란색, 계산하기 흰색
+  updateTreeBtnState(true);
   // 전체 잠금 해제 + 헤더 배지 갱신
   _isLocked = false;
   document.querySelectorAll('.content').forEach(el => el.classList.remove('locked'));
