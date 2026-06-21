@@ -1448,6 +1448,7 @@ function buildCapture(){
 }
 let _previewDataUrl='';
 let _previewFilename='';
+let _previewJpeg='';
 async function saveImage(){
   if($('result-section').classList.contains('pending')){showToast('먼저 계산하기를 눌러주세요');return;}
   buildCapture();showToast('이미지 생성 중...');
@@ -1456,17 +1457,58 @@ async function saveImage(){
     const stamp=new Date().toISOString().slice(0,16).replace(/[-:T]/g,'');
     _previewFilename=`대추피해율_${$('farm_no').value||'농지'}_${stamp}.png`;
     _previewDataUrl=canvas.toDataURL('image/png');
+    _previewJpeg=canvas.toDataURL('image/jpeg',0.65);
     $('previewImg').src=_previewDataUrl;
     $('previewModal').classList.add('show');
   }catch(e){showToast('저장 실패: '+e.message);}
 }
 function closePreview(e){if(e.target===$('previewModal'))closePreviewModal();}
 function closePreviewModal(){$('previewModal').classList.remove('show');}
+/* 공용 저장목록(index) 썸네일 캐시 — 마늘 등과 동일 형식 */
+function _saveImgCache(id, dataUrl){
+  try{
+    const _ld=new Date();const today=_ld.getFullYear()+'-'+String(_ld.getMonth()+1).padStart(2,'0')+'-'+String(_ld.getDate()).padStart(2,'0');
+    let cache=[];try{cache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');}catch(_){}
+    cache=cache.filter(c=>String(c.id)!==String(id));
+    if(dataUrl){
+      cache.unshift({id:id,date:today,img:dataUrl});
+      const todayItems=cache.filter(c=>c.date===today).slice(0,15);
+      const otherItems=cache.filter(c=>c.date!==today);
+      localStorage.setItem('save_img_cache',JSON.stringify([...todayItems,...otherItems]));
+    }else{
+      localStorage.setItem('save_img_cache',JSON.stringify(cache));
+    }
+  }catch(_){}
+}
 function doSaveImage(){
   const link=document.createElement('a');
   link.download=_previewFilename;
   link.href=_previewDataUrl;
   link.click();
+  /* ── 공용 저장목록(index.html) 연동 — 마늘 등과 동일 형식 ── */
+  try{
+    const _farmNo=(($('farm_no')&&$('farm_no').value)||'').trim();
+    const _survDate=($('survey_date')&&$('survey_date').value)||'';
+    const _pct=($('result-pct')&&$('result-pct').textContent)||'-';
+    const _rec={
+      id:Date.now(),
+      crop:'대추',
+      cropDetail:'대추',
+      category:'과수',
+      farmNo:_farmNo,
+      surveyDate:_survDate,
+      pct:_pct,
+      filename:_previewFilename,
+      savedAt:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()
+    };
+    const _hist=JSON.parse(localStorage.getItem('save_history')||'[]');
+    const _ei=_rec.farmNo?_hist.findIndex(r=>r.crop===_rec.crop&&r.farmNo===_rec.farmNo):-1;
+    if(_ei>-1){_saveImgCache(_hist[_ei].id,'');_hist.splice(_ei,1);}
+    _hist.unshift(_rec);
+    if(_hist.length>200)_hist.splice(200);
+    localStorage.setItem('save_history',JSON.stringify(_hist));
+    _saveImgCache(_rec.id,_previewJpeg||_previewDataUrl);
+  }catch(_){}
   showToast('갤러리에 저장되었습니다');
   closePreviewModal();
 }
