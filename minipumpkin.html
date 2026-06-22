@@ -48,6 +48,17 @@ function bindNextNav(){
 document.addEventListener('DOMContentLoaded',()=>{
   bindMobileFocusHandlers();
   document.addEventListener('click',()=>setTimeout(bindMobileFocusHandlers,0),{passive:true});
+  // 농지번호에서 이동(Enter) 시 평년수확량으로 포커스 이동
+  const _farmNo=document.getElementById('farm_no');
+  if(_farmNo){
+    _farmNo.setAttribute('enterkeyhint','next');
+    _farmNo.addEventListener('keydown',e=>{
+      if(e.key!=='Enter')return;
+      e.preventDefault();
+      const t=document.getElementById('avg_yield');
+      if(t){t.focus();setTimeout(()=>{try{t.select();}catch(_){}},30);}
+    });
+  }
   document.body.style.visibility='visible';
 });
 </script>
@@ -1184,9 +1195,9 @@ function fillCaptureTemplate(){
     tW3 += parseFloat(s.w3)||0;
   });
   // 4-1. 표본구간 - 길이/폭/1차중량/2차중량/3차중량/합계
-  const tdS  = 'padding:4px 2px;border-right:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px';
-  const tdSL = 'padding:4px 2px;text-align:center;font-weight:700;font-size:10px';
-  const tdSG = 'padding:4px 2px;border-right:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px;background:#fdf6f0';
+  const tdS  = 'padding:4px 2px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px';
+  const tdSL = 'padding:4px 2px;border-bottom:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px';
+  const tdSG = 'padding:4px 2px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:10px;background:#fdf6f0';
 
   let rows='', sumW1=0, sumW2=0, sumW3=0;
   samples.forEach((s,idx)=>{
@@ -1223,8 +1234,8 @@ function fillCaptureTemplate(){
   if(block2){
     if(has1stQty || has2ndQty || has3rdQty){
       block2.style.display='block';
-      const td2 = 'padding:5px 2px;border-right:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:11px';
-      const td2L= 'padding:5px 2px;text-align:center;font-weight:700;font-size:11px';
+      const td2 = 'padding:5px 2px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:11px';
+      const td2L= 'padding:5px 2px;border-bottom:1px solid #e0e0e0;text-align:center;font-weight:700;font-size:11px';
       let rows2='', sQ=0, sQ1=0, sQ2=0, sQ3=0;
       samples.forEach((s,idx)=>{
         const tq=(s.totalQty!==undefined&&s.totalQty!=='') ? Number(s.totalQty) : 0;
