@@ -558,7 +558,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
       <!-- 적과후착과수 (표본주별) -->
       <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
         <div style="font-size:11px;font-weight:800;color:#185FA5;letter-spacing:0.04em;margin-bottom:6px">■ 적과후착과수 (표본주별)</div>
-        <div id="cap-sample-summary" style="display:flex;justify-content:flex-end;margin-bottom:8px"></div>
+        <div id="cap-sample-summary" style="display:flex;justify-content:flex-start;margin-bottom:8px"></div>
         <div id="cap-samples-wrap"></div>
       </div>
 
@@ -2327,7 +2327,7 @@ function openHistoryModal(){
         onclick="loadHistoryRecord(${idx})"
         onmouseenter="this.style.background='#eaf2fc'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:15px;font-weight:800;color:var(--blue)">${r.contractor_name ? r.contractor_name+'('+(r.farm_no||'-')+')' : (r.farm_no?'농지 '+r.farm_no:'농지번호 미입력')}</span>
+          <span style="font-size:15px;font-weight:800;color:var(--blue)">${r.contractor_name ? r.contractor_name+'('+(r.farm_no||'-')+')' : ('착과수'+(r.farm_no?'('+r.farm_no+')':''))}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
