@@ -285,17 +285,22 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     <button onclick="openResetModal()" style="height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);font-size:13px;font-weight:600;color:var(--red);cursor:pointer">전체 초기화</button>
   </div>
   <div class="section">
-    <div style="display:flex;gap:8px;align-items:flex-end">
-      <div class="field" style="flex:0 0 40%;min-width:0">
-        <label style="font-size:11px;color:var(--sub);font-weight:500">농지번호 4자리</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호"
+    <div style="display:flex;gap:6px;align-items:flex-end">
+      <div class="field" style="flex:0 0 28%;min-width:0">
+        <label style="font-size:11px;color:var(--sub);font-weight:500">계약자명</label>
+        <input type="text" id="contractor_name" class="inp" placeholder="이름"
+          oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
+      </div>
+      <div class="field" style="flex:0 0 22%;min-width:0">
+        <label style="font-size:11px;color:var(--sub);font-weight:500">농지번호</label>
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리"
           maxlength="4" oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
       </div>
-      <div class="field" style="flex:0 0 40%;min-width:0">
+      <div class="field" style="flex:1;min-width:0">
         <label style="font-size:11px;color:var(--sub);font-weight:500">조사일자</label>
         <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="syncDateDisp(this);saveState()"></div>
       </div>
-      <div style="flex:1;min-width:0">
+      <div style="flex:0 0 40px">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
           style="width:100%;height:40px;background:transparent;border:1.5px solid var(--blue2);border-radius:var(--rs);color:var(--blue2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;-webkit-appearance:none;appearance:none">📋</button>
       </div>
@@ -485,11 +490,8 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:900px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 12%,#f3f4f6 12%,#f3f4f6 100%);padding:0 20px 20px;box-sizing:border-box">
     <div style="height:18px"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:800;letter-spacing:0.04em" id="cap-title">사과 적과후착과수 조사결과</div>
-      <div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap">
-        <span id="cap-date-disp"></span><span id="cap-farmno-disp" style="margin-left:10px"></span>
-      </div>
+    <div style="color:#fff;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:800;letter-spacing:0.02em" id="cap-title">사과 적과후착과수 조사결과</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
 
@@ -2164,6 +2166,7 @@ function saveState(){
     localStorage.setItem('fruit_multi_v2', JSON.stringify({
       currentMode,
       farm_no: document.getElementById('farm_no')?.value||'',
+      contractor_name: document.getElementById('contractor_name')?.value||'',
       survey_date: document.getElementById('survey_date')?.value||'',
       allData,
       isLocked: _isLocked,
@@ -2210,6 +2213,7 @@ function loadState(){
       if(af.value) af.classList.add('filled');
     }
     if(s.farm_no){const el=document.getElementById('farm_no');if(el){el.value=s.farm_no;el.classList.toggle('filled',s.farm_no!=='');}}
+    if(s.contractor_name){const el=document.getElementById('contractor_name');if(el){el.value=s.contractor_name;el.classList.toggle('filled',s.contractor_name!=='');}}
     // 아래 두 블록은 동기적으로 즉시 처리 — setTimeout으로 미루면 곧이어 실행되는
     // setIntervalCount()/renderIntervalRows() 내부의 saveState() 호출이 복원 전 상태(false)로
     // 먼저 저장해버려서, 새로고침을 두 번 하면 잠금이 풀리는 문제가 있었음
@@ -2250,6 +2254,7 @@ function resetAll() {
   document.getElementById('result-detail-section').classList.remove('show');
   resetCalcBtn();
   const _farmEl=document.getElementById('farm_no');if(_farmEl){_farmEl.value='';_farmEl.classList.remove('filled');}
+  const _nameEl=document.getElementById('contractor_name');if(_nameEl){_nameEl.value='';_nameEl.classList.remove('filled');}
   localStorage.removeItem('fruit_multi_v2');
   unlockInputs();
   // 나무조사 계산하기 잠금 해제
@@ -2259,10 +2264,10 @@ function resetAll() {
   window._treeCalcDone = false;
   onInput();
   window.scrollTo({top:0, behavior:'smooth'});
-  // 농지번호로 포커스
+  // 계약자명으로 포커스
   setTimeout(() => {
-    const _farm = document.getElementById('farm_no');
-    if(_farm) _farm.focus();
+    const _name = document.getElementById('contractor_name');
+    if(_name) _name.focus();
   }, 300);
 }
 
@@ -2273,12 +2278,14 @@ function saveHistory(){
     const stateRaw = localStorage.getItem('fruit_multi_v2');
     if(!stateRaw) return;
     const farmNo = (document.getElementById('farm_no')?.value||'').trim();
+    const contractorName = (document.getElementById('contractor_name')?.value||'').trim();
     const surveyDate = document.getElementById('survey_date')?.value||'';
     const totalTxt = (document.getElementById('r-total')?.textContent||'').trim();
     const rateTxt = (document.getElementById('result-rate')?.textContent||'').trim();
     const rec = {
       id: Date.now(),
       farm_no: farmNo,
+      contractor_name: contractorName,
       survey_date: surveyDate,
       total: totalTxt,
       rate: rateTxt,
@@ -2307,7 +2314,7 @@ function openHistoryModal(){
         onclick="loadHistoryRecord(${idx})"
         onmouseenter="this.style.background='#eaf2fc'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:15px;font-weight:800;color:var(--blue)">${r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'}</span>
+          <span style="font-size:15px;font-weight:800;color:var(--blue)">${r.contractor_name ? r.contractor_name+'('+(r.farm_no||'-')+')' : (r.farm_no?'농지 '+r.farm_no:'농지번호 미입력')}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -2457,14 +2464,20 @@ async function saveImage() {
       ? { canvasW:900, tdFs:9,  tdPad:'4px 3px', thPad:'5px 3px', sampleCols:9,  sampleCellW:60 }
       : { canvasW:960, tdFs:8,  tdPad:'3px 2px', thPad:'4px 2px', sampleCols:12, sampleCellW:50 };
 
-    // ── 헤더바
-    document.getElementById('cap-title').textContent  = `${cropName} 적과후착과수 조사결과`;
+    // ── 헤더바 (좌측 상단 한 줄: 7월7일 홍길동(3637) 포도·복숭아·자두 적과후착과수 조사결과)
     const _survDate = document.getElementById('survey_date')?.value || '';
     const _farmNo = (document.getElementById('farm_no')?.value || '').trim();
-    const _capDate = document.getElementById('cap-date-disp');
-    const _capFarm = document.getElementById('cap-farmno-disp');
-    if(_capDate) _capDate.textContent = _survDate || '';
-    if(_capFarm) _capFarm.textContent = _farmNo ? '| 농지번호 ' + _farmNo : '';
+    const _contractorName = (document.getElementById('contractor_name')?.value || '').trim();
+    let _dateShort = '';
+    if(_survDate){
+      const _dp = _survDate.split('-');
+      if(_dp.length===3) _dateShort = `${parseInt(_dp[1],10)}월${parseInt(_dp[2],10)}일`;
+    }
+    const _namePart = _contractorName
+      ? `${_contractorName}(${_farmNo || '-'})`
+      : (_farmNo ? `농지번호 ${_farmNo}` : '');
+    const _headerLine = [_dateShort, _namePart, `${cropName} 적과후착과수 조사결과`].filter(Boolean).join(' ');
+    document.getElementById('cap-title').textContent = _headerLine;
     document.getElementById('cap-avg').textContent    = avgFruit>0 ? avgFruit.toLocaleString()+'개' : '-';
     document.getElementById('cap-reg').textContent    = totalReg>0 ? totalReg.toLocaleString()+'주' : '-';
     document.getElementById('cap-survey').textContent = totalSurvey>0 ? totalSurvey.toLocaleString()+'주' : '-';
@@ -2618,6 +2631,7 @@ async function saveImage() {
       const _pct = document.getElementById('result-pct')?.textContent||'-';
       const _rec={id:Date.now(),crop:'착과수',cropDetail:'착과수',category:'과수',
         farmNo:(document.getElementById('farm_no')?.value||'').trim(),
+        contractorName:(document.getElementById('contractor_name')?.value||'').trim(),
         surveyDate:document.getElementById('survey_date')?.value||'',
         pct:_pct,
         filename:`${cropName}착과수_${stamp}.png`,savedAt:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
