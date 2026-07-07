@@ -555,10 +555,8 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 
       <!-- 적과후착과수 (표본주별) -->
       <div style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-          <div style="font-size:11px;font-weight:800;color:#185FA5;letter-spacing:0.04em">■ 적과후착과수 (표본주별)</div>
-          <div id="cap-sample-summary" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-        </div>
+        <div style="font-size:11px;font-weight:800;color:#185FA5;letter-spacing:0.04em;margin-bottom:6px">■ 적과후착과수 (표본주별)</div>
+        <div id="cap-sample-summary" style="display:flex;justify-content:flex-end;margin-bottom:8px"></div>
         <div id="cap-samples-wrap"></div>
       </div>
 
@@ -2212,7 +2210,10 @@ function loadState(){
       if(af.value) af.classList.add('filled');
     }
     if(s.farm_no){const el=document.getElementById('farm_no');if(el){el.value=s.farm_no;el.classList.toggle('filled',s.farm_no!=='');}}
-    if(s.treeCalcDone) setTimeout(()=>{
+    // 아래 두 블록은 동기적으로 즉시 처리 — setTimeout으로 미루면 곧이어 실행되는
+    // setIntervalCount()/renderIntervalRows() 내부의 saveState() 호출이 복원 전 상태(false)로
+    // 먼저 저장해버려서, 새로고침을 두 번 하면 잠금이 풀리는 문제가 있었음
+    if(s.treeCalcDone){
       window._treeCalcDone = true;
       updateTreeBtnState(false);
       const rows1 = document.getElementById('interval-rows-1');
@@ -2220,14 +2221,14 @@ function loadState(){
       if(rows1) rows1.style.pointerEvents = 'none';
       icntBtns.forEach(b => b.style.pointerEvents = 'none');
       setLockBadge(true);
-    }, 0);
-    if(s.isLocked) setTimeout(()=>{
+    }
+    if(s.isLocked){
       _isLocked=true;
       document.querySelector('.content')?.classList.add('locked');
       document.getElementById('btn-calc')?.classList.add('active');
       document.getElementById('btn-edit')?.classList.remove('active');
       setLockBadge(true);
-    }, 0);
+    }
     return true;
   }catch(e){ return false; }
 }
