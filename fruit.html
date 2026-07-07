@@ -2169,6 +2169,7 @@ function saveState(){
       survey_date: document.getElementById('survey_date')?.value||'',
       allData,
       isLocked: _isLocked,
+      treeCalcDone: window._treeCalcDone,
       intervalData,
       intervalCount
     }));
@@ -2211,6 +2212,15 @@ function loadState(){
       if(af.value) af.classList.add('filled');
     }
     if(s.farm_no){const el=document.getElementById('farm_no');if(el){el.value=s.farm_no;el.classList.toggle('filled',s.farm_no!=='');}}
+    if(s.treeCalcDone) setTimeout(()=>{
+      window._treeCalcDone = true;
+      updateTreeBtnState(false);
+      const rows1 = document.getElementById('interval-rows-1');
+      const icntBtns = document.querySelectorAll('[id^="icnt-"]');
+      if(rows1) rows1.style.pointerEvents = 'none';
+      icntBtns.forEach(b => b.style.pointerEvents = 'none');
+      setLockBadge(true);
+    }, 0);
     if(s.isLocked) setTimeout(()=>{
       _isLocked=true;
       document.querySelector('.content')?.classList.add('locked');
