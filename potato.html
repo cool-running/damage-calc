@@ -205,19 +205,24 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
       <button class="bigtext-btn" id="bigtext-btn" onclick="toggleBigText()">🔍 <span id="bigtext-label">크게</span></button>
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:flex-end">
-      <div class="field" style="width:40%">
-        <label>농지번호 4자리</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호" maxlength="4"
+    <div style="display:flex;gap:6px;align-items:flex-end">
+      <div class="field" style="flex:0 0 26%;min-width:0">
+        <label>계약자명</label>
+        <input type="text" id="contractor_name" class="inp" placeholder="이름"
+          oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
+      </div>
+      <div class="field" style="flex:0 0 20%;min-width:0">
+        <label>농지번호</label>
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" maxlength="4"
           oninput="markFilled(this)" autocomplete="off">
       </div>
-      <div class="field" style="width:40%">
+      <div class="field" style="flex:1;min-width:0">
         <label>조사일자</label>
         <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="markFilled(this);calc()" autocomplete="off"></div>
       </div>
-      <div style="width:20%;flex-shrink:0">
+      <div style="flex:0 0 40px">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
-          style="width:100%;height:46px;border:1.5px solid var(--green2);border-radius:var(--rs);background:white;color:var(--green);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
+          style="width:100%;height:40px;border:1.5px solid var(--green2);border-radius:var(--rs);background:white;color:var(--green);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
@@ -1151,7 +1156,7 @@ function openHistoryModal(){
         onclick="loadHistoryRecord(${idx})"
         onmouseenter="this.style.background='#eaf3e0'" onmouseleave="this.style.background='white'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:15px;font-weight:800;color:var(--green)">${r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'}</span>
+          <span style="font-size:15px;font-weight:800;color:var(--green)">${r.contractor_name?r.contractor_name+'('+(r.farm_no||'-')+')':(r.farm_no?'농지 '+r.farm_no:'농지번호 미입력')}</span>
           <span style="font-size:11px;color:#aaa">${r.saved_at||''}</span>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1185,7 +1190,7 @@ function loadHistoryRecord(idx){
   const r=records[idx]; if(!r) return;
   if(r.samples&&r.samples.length>0) samples=JSON.parse(JSON.stringify(r.samples));
   if(r.bugRows) bugRows=JSON.parse(JSON.stringify(r.bugRows));
-  ['farm_no','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate','survey_date'].forEach(id=>{
+  ['farm_no','contractor_name','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate','survey_date'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     el.value=r[id]||''; if(el.type==='date')markFilled(el); else el.classList.toggle('filled',!!(r[id]));
   });
@@ -1209,7 +1214,8 @@ function saveHistory(){
   const pct=document.getElementById('result-pct')?.textContent;
   if(!pct||pct==='- -') return;
   const record={
-    farm_no:farmNo, avg_yield:document.getElementById('avg_yield').value,
+    farm_no:farmNo, contractor_name:(document.getElementById('contractor_name')?.value||'').trim(),
+    avg_yield:document.getElementById('avg_yield').value,
     ins_area:document.getElementById('ins_area').value, act_area:document.getElementById('act_area').value,
     dead_area:document.getElementById('dead_area').value, other_area:document.getElementById('other_area').value,
     harv_area:document.getElementById('harv_area').value, unins_rate:document.getElementById('unins_rate').value,
@@ -1229,6 +1235,7 @@ function saveHistory(){
 function saveState(){
   const state={
     farm_no:document.getElementById('farm_no').value,
+    contractor_name:document.getElementById('contractor_name')?.value||'',
     avg_yield:document.getElementById('avg_yield').value,
     ins_area:document.getElementById('ins_area').value,
     act_area:document.getElementById('act_area').value,
@@ -1246,7 +1253,7 @@ function loadState(){
   try{
     const raw=localStorage.getItem('potato_state'); if(!raw) return false;
     const s=JSON.parse(raw);
-    ['farm_no','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate','survey_date'].forEach(id=>{
+    ['farm_no','contractor_name','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate','survey_date'].forEach(id=>{
       if(s[id]!==undefined&&s[id]!==''){
         const el=document.getElementById(id); el.value=s[id]; if(el.type==='date')markFilled(el); else el.classList.add('filled');
       }
@@ -1268,7 +1275,7 @@ function loadState(){
 // ── 초기화 ────────────────────────────────────────
 function resetAll(){
   try{localStorage.removeItem('potato_state');}catch(e){}
-  ['farm_no','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate'].forEach(id=>{
+  ['farm_no','contractor_name','avg_yield','ins_area','act_area','dead_area','other_area','harv_area','unins_rate'].forEach(id=>{
     const el=document.getElementById(id); if(el){el.value='';el.classList.remove('filled');}
   });
   samples=[]; bugRows=[]; bugYn='no';
@@ -1298,8 +1305,8 @@ function _saveImgCache(id, dataUrl){
     cache=cache.filter(c=>String(c.id)!==String(id));
     if(dataUrl){
       cache.unshift({id:id,date:today,img:dataUrl});
-      const todayItems=cache.filter(c=>c.date===today).slice(0,15);
-      const otherItems=cache.filter(c=>c.date!==today).slice(0,25);
+      const todayItems=cache.filter(c=>c.date===today).slice(0,10);
+      const otherItems=cache.filter(c=>c.date!==today).slice(0,15);
       let _merged=[...todayItems,...otherItems];
       while(_merged.length){ try{ localStorage.setItem('save_img_cache',JSON.stringify(_merged)); break; }catch(_qe){ _merged=_merged.slice(0,Math.max(0,_merged.length-5)); } }
     } else {
@@ -1317,8 +1324,11 @@ async function saveImage(){
     // 캡처 데이터 채우기
     const farmNo=(document.getElementById('farm_no')?.value||'').trim();
     const survDate=document.getElementById('survey_date')?.value||'';
+    const contractorName=(document.getElementById('contractor_name')?.value||'').trim();
     document.getElementById('cap-date-disp').textContent=survDate;
-    document.getElementById('cap-farmno-disp').textContent=farmNo?'농지번호: '+farmNo:'';
+    document.getElementById('cap-farmno-disp').textContent=contractorName
+      ? contractorName+(farmNo?'('+farmNo+')':'')
+      : (farmNo?'농지번호: '+farmNo:'');
 
     // 1. 기본정보
     document.getElementById('cap-avg-yield').textContent=document.getElementById('avg_yield').value?document.getElementById('avg_yield').value+' kg':'-';
@@ -1432,15 +1442,16 @@ async function saveImage(){
     // ── 저장목록 기록 ──────────────────────────────
     try{
       const _farmNo=(document.getElementById('farm_no')?.value||'').trim();
+      const _contractorName=(document.getElementById('contractor_name')?.value||'').trim();
       const _survDate=document.getElementById('survey_date')?.value||'';
       const _pct=document.getElementById('result-pct')?.textContent||'-';
       const _rec={
         id:Date.now(), crop:'감자', cropDetail:'감자', category:'밭작물',
-        farmNo:_farmNo, surveyDate:_survDate, pct:_pct,
+        farmNo:_farmNo, contractorName:_contractorName, surveyDate:_survDate, pct:_pct,
         filename:`감자피해율_${stamp}.png`,
         savedAt:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()
       };
-      const _dataUrl=(()=>{ try{ const _tw=Math.min(canvas.width,640),_th=Math.round(canvas.height*_tw/Math.max(1,canvas.width)); const _tc=document.createElement('canvas');_tc.width=_tw;_tc.height=_th;_tc.getContext('2d').drawImage(canvas,0,0,_tw,_th); return _tc.toDataURL('image/jpeg',0.55);}catch(_){ return canvas.toDataURL('image/jpeg',0.55);} })();
+      const _dataUrl = canvas.toDataURL('image/jpeg', 0.88);
       const _hist=JSON.parse(localStorage.getItem('save_history')||'[]');
       const _ei=_rec.farmNo?_hist.findIndex(r=>r.crop===_rec.crop&&r.farmNo===_rec.farmNo):-1;
       if(_ei>-1){_saveImgCache(_hist[_ei].id,'');_hist.splice(_ei,1);}

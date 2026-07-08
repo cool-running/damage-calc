@@ -214,19 +214,24 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
       <button class="bigtext-btn" id="bigtext-btn" onclick="toggleBigText()">🔍 <span id="bigtext-label">크게</span></button>
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:flex-end">
-      <div class="field" style="flex:2">
-        <label>농지번호 4자리</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호 4자리"
+    <div style="display:flex;gap:6px;align-items:flex-end">
+      <div class="field" style="flex:0 0 26%;min-width:0">
+        <label>계약자명</label>
+        <input type="text" id="contractor_name" class="inp" placeholder="이름"
+          oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
+      </div>
+      <div class="field" style="flex:0 0 20%;min-width:0">
+        <label>농지번호</label>
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리"
           maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);markFilled(this);checkDupFarmNo(this.value)" autocomplete="off">
       </div>
-      <div class="field" style="flex:2">
+      <div class="field" style="flex:1;min-width:0">
         <label>조사일자</label>
         <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="markFilled(this)" autocomplete="off"></div>
       </div>
-      <div style="flex-shrink:0">
+      <div style="flex:0 0 40px">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
-          style="width:46px;height:46px;border:1.5px solid var(--green2);border-radius:var(--rs);background:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
+          style="width:100%;height:40px;border:1.5px solid var(--green2);border-radius:var(--rs);background:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
@@ -942,7 +947,7 @@ function openHistoryModal(){
   } else {
     list.innerHTML = records.slice().reverse().map((r,i)=>{
       const idx = records.length-1-i;
-      const farmDisp = (r.farm_no_disp||r.farm_no) ? '농지 '+(r.farm_no_disp||r.farm_no) : '농지번호 미입력';
+      const farmDisp = r.contractor_name ? r.contractor_name+'('+(r.farm_no_disp||r.farm_no||'-')+')' : ((r.farm_no_disp||r.farm_no) ? '농지 '+(r.farm_no_disp||r.farm_no) : '농지번호 미입력');
       const pctDisp = r.pct!=null ? r.pct+'%' : '-';
       return `<div style="border:1.5px solid #e8edf3;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white;transition:background .15s"
         onclick="loadHistoryRecord(${idx})"
@@ -984,7 +989,7 @@ function loadHistoryRecord(idx){
   try{ records=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){}
   const r=records[idx];
   if(!r) return;
-  const fields=['farm_no', 'survey_date', 'avg_yield', 'ins_area', 'act_area', 'dead_area', 'other_area', 'harv_area', 'ins_harvest_rate', 'harvest_area_rate', 'unins_rate'];
+  const fields=['farm_no', 'contractor_name', 'survey_date', 'avg_yield', 'ins_area', 'act_area', 'dead_area', 'other_area', 'harv_area', 'ins_harvest_rate', 'harvest_area_rate', 'unins_rate'];
   fields.forEach(id=>{
     const el=document.getElementById(id);
     if(!el) return;
@@ -1024,7 +1029,7 @@ function saveToHistory(){
   const record={ farm_no:farmNo, farm_no_disp:farmNoDisp, seq:_farmNoSeq, isAmend:_isAmendCase, survey_date:surveyDate, pct,
     saved_at:new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/ /g,'')
   };
-  const fields=['farm_no', 'survey_date', 'avg_yield', 'ins_area', 'act_area', 'dead_area', 'other_area', 'harv_area', 'ins_harvest_rate', 'harvest_area_rate', 'unins_rate'];
+  const fields=['farm_no', 'contractor_name', 'survey_date', 'avg_yield', 'ins_area', 'act_area', 'dead_area', 'other_area', 'harv_area', 'ins_harvest_rate', 'harvest_area_rate', 'unins_rate'];
   fields.forEach(id=>{ const el=document.getElementById(id); if(el) record[id]=el.value; });
   if(typeof samples!=='undefined') record.samples=JSON.parse(JSON.stringify(samples));
   let records=[];
@@ -1049,6 +1054,8 @@ function resetAll(){
   });
   const farmEl=document.getElementById('farm_no');
   if(farmEl){ farmEl.value=''; farmEl.classList.remove('filled'); }
+  const nameEl=document.getElementById('contractor_name');
+  if(nameEl){ nameEl.value=''; nameEl.classList.remove('filled'); }
   document.getElementById('survey_date').value=fmt(new Date());
   markFilled(document.getElementById('survey_date'));
   ['contract_yn_disp','survey_area_disp','m2_avg_disp'].forEach(id=>{
@@ -1073,6 +1080,7 @@ function saveState(){
   try{
     const state={
       farm_no:document.getElementById('farm_no').value,
+      contractor_name:document.getElementById('contractor_name')?.value||'',
       survey_date:document.getElementById('survey_date').value,
       avg_yield:document.getElementById('avg_yield').value,
       ins_area:document.getElementById('ins_area').value,
@@ -1102,6 +1110,7 @@ function loadState(){
       }
     });
     if(s.farm_no){ const el=document.getElementById('farm_no'); if(el){ el.value=s.farm_no; el.classList.add('filled'); } }
+    if(s.contractor_name){ const el=document.getElementById('contractor_name'); if(el){ el.value=s.contractor_name; el.classList.add('filled'); } }
     if(s.samples&&s.samples.length>0) samples=s.samples;
     if(s.isLocked) setTimeout(()=>{
       _isLocked=true;
@@ -1123,8 +1132,8 @@ function _saveImgCache(id,dataUrl){
     cache=cache.filter(c=>String(c.id)!==String(id));
     if(dataUrl){
       cache.unshift({id,date:today,img:dataUrl});
-      const todayItems=cache.filter(c=>c.date===today).slice(0,15);
-      const otherItems=cache.filter(c=>c.date!==today).slice(0,25);
+      const todayItems=cache.filter(c=>c.date===today).slice(0,10);
+      const otherItems=cache.filter(c=>c.date!==today).slice(0,15);
       let _merged=[...todayItems,...otherItems];
       while(_merged.length){ try{ localStorage.setItem('save_img_cache',JSON.stringify(_merged)); break; }catch(_qe){ _merged=_merged.slice(0,Math.max(0,_merged.length-5)); } }
     } else {
@@ -1137,8 +1146,12 @@ function fillTeaCaptureTemplate(){
   const contractColor=contractV.includes('변경')?'#e24b4a':'#111827';
   const survDate=document.getElementById('survey_date').value||'';
   const farmNo=(document.getElementById('farm_no').value||'').trim();
+  const contractorName=(document.getElementById('contractor_name')?.value||'').trim();
   document.getElementById('cap-date-disp').textContent=survDate;
-  document.getElementById('cap-farmno-disp').textContent=farmNo?'농지번호: '+farmNo+(_farmNoSeq>0?'('+_farmNoSeq+')':''):'';
+  const farmNoFull=farmNo+(_farmNoSeq>0?'('+_farmNoSeq+')':'');
+  document.getElementById('cap-farmno-disp').textContent=contractorName
+    ? contractorName+(farmNoFull?'('+farmNoFull+')':'')
+    : (farmNo?'농지번호: '+farmNoFull:'');
   document.getElementById('cap-avg-yield').textContent=document.getElementById('avg_yield').value?document.getElementById('avg_yield').value+' kg':'-';
   document.getElementById('cap-ins-area').textContent=document.getElementById('ins_area').value?document.getElementById('ins_area').value+' ㎡':'-';
   const _insHR=document.getElementById('ins_harvest_rate').value||'';
@@ -1199,10 +1212,11 @@ async function saveImage(){
     link.download=`차피해율_${stamp}.png`; link.href=canvas.toDataURL('image/png'); link.click();
     try{
       const _farmNo=(document.getElementById('farm_no')?.value||'').trim()+(_farmNoSeq>0?'('+_farmNoSeq+')':'');
+      const _contractorName=(document.getElementById('contractor_name')?.value||'').trim();
       const _survDate=document.getElementById('survey_date')?.value||'';
       const _pct=document.getElementById('result-pct')?.textContent||'-';
-      const _rec={id:Date.now(),crop:'차',cropDetail:'차(茶)',category:'밭작물',farmNo:_farmNo,surveyDate:_survDate,pct:_pct,filename:`차피해율_${stamp}.png`,savedAt:(()=>{const d=new Date();return fmt(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
-      const _dataUrl=(()=>{ try{ const _tw=Math.min(canvas.width,640),_th=Math.round(canvas.height*_tw/Math.max(1,canvas.width)); const _tc=document.createElement('canvas');_tc.width=_tw;_tc.height=_th;_tc.getContext('2d').drawImage(canvas,0,0,_tw,_th); return _tc.toDataURL('image/jpeg',0.55);}catch(_){ return canvas.toDataURL('image/jpeg',0.55);} })();
+      const _rec={id:Date.now(),crop:'차',cropDetail:'차(茶)',category:'밭작물',farmNo:_farmNo,contractorName:_contractorName,surveyDate:_survDate,pct:_pct,filename:`차피해율_${stamp}.png`,savedAt:(()=>{const d=new Date();return fmt(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()};
+      const _dataUrl = canvas.toDataURL('image/jpeg', 0.88);
       const _hist=JSON.parse(localStorage.getItem('save_history')||'[]');
       const _ei=_rec.farmNo?_hist.findIndex(r=>r.crop===_rec.crop&&r.farmNo===_rec.farmNo):-1;
       if(_ei>-1){ _saveImgCache(_hist[_ei].id,''); _hist.splice(_ei,1); }

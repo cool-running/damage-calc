@@ -231,18 +231,22 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
       <button class="bigtext-btn" id="bigtext-btn" onclick="toggleBigText()">🔍 <span id="bigtext-label">크게</span></button>
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:flex-end">
-      <div class="field" style="width:40%">
-        <label>농지번호</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호 4자리" maxlength="4" oninput="onField(this)" autocomplete="off">
+    <div style="display:flex;gap:6px;align-items:flex-end">
+      <div class="field" style="flex:0 0 26%;min-width:0">
+        <label>계약자명</label>
+        <input type="text" id="contractor_name" class="inp" placeholder="이름" oninput="onField(this)" autocomplete="off">
       </div>
-      <div class="field" style="width:40%">
+      <div class="field" style="flex:0 0 20%;min-width:0">
+        <label>농지번호</label>
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" maxlength="4" oninput="onField(this)" autocomplete="off">
+      </div>
+      <div class="field" style="flex:1;min-width:0">
         <label>조사일자</label>
         <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="onDateField(this)" autocomplete="off"></div>
       </div>
-      <div style="width:20%;flex-shrink:0">
+      <div style="flex:0 0 40px">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
-          style="width:100%;height:46px;border:1.5px solid var(--org2);border-radius:var(--rs);background:white;color:var(--org);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
+          style="width:100%;height:40px;border:1.5px solid var(--org2);border-radius:var(--rs);background:white;color:var(--org);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
@@ -558,7 +562,7 @@ const LABEL={top:['10%','20%','30%','40%','50%'],bot:['60%','70%','80%','90%','1
 const KEY='pepper_state', HKEY='pepper_history', BKEY='pepper_bigtext';
 
 let st={
-  farm_no:'',survey_date:'',pumjong:'홍고추',region:'강원외',
+  farm_no:'',contractor_name:'',survey_date:'',pumjong:'홍고추',region:'강원외',
   disasterIdx:0,diseaseIdx:0,uninsRate:'',
   phase:'pre',plantDate:'',accDate:'',harvestStart:'',accDate2:'',covEnd:'',covEndManual:false,harvestPlan:'',harvestPlanManual:false,
   insArea:'',actArea:'',dmgArea:'',
@@ -754,7 +758,7 @@ function diseaseName(){
   return d.diseases[st.diseaseIdx]||'';
 }
 function loadForm(){
-  ['farm_no','survey_date','pumjong','region','uninsRate','ginujeok','plantDate','accDate','harvestStart','accDate2','covEnd','harvestPlan','insArea','actArea','dmgArea'].forEach(id=>{
+  ['farm_no','contractor_name','survey_date','pumjong','region','uninsRate','ginujeok','plantDate','accDate','harvestStart','accDate2','covEnd','harvestPlan','insArea','actArea','dmgArea'].forEach(id=>{
     const el=$(id);if(el){el.value=st[id]||'';markFilled(el);}
   });
   // 면적칸 천단위 콤마 복원
@@ -989,7 +993,7 @@ function openHistoryModal(){
       const idx=recs.length-1-ri;
       return '<div style="border:1.5px solid #f0e0d0;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white" onclick="loadHistoryRecord('+idx+')">'+
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'+
-        '<span style="font-size:15px;font-weight:800;color:var(--org)">'+(r.farm_no?'농지 '+r.farm_no:'농지번호 미입력')+'</span>'+
+        '<span style="font-size:15px;font-weight:800;color:var(--org)">'+(r.contractor_name?r.contractor_name+'('+(r.farm_no||'-')+')':(r.farm_no?'농지 '+r.farm_no:'농지번호 미입력'))+'</span>'+
         '<span style="font-size:11px;color:#aaa">'+(r.saved_at||'')+'</span></div>'+
         '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
         '<span style="font-size:12px;color:#555">🌶️ '+(r.pumjong||'고추')+'</span>'+
@@ -1057,7 +1061,9 @@ function disasterLabel(){
 }
 function fillCaptureTemplate(){
   $('cap-date').textContent=st.survey_date||'';
-  $('cap-farmno').textContent=st.farm_no?('농지번호: '+st.farm_no):'';
+  $('cap-farmno').textContent=st.contractor_name
+    ? st.contractor_name+(st.farm_no?'('+st.farm_no+')':'')
+    : (st.farm_no?('농지번호: '+st.farm_no):'');
   // 1. 사고원인
   const d=DISASTERS[st.disasterIdx];
   const dn=diseaseName();
@@ -1153,7 +1159,7 @@ function saveToHistoryList(imgData){
     }
     hist.unshift({
       id:id, crop:'고추', cropDetail:'고추', category:'밭작물',
-      farmNo:st.farm_no||'', pct:pct,
+      farmNo:st.farm_no||'', contractorName:st.contractor_name||'', pct:pct,
       savedAt:(st.survey_date||todayStr())+'T'+new Date().toTimeString().slice(0,8)
     });
     if(hist.length>200) hist=hist.slice(0,200);
@@ -1171,7 +1177,7 @@ function saveToHistoryList(imgData){
     let imgs=[]; try{imgs=JSON.parse(localStorage.getItem('save_img_cache')||'[]');}catch(e){}
     if(oldId!=null) imgs=imgs.filter(c=>String(c.id)!==String(oldId));
     imgs.unshift({id:id,img:imgData});
-    while(imgs.length>15) imgs.pop();
+    while(imgs.length>10) imgs.pop();
     try{ localStorage.setItem('save_img_cache',JSON.stringify(imgs)); }
     catch(e){ // 용량 초과 시 오래된 이미지 비우며 재시도
       while(imgs.length>1){ imgs.pop(); try{localStorage.setItem('save_img_cache',JSON.stringify(imgs));break;}catch(_){} }
@@ -1185,14 +1191,9 @@ function saveImage(){
     const a=document.createElement('a');
     a.download='고추_'+(st.farm_no||'')+'_'+(st.survey_date||'')+'.png';
     a.href=dataUrl;a.click();
-    /* 저장목록 미리보기용 축소 썸네일(JPEG) — localStorage 용량 절약 */
+    /* 저장목록 미리보기용 썸네일 (원본 해상도 그대로, 고품질) */
     let thumb='';
-    try{
-      const tw=Math.min(cv.width,640), th=Math.round(cv.height*tw/Math.max(1,cv.width));
-      const tc=document.createElement('canvas');tc.width=tw;tc.height=th;
-      tc.getContext('2d').drawImage(cv,0,0,tw,th);
-      thumb=tc.toDataURL('image/jpeg',0.55);
-    }catch(_){ try{thumb=cv.toDataURL('image/jpeg',0.55);}catch(__){} }
+    try{ thumb=cv.toDataURL('image/jpeg',0.88); }catch(_){}
     saveToHistoryList(thumb||dataUrl);
     document.getElementById('saved-overlay').style.display='flex';
   });
