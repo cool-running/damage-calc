@@ -206,12 +206,12 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
     <div style="display:flex;gap:6px;align-items:flex-end">
-      <div class="field" style="flex:0 0 26%;min-width:0">
+      <div class="field" style="flex:0 0 28%;min-width:0">
         <label>계약자명</label>
         <input type="text" id="contractor_name" class="inp" placeholder="이름"
           oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
       </div>
-      <div class="field" style="flex:0 0 20%;min-width:0">
+      <div class="field" style="flex:0 0 22%;min-width:0">
         <label>농지번호</label>
         <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" maxlength="4"
           oninput="markFilled(this)" autocomplete="off">
