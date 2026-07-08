@@ -384,11 +384,9 @@ function makeLblRow(r){
   const crop = r.cropDetail||r.crop||'-';
   const farm = r.farmNo||'';
   const name = r.contractorName||'';
-  const date = r.savedAt ? fmtShortDate(r.savedAt) : '';
   let html = `<span class="lbl-crop">${crop}</span>`;
   const farmPart = name ? `${name}${farm?'('+farm+')':''}` : farm;
   if(farmPart) html += `<span class="lbl-sep">·</span><span class="lbl-farm">${farmPart}</span>`;
-  if(date) html += `<span class="lbl-sep">·</span><span class="lbl-date">${date}</span>`;
   return `<div class="lbl-row">${html}</div>`;
 }
 function fmtDateLabel(iso){
