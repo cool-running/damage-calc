@@ -2656,7 +2656,7 @@ async function saveImage() {
         filename: `${cropName}착과수_${stamp}.png`,
         savedAt: (()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()
       };
-      const _dataUrl=(()=>{ try{ const _tw=Math.min(canvas.width,640),_th=Math.round(canvas.height*_tw/Math.max(1,canvas.width)); const _tc=document.createElement('canvas');_tc.width=_tw;_tc.height=_th;_tc.getContext('2d').drawImage(canvas,0,0,_tw,_th); return _tc.toDataURL('image/jpeg',0.55);}catch(_){ return canvas.toDataURL('image/jpeg',0.55);} })();
+      const _dataUrl=(()=>{ try{ const _tw=Math.min(canvas.width,800),_th=Math.round(canvas.height*_tw/Math.max(1,canvas.width)); const _tc=document.createElement('canvas');_tc.width=_tw;_tc.height=_th;_tc.getContext('2d').drawImage(canvas,0,0,_tw,_th); return _tc.toDataURL('image/jpeg',0.7);}catch(_){ return canvas.toDataURL('image/jpeg',0.7);} })();
       const _hist = JSON.parse(localStorage.getItem('save_history')||'[]');
       const _ei = _rec.farmNo ? _hist.findIndex(r=>r.crop===_rec.crop&&r.farmNo===_rec.farmNo) : -1;
       if(_ei > -1){ _saveImgCache(_hist[_ei].id, ''); _hist.splice(_ei,1); }
