@@ -1086,6 +1086,7 @@ function resetAll(){
   document.getElementById('result-section').className='result-box pending';
   document.getElementById('result-pct').textContent='- -';
   window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(() => { const _name = document.getElementById('contractor_name'); if(_name) _name.focus(); }, 300);
 }
 
 // ── 갤러리 저장 ──────────────────────────────────

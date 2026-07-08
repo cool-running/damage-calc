@@ -1294,6 +1294,7 @@ function resetAll(){
   document.getElementById('result-pct').textContent='- -';
   document.getElementById('s-bug').textContent='-';
   window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(() => { const _name = document.getElementById('contractor_name'); if(_name) _name.focus(); }, 300);
 }
 
 // ── 이미지 캐시 저장 (마늘과 동일) ───────────────────

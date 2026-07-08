@@ -1043,6 +1043,7 @@ function resetAll(){
   _isLocked = false; unlockInputs();
   setMode('sample');
   window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(() => { const _name = document.getElementById('contractor_name'); if(_name) _name.focus(); }, 300);
 }
 
 if('serviceWorker' in navigator){

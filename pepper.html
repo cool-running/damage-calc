@@ -979,6 +979,7 @@ function confirmResetAll(){
   localStorage.removeItem(KEY);
   // 조사일자는 오늘로 자동 세팅 후 시작
   try{ localStorage.setItem(KEY, JSON.stringify({survey_date:todayStr()})); }catch(e){}
+  try{ sessionStorage.setItem('focus_contractor_name','1'); }catch(e){}
   location.reload();
 }
 
@@ -1208,6 +1209,12 @@ document.querySelectorAll('.datewrap input[type=date]').forEach(inp=>{
   const open=()=>{ try{ if(inp.showPicker) inp.showPicker(); }catch(e){} };
   inp.addEventListener('click',open);
 });
+try{
+  if(sessionStorage.getItem('focus_contractor_name')==='1'){
+    sessionStorage.removeItem('focus_contractor_name');
+    setTimeout(()=>{ const f=$('contractor_name'); if(f) f.focus(); },300);
+  }
+}catch(e){}
 </script>
 </body>
 </html>
