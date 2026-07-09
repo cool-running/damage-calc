@@ -368,12 +368,12 @@ tbody td input.filled:active{
       <option value="onion" selected>양파</option>
     </select>
     <div style="display:flex;gap:6px;align-items:flex-end">
-      <div class="field" style="flex:0 0 30%;min-width:0">
+      <div class="field" style="flex:0 0 28%;min-width:0">
         <label>계약자명</label>
         <input type="text" id="contractor_name" class="inp" placeholder="이름"
           oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
       </div>
-      <div class="field" style="flex:0 0 30%;min-width:0">
+      <div class="field" style="flex:0 0 22%;min-width:0">
         <label>농지번호</label>
         <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리"
           maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);checkDupFarmNo(this.value);markFilled(this)"
