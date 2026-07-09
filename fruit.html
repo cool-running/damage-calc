@@ -983,6 +983,7 @@ function calcTreeResult(silent=false) {
   if(rows1) rows1.style.pointerEvents = 'none';
   icntBtns.forEach(b => b.style.pointerEvents = 'none');
   renderIntervalRows(); // 잠금 상태 반영하여 재렌더링
+  syncIntervalToVarieties(); // 탭 이동 없이 즉시 착과수 데이터에 반영
   onInput();
   setLockBadge(true);
   showToast('나무조사 완료 — 하단 요약을 확인하세요');
@@ -1259,8 +1260,8 @@ function renderIntervalRows() {
 function canMoveToFruitTab() {
   return intervalData.slice(0, intervalCount).every(d => d.actual > 0);
 }
-function applyIntervalToVarieties() {
-  if(!canMoveToFruitTab()){ showToast('실제결과주수를 먼저 입력해 주세요'); return; }
+function syncIntervalToVarieties() {
+  if(!canMoveToFruitTab()) return false;
   const validData = intervalData.slice(0, intervalCount);
   const total = validData.reduce((s,d) => s + getSurveyFromInterval(d), 0);
   const tp = getProperSample(total);
@@ -1290,6 +1291,11 @@ function applyIntervalToVarieties() {
   });
 
   saveState();
+  return true;
+}
+
+function applyIntervalToVarieties() {
+  if(!syncIntervalToVarieties()){ showToast('실제결과주수를 먼저 입력해 주세요'); return; }
   setMode(1);
   onInput();
 }
