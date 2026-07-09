@@ -2548,7 +2548,7 @@ async function saveImage() {
     // ── 적과후착과수 섹션 헤더 옆 요약: 전체 조사대상주수/표본주수 (공식 서식과 동일한 총계 표시)
     const chipS = `border:1px solid #BFD8F2;background:#EBF4FF;color:#185FA5;border-radius:6px;padding:3px 7px;font-size:${cfg.tdFs-1}px;font-weight:700;white-space:nowrap`;
     const summaryChips = totalSurvey>0
-      ? `<div style="${chipS}">조사대상주수 ${totalSurvey.toLocaleString()}주 · 표본주수 ${totalProperSum.toLocaleString()}주</div>`
+      ? `<div style="${chipS}">조사대상주수 ${totalSurvey.toLocaleString()}주 · 표본주수 ${totalSampleN.toLocaleString()}주</div>`
       : '';
     const capSummaryEl = document.getElementById('cap-sample-summary');
     if(capSummaryEl) capSummaryEl.innerHTML = summaryChips;
