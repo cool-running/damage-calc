@@ -1261,7 +1261,9 @@ function renderIntervalRows() {
 
 
 function canMoveToFruitTab() {
-  return intervalData.slice(0, intervalCount).every(d => d.actual > 0);
+  // 실제결과주수는 0(전체 고사 등)이 정상적인 값일 수 있어 이걸로 "입력 여부"를 판단하면 안 됨.
+  // 가입주수가 입력됐는지로 판단 — 가입주수는 보험계약상 항상 0보다 큰 값이 있어야 함.
+  return intervalData.slice(0, intervalCount).every(d => d.reg > 0);
 }
 function syncIntervalToVarieties() {
   if(!canMoveToFruitTab()) return false;
@@ -2061,7 +2063,7 @@ function doCalc(manual = false, fromBtn = false) {
   // 필수값·미입력 통합 팝업 체크
   const missing = [];
   if (!avgFruit) missing.push('• 평년착과수');
-  const hasActual = varieties.some(v => v.actual > 0);
+  const hasActual = varieties.some(v => v.reg > 0);  // 실제결과주수는 0(전체 고사)이 정상값일 수 있어 가입주수로 판단
   if (!hasActual) missing.push('• 실제결과주수');
   const hasSamples = varieties.some(v => v.samples.some(s => s !== '' && !isNaN(parseFloat(s))));
   if (!hasSamples) missing.push('• 표본주 착과수');
@@ -2403,7 +2405,7 @@ function _checkCalcMissing(){
   const avgFruit = toNum(document.getElementById('avg_fruit'));
   const missing = [];
   if (!avgFruit) missing.push('• 평년착과수');
-  const hasActual = varieties.some(v => v.actual > 0);
+  const hasActual = varieties.some(v => v.reg > 0);  // 실제결과주수는 0(전체 고사)이 정상값일 수 있어 가입주수로 판단
   if (!hasActual) missing.push('• 실제결과주수');
   const hasSamples = varieties.some(v => v.samples.some(s => s !== '' && !isNaN(parseFloat(s))));
   if (!hasSamples) missing.push('• 표본주 착과수');
