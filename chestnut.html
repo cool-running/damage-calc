@@ -250,17 +250,21 @@ body.big-text .scell .ci{font-size:19px!important}
       </div>
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:flex-end">
-      <div class="field" style="flex:1">
-        <label>농지번호</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="농지번호" oninput="markFilled(this);saveState()" onkeydown="if(event.key==='Enter'||event.key==='Next'){event.preventDefault();$('avg_yield').focus();}" autocomplete="off">
+    <div style="display:flex;gap:6px;align-items:flex-end">
+      <div class="field" style="flex:0 0 28%;min-width:0">
+        <label>계약자명</label>
+        <input type="text" id="contractor_name" class="inp" placeholder="이름" oninput="markFilled(this);saveState()" autocomplete="off">
       </div>
-      <div class="field" style="flex:1">
+      <div class="field" style="flex:0 0 22%;min-width:0">
+        <label>농지번호</label>
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" oninput="markFilled(this);saveState()" onkeydown="if(event.key==='Enter'||event.key==='Next'){event.preventDefault();$('avg_yield').focus();}" autocomplete="off">
+      </div>
+      <div class="field" style="flex:1;min-width:0">
         <label>조사일자</label>
         <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="syncDate(this);saveState()" autocomplete="off"></div>
       </div>
-      <div style="width:54px;flex-shrink:0">
-        <button class="hist-btn" onclick="openHistoryModal()" title="이전 기록 불러오기">📋</button>
+      <div style="flex:0 0 40px">
+        <button onclick="openHistoryModal()" title="이전 기록 불러오기" style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:var(--rs);background:white;color:var(--main);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
@@ -1164,7 +1168,7 @@ function openResetModal(){$('resetModal').style.display='flex';}
 function closeResetModal(){$('resetModal').style.display='none';}
 function confirmReset(){
   closeResetModal();
-  ['farm_no','avg_yield','unins_rate'].forEach(id=>{$(id).value='';$(id).classList.remove('filled');});
+  ['farm_no','contractor_name','avg_yield','unins_rate'].forEach(id=>{$(id).value='';$(id).classList.remove('filled');});
   $('survey_date').value=new Date().toLocaleDateString('en-CA');syncDate($('survey_date'));
   varieties=[newVariety()];
   _locked=false;_phase='tree';
@@ -1176,7 +1180,7 @@ function confirmReset(){
 function saveState(){
   try{
     localStorage.setItem('chestnut_state_v2',JSON.stringify({
-      farm:$('farm_no').value,date:$('survey_date').value,
+      farm:$('farm_no').value,contractor_name:$('contractor_name')?.value||'',date:$('survey_date').value,
       avg:$('avg_yield').value,unins:$('unins_rate').value,
       varieties,locked:_locked,phase:_phase,expand:_expandAll}));
   }catch(e){}
@@ -1186,6 +1190,7 @@ function loadState(){
     const s=JSON.parse(localStorage.getItem('chestnut_state_v2')||'null');
     if(s&&s.varieties&&s.varieties.length){
       $('farm_no').value=s.farm||'';markFilled($('farm_no'));
+      if($('contractor_name')){ $('contractor_name').value=s.contractor_name||''; markFilled($('contractor_name')); }
       $('avg_yield').value=s.avg||'';markFilled($('avg_yield'));
       $('unins_rate').value=s.unins||'';markFilled($('unins_rate'));
       $('survey_date').value=s.date||'';syncDate($('survey_date'));
@@ -1214,7 +1219,7 @@ function saveToHistory(){
   const date=$('survey_date').value||'';
   const pctEl=$('result-pct');
   const pct=pctEl&&pctEl.textContent!=='- -'?pctEl.textContent.replace('%',''):null;
-  const rec={farm,date,avg:$('avg_yield').value,unins:$('unins_rate').value,
+  const rec={farm,contractor_name:($('contractor_name')?.value||'').trim(),date,avg:$('avg_yield').value,unins:$('unins_rate').value,
     varieties:JSON.parse(JSON.stringify(varieties)),pct,
     saved_at:new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\s/g,'')};
   let recs=[];try{recs=JSON.parse(localStorage.getItem('chestnut_history_v2')||'[]');}catch(e){}
@@ -1241,7 +1246,7 @@ function openHistoryModal(){
       const vtext=vtypes.join(' ')||'-';
       const pctText=r.pct!=null?r.pct+'%':'-';
       return `<div style="border:1.5px solid #e8ddd0;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:white" onclick="loadHistory(${idx})">
-        <div style="font-size:15px;font-weight:800;color:var(--main-d);margin-bottom:4px">${r.farm?'농지 '+r.farm:'농지 미입력'}</div>
+        <div style="font-size:15px;font-weight:800;color:var(--main-d);margin-bottom:4px">${r.contractor_name?r.contractor_name+'('+(r.farm||'-')+')':(r.farm?'농지 '+r.farm:'농지 미입력')}</div>
         <div style="font-size:13px;color:var(--text);margin-bottom:3px;font-weight:600">${vtext} &nbsp;·&nbsp; 피해율 ${pctText}</div>
         <div style="font-size:11px;color:#aaa">조사일자 ${r.date||'-'} &nbsp;·&nbsp; 저장 ${r.saved_at||''}</div>
         <div style="margin-top:8px;display:flex;justify-content:flex-end;gap:6px">
@@ -1257,6 +1262,7 @@ function loadHistory(idx){
   let recs=[];try{recs=JSON.parse(localStorage.getItem('chestnut_history_v2')||'[]');}catch(e){}
   const r=recs[idx];if(!r)return;
   $('farm_no').value=r.farm||'';markFilled($('farm_no'));
+  if($('contractor_name')){ $('contractor_name').value=r.contractor_name||''; markFilled($('contractor_name')); }
   $('avg_yield').value=r.avg||'';markFilled($('avg_yield'));
   $('unins_rate').value=r.unins||'';markFilled($('unins_rate'));
   $('survey_date').value=r.date||'';syncDate($('survey_date'));
@@ -1276,6 +1282,7 @@ function buildCapture(){
   const R=computeAll();
   const fmtN=x=>Math.round(x).toLocaleString();
   const farm=$('farm_no').value||'-',date=$('survey_date').value||'-';
+  const cname=($('contractor_name')?.value||'').trim();
 
   let treeRows='';
   let sReg=0,sAct=0,sDead=0,sUn=0,sProp=0,sSamp=0;
@@ -1346,7 +1353,7 @@ function buildCapture(){
         <div style="font-size:17px;font-weight:800">🌰 밤 수확개시전 수확량조사</div>
       </div>
       <div style="text-align:right;font-size:12px;line-height:1.6;flex-shrink:0">
-        <div>농지번호 <b>${farm}</b></div>
+        <div>${cname ? cname+'('+farm+')' : '농지번호 <b>'+farm+'</b>'}</div>
         <div>조사일자 <b>${date}</b></div>
       </div>
     </div>
@@ -1418,7 +1425,7 @@ async function saveImage(){
     _previewFilename=`밤피해율_${$('farm_no').value||'농지'}_${stamp}.png`;
     _previewDataUrl=canvas.toDataURL('image/png');
     /* 저장목록 미리보기용 축소 썸네일 (localStorage 용량 절약) */
-    _previewJpeg=(()=>{ try{ const _tw=Math.min(canvas.width,640),_th=Math.round(canvas.height*_tw/Math.max(1,canvas.width)); const _tc=document.createElement('canvas');_tc.width=_tw;_tc.height=_th;_tc.getContext('2d').drawImage(canvas,0,0,_tw,_th); return _tc.toDataURL('image/jpeg',0.55);}catch(_){ return canvas.toDataURL('image/jpeg',0.55);} })();
+    _previewJpeg=(()=>{ try{ return canvas.toDataURL('image/jpeg',0.88); }catch(_){ return canvas.toDataURL('image/png'); } })();
     $('previewImg').src=_previewDataUrl;
     $('previewModal').classList.add('show');
   }catch(e){showToast('저장 실패: '+e.message);}
@@ -1431,10 +1438,11 @@ function doSaveImage(){
   let _saved=false;
   try{
     const _farmNo=(($('farm_no')&&$('farm_no').value)||'').trim();
+    const _contractorName=(($('contractor_name')&&$('contractor_name').value)||'').trim();
     const _survDate=($('survey_date')&&$('survey_date').value)||'';
     const _pct=($('result-pct')&&$('result-pct').textContent)||'-';
     const _rec={ id:Date.now(), crop:'밤', cropDetail:'밤', category:'과수',
-      farmNo:_farmNo, surveyDate:_survDate, pct:_pct, filename:_previewFilename,
+      farmNo:_farmNo, contractorName:_contractorName, surveyDate:_survDate, pct:_pct, filename:_previewFilename,
       savedAt:(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})() };
     let _hist=[];try{_hist=JSON.parse(localStorage.getItem('save_history')||'[]');}catch(_){}
     if(!Array.isArray(_hist))_hist=[];
