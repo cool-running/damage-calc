@@ -1163,13 +1163,18 @@ function renderIntervalRows() {
             oninput="intervalData[${i}].reg=+this.value||0;this.classList.toggle('filled',!!this.value);onInput();saveState()"
             onkeydown="if(event.key==='Enter'){event.preventDefault();intervalData[${i}].reg=+this.value||0;const _next=document.getElementById('actual-${i}');if(_next)_next.focus();}"
             onblur="intervalData[${i}].reg=+this.value||0;onInput();saveState()">
-          <input type="number" value="${d.actual||''}" placeholder="" inputmode="decimal" autocomplete="off"
-            class="inp${d.actual?' filled':''}" style="height:34px;font-size:${document.body.classList.contains('big-text')?'16':'13'}px;min-width:0"
+          ${(()=>{
+            // actualEntered: 실제결과주수 '0'을 명시적으로 입력한 것과 아예 안 건드린 것을 구분하기 위한 플래그
+            // (기존 저장 데이터엔 이 플래그가 없을 수 있어 actual>0이면 입력된 것으로 간주 — 하위호환)
+            const _actualHasValue = d.actualEntered || d.actual>0;
+            return `<input type="number" value="${_actualHasValue ? d.actual : ''}" placeholder="" inputmode="decimal" autocomplete="off"
+            class="inp${_actualHasValue?' filled':''}" style="height:34px;font-size:${document.body.classList.contains('big-text')?'16':'13'}px;min-width:0"
             id="actual-${i}"
             onfocus="this.select()"
-            oninput="intervalData[${i}].actual=+this.value||0;this.classList.toggle('filled',!!this.value);onInput();saveState()"
-            onkeydown="if(event.key==='Enter'){event.preventDefault();intervalData[${i}].actual=+this.value||0;onInput();saveState();setTimeout(()=>{const _next=document.getElementById('reg-${i+1}');if(_next)_next.focus();else this.blur();},30);}"
-            onblur="intervalData[${i}].actual=+this.value||0;onInput();saveState()">
+            oninput="intervalData[${i}].actual=+this.value||0;intervalData[${i}].actualEntered=this.value!=='';this.classList.toggle('filled',this.value!=='');onInput();saveState()"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();intervalData[${i}].actual=+this.value||0;intervalData[${i}].actualEntered=this.value!=='';onInput();saveState();setTimeout(()=>{const _next=document.getElementById('reg-${i+1}');if(_next)_next.focus();else this.blur();},30);}"
+            onblur="intervalData[${i}].actual=+this.value||0;intervalData[${i}].actualEntered=this.value!=='';onInput();saveState()">`;
+          })()}
           <div style="display:flex;align-items:center;justify-content:center;white-space:nowrap">
             ${pn>0&&sv>0 ? `<span style="flex:1 1 0;min-width:0;text-align:right;font-size:${document.body.classList.contains('big-text')?'16':'13'}px;font-weight:800;color:#e24b4a">${pn}주</span><span style="flex:0 0 auto;font-size:11px;color:var(--hint);margin:0 2px">·</span><span style="flex:1 1 0;min-width:0;text-align:left;font-size:${document.body.classList.contains('big-text')?'16':'13'}px;font-weight:800;color:#185FA5">${gap}칸</span>` : '<span style="font-size:12px;color:var(--hint)">-</span>'}
           </div>
@@ -1261,9 +1266,9 @@ function renderIntervalRows() {
 
 
 function canMoveToFruitTab() {
-  // 실제결과주수는 0(전체 고사 등)이 정상적인 값일 수 있어 이걸로 "입력 여부"를 판단하면 안 됨.
-  // 가입주수가 입력됐는지로 판단 — 가입주수는 보험계약상 항상 0보다 큰 값이 있어야 함.
-  return intervalData.slice(0, intervalCount).every(d => d.reg > 0);
+  // 가입주수는 입력됐어야 하고, 실제결과주수는 "0을 명시적으로 입력"했거나 양수여야 함
+  // (actualEntered 플래그로 '0 입력'과 '아예 미입력'을 구분 — 기존 데이터는 actual>0으로 하위호환)
+  return intervalData.slice(0, intervalCount).every(d => d.reg > 0 && (d.actualEntered || d.actual > 0));
 }
 function syncIntervalToVarieties() {
   if(!canMoveToFruitTab()) return false;
