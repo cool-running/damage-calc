@@ -1156,16 +1156,20 @@ function renderIntervalRows() {
             ${(()=>{const _n=(allData[currentCrop].varieties[i]&&allData[currentCrop].varieties[i].name)||('품종'+(i+1));const _len=_n.length;const _fs=_len<=2?15:_len<=3?14:_len<=4?13:_len<=5?12:_len<=6?11:10;return `<div style="font-size:${_fs}px;color:var(--blue);font-weight:700;word-break:keep-all;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px;text-align:center">${_n}</div>`;})()}
             <div style="position:absolute;top:0;right:0;font-size:9px;line-height:1;color:var(--hint)">✏️</div>
           </div>
-          <input type="number" value="${d.reg||''}" placeholder="" inputmode="decimal" autocomplete="off"
-            class="inp${d.reg?' filled':''}" style="height:34px;font-size:${document.body.classList.contains('big-text')?'16':'13'}px;min-width:0"
+          ${(()=>{
+            // regEntered: 가입주수 '0'을 명시적으로 입력한 것과 아예 안 건드린 것을 구분하기 위한 플래그
+            // (신규 발견 품종 등 가입주수가 0인 정상 케이스가 있을 수 있음 — 실제결과주수와 동일한 처리)
+            const _regHasValue = d.regEntered || d.reg>0;
+            return `<input type="number" value="${_regHasValue ? d.reg : ''}" placeholder="" inputmode="decimal" autocomplete="off"
+            class="inp${_regHasValue?' filled':''}" style="height:34px;font-size:${document.body.classList.contains('big-text')?'16':'13'}px;min-width:0"
             id="reg-${i}"
             onfocus="this.select()"
-            oninput="intervalData[${i}].reg=+this.value||0;this.classList.toggle('filled',!!this.value);onInput();saveState()"
-            onkeydown="if(event.key==='Enter'){event.preventDefault();intervalData[${i}].reg=+this.value||0;const _next=document.getElementById('actual-${i}');if(_next)_next.focus();}"
-            onblur="intervalData[${i}].reg=+this.value||0;onInput();saveState()">
+            oninput="intervalData[${i}].reg=+this.value||0;intervalData[${i}].regEntered=this.value!=='';this.classList.toggle('filled',this.value!=='');onInput();saveState()"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();intervalData[${i}].reg=+this.value||0;intervalData[${i}].regEntered=this.value!=='';const _next=document.getElementById('actual-${i}');if(_next)_next.focus();}"
+            onblur="intervalData[${i}].reg=+this.value||0;intervalData[${i}].regEntered=this.value!=='';onInput();saveState()">`;
+          })()}
           ${(()=>{
             // actualEntered: 실제결과주수 '0'을 명시적으로 입력한 것과 아예 안 건드린 것을 구분하기 위한 플래그
-            // (기존 저장 데이터엔 이 플래그가 없을 수 있어 actual>0이면 입력된 것으로 간주 — 하위호환)
             const _actualHasValue = d.actualEntered || d.actual>0;
             return `<input type="number" value="${_actualHasValue ? d.actual : ''}" placeholder="" inputmode="decimal" autocomplete="off"
             class="inp${_actualHasValue?' filled':''}" style="height:34px;font-size:${document.body.classList.contains('big-text')?'16':'13'}px;min-width:0"
@@ -1266,9 +1270,11 @@ function renderIntervalRows() {
 
 
 function canMoveToFruitTab() {
-  // 가입주수는 입력됐어야 하고, 실제결과주수는 "0을 명시적으로 입력"했거나 양수여야 함
-  // (actualEntered 플래그로 '0 입력'과 '아예 미입력'을 구분 — 기존 데이터는 actual>0으로 하위호환)
-  return intervalData.slice(0, intervalCount).every(d => d.reg > 0 && (d.actualEntered || d.actual > 0));
+  // 가입주수·실제결과주수 둘 다 0이 정상값일 수 있어(신규 발견 품종, 전체 고사 등)
+  // "입력했는지"는 각각 별도의 Entered 플래그로 판단 — 값 자체(>0)로 판단하면 안 됨
+  return intervalData.slice(0, intervalCount).every(d =>
+    (d.regEntered || d.reg > 0) && (d.actualEntered || d.actual > 0)
+  );
 }
 function syncIntervalToVarieties() {
   if(!canMoveToFruitTab()) return false;
@@ -1289,6 +1295,8 @@ function syncIntervalToVarieties() {
     varieties[i].age        = 0;
     varieties[i].reg        = d.reg || 0;
     varieties[i].actual     = d.actual || 0;
+    varieties[i].regEntered = d.regEntered || d.reg > 0;
+    varieties[i].actualEntered = d.actualEntered || d.actual > 0;
     varieties[i].dead       = d.dead || 0;
     varieties[i].unable     = d.unable || 0;
     varieties[i].uninsDead  = d.uninsDead || 0;
@@ -2068,7 +2076,7 @@ function doCalc(manual = false, fromBtn = false) {
   // 필수값·미입력 통합 팝업 체크
   const missing = [];
   if (!avgFruit) missing.push('• 평년착과수');
-  const hasActual = varieties.some(v => v.reg > 0);  // 실제결과주수는 0(전체 고사)이 정상값일 수 있어 가입주수로 판단
+  const hasActual = varieties.some(v => v.regEntered || v.reg > 0);  // 가입주수·실제결과주수 둘 다 0이 정상값일 수 있어 Entered 플래그로 판단
   if (!hasActual) missing.push('• 실제결과주수');
   const hasSamples = varieties.some(v => v.samples.some(s => s !== '' && !isNaN(parseFloat(s))));
   if (!hasSamples) missing.push('• 표본주 착과수');
@@ -2410,7 +2418,7 @@ function _checkCalcMissing(){
   const avgFruit = toNum(document.getElementById('avg_fruit'));
   const missing = [];
   if (!avgFruit) missing.push('• 평년착과수');
-  const hasActual = varieties.some(v => v.reg > 0);  // 실제결과주수는 0(전체 고사)이 정상값일 수 있어 가입주수로 판단
+  const hasActual = varieties.some(v => v.regEntered || v.reg > 0);  // 가입주수·실제결과주수 둘 다 0이 정상값일 수 있어 Entered 플래그로 판단
   if (!hasActual) missing.push('• 실제결과주수');
   const hasSamples = varieties.some(v => v.samples.some(s => s !== '' && !isNaN(parseFloat(s))));
   if (!hasSamples) missing.push('• 표본주 착과수');
@@ -2738,6 +2746,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       varieties[i].name       = d._name || varieties[i].name || '';
       varieties[i].reg        = d.reg || 0;
       varieties[i].actual     = d.actual || 0;
+      varieties[i].regEntered = d.regEntered || d.reg > 0;
+      varieties[i].actualEntered = d.actualEntered || d.actual > 0;
       varieties[i].dead       = d.dead || 0;
       varieties[i].unable     = d.unable || 0;
       varieties[i].uninsDead  = d.uninsDead || 0;
