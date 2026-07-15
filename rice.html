@@ -1263,6 +1263,7 @@ function resetAll(){
   const vEl=document.getElementById('variety'); if(vEl){vEl.value='mebyeo';vEl.classList.add('filled');}
   const dn = document.getElementById('dis-n');
   if(dn){ dn.checked=true; onDiseaseChk(); }
+  setMode('sample'); // 조사방식도 기본값(표본조사)으로 복원
 
   document.getElementById('sample-inputs').innerHTML='';
   const psd=document.getElementById('properSampleDisp'); if(psd) psd.value='';
