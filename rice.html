@@ -1088,7 +1088,7 @@ function loadState(){
     const raw = localStorage.getItem('rice_state');
     if(!raw) return;
     const s = JSON.parse(raw);
-    if(s.mode) { mode = s.mode; }
+    // 조사방식(mode)은 저장값을 복원하지 않음 — 들어올 때마다 항상 표본조사가 기본값
     if(s.actualProper) actualProper = s.actualProper; // actualProper 복원
     if(s.disease === 'y'){
       const dy = document.getElementById('dis-y');
