@@ -564,7 +564,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 <div id="save-overlay">
   <div class="save-modal">
     <div style="font-size:36px;margin-bottom:10px">✅</div>
-    <p id="save-overlay-msg">결과가 저장됐어요!</p>
+    <p>결과가 갤러리에 저장됐어요!</p>
     <button class="btn-ok" onclick="document.getElementById('save-overlay').classList.remove('show')">확인</button>
   </div>
 </div>
@@ -2537,32 +2537,12 @@ async function saveImage() {
     const canvas = await html2canvas(document.getElementById('capture-template'), {
       backgroundColor:'#f3f4f6', scale:2, useCORS:true, windowWidth:cfg.canvasW
     });
+    const link = document.createElement('a');
     const now = new Date();
     const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-    const _filename = `${cropName}착과수_${stamp}.png`;
-    const _pngDataUrl = canvas.toDataURL('image/png');
-
-    // ── 이미지 저장: 가능하면 공유시트(Web Share API)로, 아니면 다운로드로 폴백 ──
-    let _shared = false;
-    try {
-      if (navigator.canShare) {
-        const _blob = await (await fetch(_pngDataUrl)).blob();
-        const _file = new File([_blob], _filename, { type: 'image/png' });
-        if (navigator.canShare({ files: [_file] })) {
-          await navigator.share({ files: [_file], title: _filename });
-          _shared = true;
-        }
-      }
-    } catch (_shareErr) {
-      if (_shareErr && _shareErr.name === 'AbortError') { return; } // 사용자가 공유 취소함
-      _shared = false;
-    }
-    if (!_shared) {
-      const link = document.createElement('a');
-      link.download = _filename;
-      link.href = _pngDataUrl;
-      link.click();
-    }
+    link.download = `${cropName}착과수_${stamp}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
     // ── 저장목록 기록 ──────────────────────────────
     try{
       const _farmNo = (document.getElementById('farm_no')?.value||'').trim();
@@ -2576,7 +2556,7 @@ async function saveImage() {
         farmNo: _farmNo,
         surveyDate: _survDate,
         pct: _pct,
-        filename: _filename,
+        filename: `${cropName}착과수_${stamp}.png`,
         savedAt: (()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()
       };
       const _dataUrl = canvas.toDataURL('image/jpeg', 0.65);
