@@ -2493,8 +2493,9 @@ function setCalcMode(silent=false){
 }
 
 function showCalcInfoPopup(){
-  // 평년주당착과수·적과후주당착과수 둘 다 조사대상주수 기준으로 통일 — 분모가 같아야 두 값을 직접 비교(=착과율) 가능
-  const totalSurvey = varieties.reduce((s,v) => s+getSurveyTarget(v), 0);
+  // 평년주당착과수: 가입주수 기준 / 적과후주당착과수: 실제결과주수 기준 (조사대상주수 아님 — 고사 등 차감 전 값)
+  const totalReg = varieties.reduce((s,v) => s+(v.reg||0), 0);
+  const totalActual = varieties.reduce((s,v) => s+(v.actual||0), 0);
   const avgFruit = toNum(document.getElementById('avg_fruit'));
   const totalAfterFruit = window._lastCalcResults?.totalAfterFruit || 0;
   const avgTotalEl = document.getElementById('calc-info-avg-total');
@@ -2503,8 +2504,8 @@ function showCalcInfoPopup(){
   const afterPerEl = document.getElementById('calc-info-after-per');
   if(avgTotalEl) avgTotalEl.textContent = avgFruit>0 ? avgFruit.toLocaleString()+'개' : '-';
   if(afterTotalEl) afterTotalEl.textContent = totalAfterFruit>0 ? Math.round(totalAfterFruit).toLocaleString()+'개' : '-';
-  if(avgPerEl) avgPerEl.textContent = (avgFruit>0 && totalSurvey>0) ? (avgFruit/totalSurvey).toFixed(1)+'개' : '-';
-  if(afterPerEl) afterPerEl.textContent = (totalAfterFruit>0 && totalSurvey>0) ? (totalAfterFruit/totalSurvey).toFixed(1)+'개' : '-';
+  if(avgPerEl) avgPerEl.textContent = (avgFruit>0 && totalReg>0) ? (avgFruit/totalReg).toFixed(1)+'개' : '-';
+  if(afterPerEl) afterPerEl.textContent = (totalAfterFruit>0 && totalActual>0) ? (totalAfterFruit/totalActual).toFixed(1)+'개' : '-';
   document.getElementById('calc-info-overlay').style.display = 'flex';
 }
 function setEditMode(){
