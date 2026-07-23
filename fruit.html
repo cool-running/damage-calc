@@ -1526,7 +1526,8 @@ function renderVarieties(totalSurvey) {
     const inputtedSamples = v.samples.filter(s => s !== '' && !isNaN(parseFloat(s))).length;
     const sampleSum = v.samples.reduce((s,x) => s + (parseFloat(x)||0), 0);
     const perTree = inputtedSamples > 0 ? (sampleSum / inputtedSamples) : 0;
-    const afterFruit = perTree > 0 && surveyTarget > 0 ? Math.round(perTree * surveyTarget) : 0;
+    const perTreeRounded = Math.round(perTree * 10000) / 10000;
+    const afterFruit = perTree > 0 && surveyTarget > 0 ? Math.round(perTreeRounded * surveyTarget) : 0;
 
     // 표본주 그리드 (4열) - 실제 samples 길이 기준
     const _total = v.samples.length;
@@ -1670,7 +1671,8 @@ function calcVariety(vi) {
   const inputted = v.samples.filter(s => s!=='' && !isNaN(parseFloat(s)));
   const sampleSum = inputted.reduce((s,x) => s+(parseFloat(x)||0), 0);
   const perTree = inputted.length > 0 ? sampleSum / inputted.length : 0;
-  const afterFruit = perTree > 0 && surveyTarget > 0 ? Math.round(perTree * surveyTarget) : 0;
+  const perTreeRounded = Math.round(perTree * 10000) / 10000;
+  const afterFruit = perTree > 0 && surveyTarget > 0 ? Math.round(perTreeRounded * surveyTarget) : 0;
 
   const sumEl = document.getElementById(`vi-sum-${vi}`);
   const perEl = document.getElementById(`vi-per-${vi}`);
@@ -1736,7 +1738,8 @@ function updateCardSummary(vi) {
   const validS = v.samples.filter(s=>s!==''&&!isNaN(parseFloat(s)));
   const sampleSum = validS.reduce((a,x)=>a+parseFloat(x),0);
   const perTree = validS.length>0 ? sampleSum/validS.length : 0;
-  const afterFruit = perTree>0&&surveyTarget>0 ? Math.round(perTree*surveyTarget) : 0;
+  const perTreeRounded = Math.round(perTree * 10000) / 10000;
+  const afterFruit = perTree>0&&surveyTarget>0 ? Math.round(perTreeRounded*surveyTarget) : 0;
   const sampleOk = properN>0 && validS.length>=properN;
   const sampleStatus = properN>0 ? `표본 ${validS.length}/${properN}주 ${sampleOk?'✅':'⚠️'}` : '표본주 미설정';
   const fruitStatus = afterFruit>0 ? `${afterFruit.toLocaleString()}개` : '-';
@@ -2148,7 +2151,8 @@ function doCalc(manual = false, fromBtn = false) {
     if (sampleCount === 0) continue;
 
     const perTree = sampleSum / sampleCount;
-    const afterFruit = Math.round(perTree * surveyTarget);
+    const perTreeRounded = Math.round(perTree * 10000) / 10000; // 전산 표시값(소수 4자리)과 동일하게 반올림 후 곱함
+    const afterFruit = Math.round(perTreeRounded * surveyTarget);
 
     totalAfterFruit += afterFruit;
     totalSampleUsed += sampleCount;
@@ -2590,7 +2594,8 @@ async function saveImage() {
       const sN      = validS.length;
       const sSum    = validS.reduce((a,x)=>a+parseFloat(x),0);
       const perTree = sN>0 ? sSum/sN : 0;
-      const after   = perTree>0&&st>0 ? Math.round(perTree*st) : 0;
+      const perTreeRounded = Math.round(perTree * 10000) / 10000;
+      const after   = perTree>0&&st>0 ? Math.round(perTreeRounded*st) : 0;
       totalSampleN  += sN; totalSampleSum += sSum; totalAfterSum += after;
       totalProperSum += properN;  // 품종별 적정표본 합산
       const bg = vi%2?'#fff':'#eceef2';
