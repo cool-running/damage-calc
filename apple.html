@@ -1522,9 +1522,9 @@ function renderVarieties(totalSurvey) {
     const properN = properNs[vi];
 
     // 샘플 배열 조정 — 착과수 입력이 하나도 없으면 나무수 변화에 맞춰 축소도 허용,
-    // 하나라도 입력돼 있으면 데이터 보존을 위해 늘어나는 것만 허용(사용자가 추가한 칸도 보존)
+    // 하나라도 입력돼 있거나 사용자가 방금 수동으로 추가한 칸이면 데이터/추가 보존을 위해 늘어나는 것만 허용
     const _hasData = v.samples.some(s => s !== '');
-    if(!_hasData){
+    if(!_hasData && !v.__addedSample){
       if(v.samples.length !== properN) v.samples = Array.from({length: properN}, () => '');
     } else {
       while (v.samples.length < properN) v.samples.push('');
@@ -1796,7 +1796,7 @@ function renderSamplesOnly(vi) {
   const surveyTarget = getSurveyTarget(v);
   const properN = surveyTarget>0&&totalSurvey>0 ? Math.max(1,Math.ceil(totalProper*surveyTarget/totalSurvey)) : 0;
   const _hasData = v.samples.some(s => s !== '');
-  if(!_hasData){
+  if(!_hasData && !v.__addedSample){
     if(v.samples.length !== properN) v.samples = Array.from({length: properN}, () => '');
   } else {
     while(v.samples.length < properN) v.samples.push('');
