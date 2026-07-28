@@ -498,9 +498,8 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
 
       <!-- 4. 손해정도비율 -->
       <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline">
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">
           <span>4. 손해정도비율 조사</span>
-          <span style="font-size:11px;font-weight:800;color:#3f5a2b">평균손해정도 <span id="cap-sonhae">-</span></span>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:9px;border:1px solid #e0e0e0;table-layout:fixed">
           <colgroup>
@@ -516,18 +515,22 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
 
       <!-- 5. 결과 -->
       <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
-        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">5. 피해율 결과</div>
+        <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">5. 결과</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid #e0e0e0">
-          <colgroup><col style="width:34%"><col style="width:33%"><col style="width:33%"></colgroup>
+          <colgroup><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
           <thead><tr>
             <th style="padding:5px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">누적피해율</th>
             <th style="padding:5px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">기누적</th>
-            <th style="padding:5px;background:#5B7E3F;color:#fff;text-align:center">적용피해율</th>
+            <th style="padding:5px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">적용피해율</th>
+            <th style="padding:5px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">경과비율</th>
+            <th style="padding:5px;background:#5B7E3F;color:#fff;text-align:center">손해정도비율</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:6px;text-align:center;font-weight:700" id="cap-nujeok">-</td>
             <td style="padding:6px;text-align:center;font-weight:700;border-left:1px solid #e0e0e0" id="cap-ginujeok">-</td>
             <td style="padding:6px;text-align:center;font-weight:900;color:#5B7E3F;border-left:1px solid #e0e0e0" id="cap-final">-</td>
+            <td style="padding:6px;text-align:center;font-weight:700;border-left:1px solid #e0e0e0" id="cap-coeff">-</td>
+            <td style="padding:6px;text-align:center;font-weight:700;border-left:1px solid #e0e0e0" id="cap-sonhae">-</td>
           </tr></tbody>
         </table>
         <div style="margin-top:8px;font-size:9px;color:#999;line-height:1.5">※ 미보상비율 <span id="cap-unins">0%</span> 반영 · 사고원인·면적·표본·조사자의견은 종이 조사서에 직접 기재</div>
@@ -1151,6 +1154,7 @@ function fillCaptureTemplate(){
   $('cap-nujeok').textContent=nj===null?'-':fmtPct(nj);
   $('cap-ginujeok').textContent=fmtPct(gnj);
   $('cap-final').textContent=nj===null?'-':fmtPct(Math.max(0,nj-gnj));
+  { const co=coeff(); if($('cap-coeff')) $('cap-coeff').textContent=co===null?'-':fmtPct(co); }
   $('cap-unins').textContent=(st.uninsRate||'0')+'%';
 }
 function saveToHistoryList(imgData){
