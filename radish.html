@@ -322,31 +322,6 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     </div>
   </div>
 
-  <!-- 조사 결과 요약 -->
-  <div class="section">
-    <div class="sec-title">조사 결과 요약</div>
-    <div class="result-mini" style="margin-bottom:8px">
-      <div class="field">
-        <label>표본구간 단위면적당 수확량</label><span class="unit-badge">kg/㎡</span>
-        <input type="text" id="unit-yield-disp" class="auto" readonly>
-      </div>
-      <div class="field">
-        <label>조사수확량</label><span class="unit-badge">kg</span>
-        <input type="text" id="survey-yield-disp" class="auto" readonly>
-      </div>
-    </div>
-    <div class="result-mini">
-      <div class="field">
-        <label>적용수확량</label><span class="unit-badge">kg</span>
-        <input type="text" id="applied-yield-disp" class="auto" readonly>
-      </div>
-      <div class="field">
-        <label>미보상감수량</label><span class="unit-badge">kg</span>
-        <input type="text" id="unins-loss-disp" class="auto" readonly>
-      </div>
-    </div>
-  </div>
-
   <!-- 계산하기/수정하기 -->
   <div class="calc-action-row">
     <button class="btn-edit active" id="btn-edit" onclick="setEditMode()">✏️ 수정하기</button>
@@ -716,10 +691,6 @@ function calcAll(){
   if(missingCore){
     resultBox.className='result-box pending';
     pctEl.textContent='- -'; pctEl.style.color='white';
-    document.getElementById('unit-yield-disp').value='';
-    document.getElementById('survey-yield-disp').value='';
-    document.getElementById('applied-yield-disp').value='';
-    document.getElementById('unins-loss-disp').value='';
     saveState();
     return;
   }
@@ -728,14 +699,8 @@ function calcAll(){
   const sv  = Math.round(u*surveyArea + m2AvgAct*(otherArea+harvArea)); // 조사수확량
   const loss= effAvg-sv;                                                // 감수량(풍작 시 마이너스 허용)
   const uLoss=loss>0?Math.round(loss*uninsRate):0;                      // 미보상감수량(감수량이 없으면 0)
-  const applied = sv+uLoss;                                             // 적용수확량
   const net = loss-uLoss;
   const pct = effAvg>0?Math.round(net/effAvg*10000)/100:0;
-
-  document.getElementById('unit-yield-disp').value=u>0?u.toFixed(3)+' kg/㎡':'';
-  document.getElementById('survey-yield-disp').value=sv.toLocaleString()+' kg';
-  document.getElementById('applied-yield-disp').value=applied.toLocaleString()+' kg';
-  document.getElementById('unins-loss-disp').value=uLoss.toLocaleString()+' kg';
 
   resultBox.className='result-box';
   pctEl.textContent=pct.toFixed(2)+'%';
