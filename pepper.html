@@ -697,8 +697,8 @@ function renderSamples(){
   st.samples.forEach((s,r)=>{
     h+='<div class="smp-row">';
     h+='<div class="smp-rhead"><span class="rname">'+(r+1)+'번 표본</span>'+
-       '<input inputmode="numeric" class="rang" data-r="'+r+'" value="'+(s.rang||'')+'" placeholder="이랑번호" oninput="onRang(this)">'+
-       '<input inputmode="numeric" class="totcnt" data-r="'+r+'" value="'+(s.totalCnt||'')+'" placeholder="전체주수" oninput="onTotalCnt(this)">'+
+       '<input inputmode="numeric" class="rang'+((s.rang||'').toString().trim()!==''?' filled':'')+'" data-r="'+r+'" value="'+(s.rang||'')+'" placeholder="이랑번호" oninput="onRang(this)">'+
+       '<input inputmode="numeric" class="totcnt'+((s.totalCnt||'').toString().trim()!==''?' filled':'')+'" data-r="'+r+'" value="'+(s.totalCnt||'')+'" placeholder="전체주수" oninput="onTotalCnt(this)">'+
        '<span class="rsonhae">손해정도 <b id="rsonhae-'+r+'">'+(rowSonhae(s)===null?'-':fmtPct(rowSonhae(s)))+'</b></span>'+
        '<span class="rsum">합계 <b id="rsum-'+r+'" class="'+rsumCls(s)+'">'+rowTotal(s)+'</b>주</span></div>';
     h+='<div class="smp-grid">';
