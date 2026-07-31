@@ -545,7 +545,7 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
 
 <script>
 function bindSelectAll(){
-  document.querySelectorAll('input.inp, .scell .ci, .smp-rhead .rang').forEach(el=>{
+  document.querySelectorAll('input.inp, .scell .ci, .smp-rhead .rang, .smp-rhead .totcnt').forEach(el=>{
     if(el.dataset.sab==='1') return;
     el.dataset.sab='1';
     const isDate=el.type==='date';
