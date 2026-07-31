@@ -697,8 +697,8 @@ function renderSamples(){
   st.samples.forEach((s,r)=>{
     h+='<div class="smp-row">';
     h+='<div class="smp-rhead"><span class="rname">'+(r+1)+'번 표본</span>'+
-       '<input inputmode="numeric" class="rang'+((s.rang||'').toString().trim()!==''?' filled':'')+'" data-r="'+r+'" value="'+(s.rang||'')+'" placeholder="이랑번호" oninput="onRang(this)">'+
-       '<input inputmode="numeric" class="totcnt'+((s.totalCnt||'').toString().trim()!==''?' filled':'')+'" data-r="'+r+'" value="'+(s.totalCnt||'')+'" placeholder="전체주수" oninput="onTotalCnt(this)">'+
+       '<input inputmode="numeric" class="rang'+((s.rang||'').toString().trim()!==''?' filled':'')+'" data-r="'+r+'" value="'+(s.rang?s.rang+'번':'')+'" placeholder="이랑번호" oninput="onRang(this)" onfocus="onRangFocus(this)" onblur="onRangBlur(this)">'+
+       '<input inputmode="numeric" class="totcnt'+((s.totalCnt||'').toString().trim()!==''?' filled':'')+'" data-r="'+r+'" value="'+(s.totalCnt?s.totalCnt+'주':'')+'" placeholder="전체주수" oninput="onTotalCnt(this)" onfocus="onTotalCntFocus(this)" onblur="onTotalCntBlur(this)">'+
        '<span class="rsonhae">손해정도 <b id="rsonhae-'+r+'">'+(rowSonhae(s)===null?'-':fmtPct(rowSonhae(s)))+'</b></span>'+
        '<span class="rsum">합계 <b id="rsum-'+r+'" class="'+rsumCls(s)+'">'+rowTotal(s)+'</b>주</span></div>';
     h+='<div class="smp-grid">';
@@ -728,16 +728,38 @@ function focusCell(cell){
 }
 function onRang(el){
   const r=+el.dataset.r;
-  st.samples[r].rang=el.value;
-  el.classList.toggle('filled',(el.value||'').trim()!=='');
+  const v=(el.value||'').replace(/[^0-9]/g,'');
+  if(v!==el.value) el.value=v;
+  st.samples[r].rang=v;
+  el.classList.toggle('filled',v!=='');
   persist();
+}
+function onRangFocus(el){
+  const r=+el.dataset.r;
+  el.value=st.samples[r].rang||'';
+}
+function onRangBlur(el){
+  const r=+el.dataset.r;
+  const v=st.samples[r].rang;
+  el.value=v?(v+'번'):'';
 }
 function onTotalCnt(el){
   const r=+el.dataset.r;
-  st.samples[r].totalCnt=el.value;
-  el.classList.toggle('filled',(el.value||'').trim()!=='');
+  const v=(el.value||'').replace(/[^0-9]/g,'');
+  if(v!==el.value) el.value=v;
+  st.samples[r].totalCnt=v;
+  el.classList.toggle('filled',v!=='');
   const rs=$('rsum-'+r); if(rs) rs.className=rsumCls(st.samples[r]);
   persist();
+}
+function onTotalCntFocus(el){
+  const r=+el.dataset.r;
+  el.value=st.samples[r].totalCnt||'';
+}
+function onTotalCntBlur(el){
+  const r=+el.dataset.r;
+  const v=st.samples[r].totalCnt;
+  el.value=v?(v+'주'):'';
 }
 function onCell(el){
   const r=+el.dataset.r;
