@@ -245,9 +245,13 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
   <div id="sec-sample">
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">③ 표본구간 조사 <span id="sample-badge" style="font-size:14px;font-weight:700;color:var(--blue)"></span></div>
-        <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
-          style="height:26px;padding:0 10px;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:3px;flex-shrink:0;white-space:nowrap">⚡ 일괄입력</button>
+        <div class="sec-title" style="min-width:0">③ 표본구간 조사 <span id="sample-badge" style="font-size:13px;font-weight:700;color:var(--blue)"></span></div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+            style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+          <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
+            style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap">⚡ 일괄입력</button>
+        </div>
       </div>
       <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
         <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
@@ -959,14 +963,79 @@ function renderSamples(){
         oninput="samples[${i}].weight=this.value;this.classList.toggle('filled',!!this.value);calcTotals()"
         onblur="calc()" autocomplete="off"></td>
       <td><input type="number" value="${s.moist||''}" inputmode="decimal" step="0.1"
-        enterkeyhint="${i < samples.length-1 ? 'next' : 'done'}"
         class="${s.moist?'filled':''}"
         oninput="samples[${i}].moist=this.value;this.classList.toggle('filled',!!this.value);calcTotals()"
         onblur="calc()"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();if(${i} < samples.length-1){const _rows=document.querySelectorAll('#sample-body tr');const _next=_rows[${i+1}]?.querySelector('input');if(_next)_next.focus();}else{this.setAttribute('readonly','');setTimeout(()=>{this.blur();this.removeAttribute('readonly');},10);}}"
         autocomplete="off"></td>
     </tr>`).join('');
+  setTimeout(()=>{ bindMobileFocusHandlers(); bindSampleNextNavigation(); },0);
   calcTotals();
+}
+
+let sampleInputOrder='row'; // 'row'(구간별: 좌→우,위→아래) | 'col'(항목별: 위→아래,좌→우)
+
+function getNextOrderedInput(el){
+  const rows=Array.from(document.querySelectorAll('#sample-body tr'));
+  if(sampleInputOrder==='row'){
+    const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled&&x.type!=='hidden');
+    const i=cur.indexOf(el);
+    return cur[i+1]||null;
+  }
+  const td=el.closest('td');
+  const tr=el.closest('tr');
+  const rowIdx=rows.indexOf(tr);
+  const colIdx=Array.from(tr.children).indexOf(td);
+  const totalCols=rows[0]?rows[0].children.length:0;
+  for(let r=rowIdx+1;r<rows.length;r++){
+    const cell=rows[r].children[colIdx];
+    const inp=cell?cell.querySelector('input'):null;
+    if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+  }
+  for(let c=colIdx+1;c<totalCols;c++){
+    for(let r=0;r<rows.length;r++){
+      const cell=rows[r].children[c];
+      const inp=cell?cell.querySelector('input'):null;
+      if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+    }
+  }
+  return null;
+}
+function toggleInputOrder(){
+  sampleInputOrder=sampleInputOrder==='row'?'col':'row';
+  try{ if(navigator.vibrate) navigator.vibrate([15]); }catch(e){}
+  updateInputOrderBtn();
+  try{ localStorage.setItem('bean_input_order',sampleInputOrder); }catch(e){}
+}
+function updateInputOrderBtn(){
+  const btn=document.getElementById('order-toggle-btn');
+  if(!btn) return;
+  const rightArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg>';
+  const downArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="12" y1="4" x2="12" y2="18"/><polyline points="6,12 12,18 18,12"/></svg>';
+  if(sampleInputOrder==='row'){
+    btn.innerHTML=rightArrow+'<span>구간별</span>';
+    btn.title='구간(행)별로 입력 — 엔터하면 같은 구간의 다음 칸으로 이동';
+  }else{
+    btn.innerHTML=downArrow+'<span>항목별</span>';
+    btn.title='항목(열)별로 입력 — 엔터하면 같은 항목의 다음 구간으로 이동';
+  }
+}
+function bindSampleNextNavigation(){
+  const inputs=Array.from(document.querySelectorAll('#sample-body input'));
+  inputs.forEach(el=>{
+    if(el.dataset.nextBound==='1')return;
+    el.dataset.nextBound='1';
+    el.setAttribute('enterkeyhint','next');
+    el.addEventListener('keydown',(e)=>{
+      if(e.key!=='Enter')return;
+      e.preventDefault();
+      const next=getNextOrderedInput(el);
+      if(next){
+        next.focus();
+        if(next.classList.contains('dim-input')){ const L=next.value.length; try{next.setSelectionRange(L,L);}catch(_){} }
+        else{ next.select?.(); }
+      }else{ el.blur(); }
+    });
+  });
 }
 
 // ── 일괄입력 패널 열고/닫기 ─────────────────────────────
@@ -1276,6 +1345,11 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('bigtext-label').textContent='원래대로';
     }
   }catch(e){}
+  try{
+    const savedOrder=localStorage.getItem('bean_input_order');
+    if(savedOrder==='col'||savedOrder==='row') sampleInputOrder=savedOrder;
+  }catch(e){}
+  updateInputOrderBtn();
 });
 
 document.querySelectorAll('.datewrap input[type=date]').forEach(inp=>{
