@@ -35,6 +35,52 @@ function bindMobileFocusHandlers(){
     },{passive:false});
   });
 }
+let sampleInputOrder='row'; // 'row'(좌→우, 위→아래) | 'col'(위→아래, 좌→우)
+
+function getNextOrderedInput(el){
+  const rows=Array.from(document.querySelectorAll('#sample-body tr'));
+  if(sampleInputOrder==='row'){
+    const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
+    const i=cur.indexOf(el);
+    return cur[i+1]||null;
+  }
+  // 열 우선: 같은 열의 다음 행 → 없으면 다음 열의 첫 행
+  const td=el.closest('td');
+  const tr=el.closest('tr');
+  const rowIdx=rows.indexOf(tr);
+  const colIdx=Array.from(tr.children).indexOf(td);
+  const totalCols=rows[0]?rows[0].children.length:0;
+  for(let r=rowIdx+1;r<rows.length;r++){
+    const cell=rows[r].children[colIdx];
+    const inp=cell?cell.querySelector('input'):null;
+    if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+  }
+  for(let c=colIdx+1;c<totalCols;c++){
+    for(let r=0;r<rows.length;r++){
+      const cell=rows[r].children[c];
+      const inp=cell?cell.querySelector('input'):null;
+      if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+    }
+  }
+  return null;
+}
+function toggleInputOrder(){
+  sampleInputOrder=sampleInputOrder==='row'?'col':'row';
+  updateInputOrderBtn();
+  try{ localStorage.setItem('radish_input_order',sampleInputOrder); }catch(e){}
+}
+function updateInputOrderBtn(){
+  const btn=document.getElementById('order-toggle-btn');
+  if(!btn) return;
+  if(sampleInputOrder==='row'){
+    btn.innerHTML='➡️ 구간별';
+    btn.title='구간(행)별로 입력 — 엔터하면 같은 구간의 다음 칸으로 이동';
+  }else{
+    btn.innerHTML='⬇️ 항목별';
+    btn.title='항목(열)별로 입력 — 엔터하면 같은 항목의 다음 구간으로 이동';
+  }
+}
+
 function bindNextNav(){
   const inputs=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
   inputs.forEach(el=>{
@@ -44,9 +90,7 @@ function bindNextNav(){
     el.addEventListener('keydown',e=>{
       if(e.key!=='Enter')return;
       e.preventDefault();
-      const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
-      const i=cur.indexOf(el);
-      const nxt=cur[i+1];
+      const nxt=getNextOrderedInput(el);
       if(nxt){
         nxt.focus();
         if(nxt.classList.contains('dim-input')){ const L=nxt.value.length; try{nxt.setSelectionRange(L,L);}catch(_){} }
@@ -293,8 +337,12 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
   <div class="section">
     <div class="sec-head">
       <div class="sec-title">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
-      <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
-        style="height:26px;padding:0 10px;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:3px;flex-shrink:0;white-space:nowrap">⚡ 일괄입력</button>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+          style="height:26px;padding:0 9px;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:3px;white-space:nowrap">➡️ 구간별</button>
+        <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
+          style="height:26px;padding:0 10px;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:3px;white-space:nowrap">⚡ 일괄입력</button>
+      </div>
     </div>
     <div id="sample-guide" class="guide">실경작면적 입력 후 자동으로 구간이 생성됩니다</div>
     <div id="sample-wrap" style="display:none">
@@ -1190,6 +1238,11 @@ try{
     document.getElementById('bigtext-label').textContent='원래대로';
   }
 }catch(e){}
+try{
+  const savedOrder=localStorage.getItem('radish_input_order');
+  if(savedOrder==='col'||savedOrder==='row') sampleInputOrder=savedOrder;
+}catch(e){}
+updateInputOrderBtn();
 document.getElementById('survey_date').value=fmt(new Date());
 markFilled(document.getElementById('survey_date'));
 setTimeout(()=>{
