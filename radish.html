@@ -657,17 +657,11 @@ function toggleBatchLen(){
   }
 }
 function onBatchLenInput(el){ el.classList.toggle('filled', el.value!==''); }
-async function applyBatchLen(){
+function applyBatchLen(){
   const chk=document.getElementById('batch-len-chk');
   if(!chk.checked) return;
   const val=normDim(document.getElementById('batch-len-val').value);
   if(val==='') return;
-  const entered=samples.filter(s=>s.len!=='' && s.len!=null);
-  const hasDiffering=entered.some(s=>s.len!==val);
-  if(hasDiffering){
-    const ok=await customConfirm(`이미 입력된 길이값 중 다른 값이 있습니다.<br>전체 구간을 <b style="color:var(--blue)">${val}</b>(으)로 덮어쓸까요?`);
-    if(!ok) return;
-  }
   try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
   samples.forEach(s=>{ s.len=val; });
   renderSamples(); calcTotals(); saveState();
@@ -681,17 +675,11 @@ function toggleBatchWid(){
   }
 }
 function onBatchWidInput(el){ el.classList.toggle('filled', el.value!==''); }
-async function applyBatchWid(){
+function applyBatchWid(){
   const chk=document.getElementById('batch-wid-chk');
   if(!chk.checked) return;
   const val=normDim(document.getElementById('batch-wid-val').value);
   if(val==='') return;
-  const entered=samples.filter(s=>s.wid!=='' && s.wid!=null);
-  const hasDiffering=entered.some(s=>s.wid!==val);
-  if(hasDiffering){
-    const ok=await customConfirm(`이미 입력된 폭값 중 다른 값이 있습니다.<br>전체 구간을 <b style="color:var(--blue)">${val}</b>(으)로 덮어쓸까요?`);
-    if(!ok) return;
-  }
   try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
   samples.forEach(s=>{ s.wid=val; });
   renderSamples(); calcTotals(); saveState();
