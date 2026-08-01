@@ -299,25 +299,25 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     <div id="sample-guide" class="guide">실경작면적 입력 후 자동으로 구간이 생성됩니다</div>
     <div id="sample-wrap" style="display:none">
       <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
-        <div style="flex:1;display:flex;align-items:center;gap:5px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px 8px;min-width:0">
-          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0">
-            <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:15px;height:15px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+        <div style="flex:1;display:flex;align-items:center;gap:6px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:7px 8px;min-width:0">
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0;padding:4px 2px">
+            <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:19px;height:19px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
             길이
           </label>
           <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
             style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
-            oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();applyBatchLen();this.blur();}" autocomplete="off">
-          <button onclick="applyBatchLen()" style="height:32px;width:38px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
+            oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+          <button onclick="applyBatchLen()" style="height:32px;width:38px;margin-left:2px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
         </div>
-        <div style="flex:1;display:flex;align-items:center;gap:5px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px 8px;min-width:0">
-          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0">
-            <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:15px;height:15px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+        <div style="flex:1;display:flex;align-items:center;gap:6px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:7px 8px;min-width:0">
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0;padding:4px 2px">
+            <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:19px;height:19px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
             폭
           </label>
           <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
             style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
-            oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();applyBatchWid();this.blur();}" autocomplete="off">
-          <button onclick="applyBatchWid()" style="height:32px;width:38px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
+            oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+          <button onclick="applyBatchWid()" style="height:32px;width:38px;margin-left:2px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
         </div>
       </div>
       <div class="tbl-outer">
@@ -612,11 +612,11 @@ function renderSamples(){
       <td><input type="text" value="${s.len||''}" inputmode="decimal"
         class="dim-input ${s.len?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
-        onblur="this.value=normDim(this.value);samples[${i}].len=this.value;if(document.getElementById('batch-len-chk').checked){syncBatchLenFromSample(this.value);}calcTotals();saveState()" autocomplete="off"></td>
+        onblur="this.value=normDim(this.value);samples[${i}].len=this.value;calcTotals();saveState()" autocomplete="off"></td>
       <td><input type="text" value="${s.wid||''}" inputmode="decimal"
         class="dim-input ${s.wid?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
-        onblur="this.value=normDim(this.value);samples[${i}].wid=this.value;if(document.getElementById('batch-wid-chk').checked){syncBatchWidFromSample(this.value);}calcTotals();saveState()" autocomplete="off"></td>
+        onblur="this.value=normDim(this.value);samples[${i}].wid=this.value;calcTotals();saveState()" autocomplete="off"></td>
       <td><input type="text" value="${s.cnt||''}" inputmode="numeric"
         class="${s.cnt?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
@@ -657,18 +657,20 @@ function toggleBatchLen(){
   }
 }
 function onBatchLenInput(el){ el.classList.toggle('filled', el.value!==''); }
-function applyBatchLen(){
+async function applyBatchLen(){
   const chk=document.getElementById('batch-len-chk');
   if(!chk.checked) return;
   const val=normDim(document.getElementById('batch-len-val').value);
   if(val==='') return;
+  const entered=samples.filter(s=>s.len!=='' && s.len!=null);
+  const hasDiffering=entered.some(s=>s.len!==val);
+  if(hasDiffering){
+    const ok=await customConfirm(`이미 입력된 길이값 중 다른 값이 있습니다.<br>전체 구간을 <b style="color:var(--blue)">${val}</b>(으)로 덮어쓸까요?`);
+    if(!ok) return;
+  }
   try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
   samples.forEach(s=>{ s.len=val; });
   renderSamples(); calcTotals(); saveState();
-}
-function syncBatchLenFromSample(val){
-  const input=document.getElementById('batch-len-val');
-  if(input) input.value=val||'';
 }
 function toggleBatchWid(){
   const chk=document.getElementById('batch-wid-chk');
@@ -679,18 +681,20 @@ function toggleBatchWid(){
   }
 }
 function onBatchWidInput(el){ el.classList.toggle('filled', el.value!==''); }
-function applyBatchWid(){
+async function applyBatchWid(){
   const chk=document.getElementById('batch-wid-chk');
   if(!chk.checked) return;
   const val=normDim(document.getElementById('batch-wid-val').value);
   if(val==='') return;
+  const entered=samples.filter(s=>s.wid!=='' && s.wid!=null);
+  const hasDiffering=entered.some(s=>s.wid!==val);
+  if(hasDiffering){
+    const ok=await customConfirm(`이미 입력된 폭값 중 다른 값이 있습니다.<br>전체 구간을 <b style="color:var(--blue)">${val}</b>(으)로 덮어쓸까요?`);
+    if(!ok) return;
+  }
   try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
   samples.forEach(s=>{ s.wid=val; });
   renderSamples(); calcTotals(); saveState();
-}
-function syncBatchWidFromSample(val){
-  const input=document.getElementById('batch-wid-val');
-  if(input) input.value=val||'';
 }
 
 // ── 추가/삭제 ────────────────────────────────────────────────
