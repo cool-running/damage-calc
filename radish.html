@@ -304,9 +304,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
             <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:15px;height:15px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
             길이
           </label>
-          <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄"
+          <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
             style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
-            oninput="onBatchLenInput(this)" onblur="applyBatchLen()" autocomplete="off">
+            oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();applyBatchLen();this.blur();}" autocomplete="off">
           <button onclick="applyBatchLen()" style="height:32px;width:38px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
         </div>
         <div style="flex:1;display:flex;align-items:center;gap:5px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px 8px;min-width:0">
@@ -314,9 +314,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
             <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:15px;height:15px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
             폭
           </label>
-          <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄"
+          <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
             style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
-            oninput="onBatchWidInput(this)" onblur="applyBatchWid()" autocomplete="off">
+            oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();applyBatchWid();this.blur();}" autocomplete="off">
           <button onclick="applyBatchWid()" style="height:32px;width:38px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
         </div>
       </div>
