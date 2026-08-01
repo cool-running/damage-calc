@@ -299,25 +299,25 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     <div id="sample-guide" class="guide">실경작면적 입력 후 자동으로 구간이 생성됩니다</div>
     <div id="sample-wrap" style="display:none">
       <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
-        <div style="flex:1;display:flex;align-items:center;gap:6px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:7px 8px;min-width:0">
-          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0;padding:4px 2px">
-            <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:19px;height:19px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+        <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+          <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
             길이
           </label>
           <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
-            style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
+            style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
             oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
-          <button onclick="applyBatchLen()" style="height:32px;width:38px;margin-left:2px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
+          <button onclick="applyBatchLen()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
         </div>
-        <div style="flex:1;display:flex;align-items:center;gap:6px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:7px 8px;min-width:0">
-          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0;padding:4px 2px">
-            <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:19px;height:19px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+        <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+          <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
             폭
           </label>
           <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
-            style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
+            style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
             oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
-          <button onclick="applyBatchWid()" style="height:32px;width:38px;margin-left:2px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
+          <button onclick="applyBatchWid()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
         </div>
       </div>
       <div class="tbl-outer">
