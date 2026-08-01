@@ -25,7 +25,13 @@ function bindMobileFocusHandlers(){
       if(sc)return;
       if(e.cancelable)e.preventDefault();
       el.focus();el.classList.add('mobile-focus');
-      setTimeout(()=>{try{el.select();}catch(_){try{el.setSelectionRange(0,el.value.length);}catch(_){}}},50);
+      const isDim=el.classList.contains('dim-input');
+      setTimeout(()=>{
+        try{
+          if(isDim){ const L=el.value.length; el.setSelectionRange(L,L); }
+          else{ el.select(); }
+        }catch(_){ try{el.setSelectionRange(0,el.value.length);}catch(__){} }
+      },50);
     },{passive:false});
   });
 }
@@ -41,7 +47,11 @@ function bindNextNav(){
       const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
       const i=cur.indexOf(el);
       const nxt=cur[i+1];
-      if(nxt){nxt.focus();nxt.select?.();}else{el.blur();}
+      if(nxt){
+        nxt.focus();
+        if(nxt.classList.contains('dim-input')){ const L=nxt.value.length; try{nxt.setSelectionRange(L,L);}catch(_){} }
+        else{ nxt.select?.(); }
+      }else{el.blur();}
     });
   });
 }
@@ -283,10 +293,33 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
   <div class="section">
     <div class="sec-head">
       <div class="sec-title">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
-      <span style="font-size:10px;color:var(--hint);font-weight:400">이랑길이·폭(m) / 정상중량(g)</span>
+      <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
+        style="height:26px;padding:0 10px;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:3px;flex-shrink:0;white-space:nowrap">⚡ 일괄입력</button>
     </div>
     <div id="sample-guide" class="guide">실경작면적 입력 후 자동으로 구간이 생성됩니다</div>
     <div id="sample-wrap" style="display:none">
+      <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
+        <div style="flex:1;display:flex;align-items:center;gap:5px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px 8px;min-width:0">
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:15px;height:15px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+            길이
+          </label>
+          <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄"
+            style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
+            oninput="onBatchLenInput(this)" onblur="applyBatchLen()" autocomplete="off">
+          <button onclick="applyBatchLen()" style="height:32px;width:38px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:5px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px 8px;min-width:0">
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;font-size:11px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:15px;height:15px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+            폭
+          </label>
+          <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄"
+            style="flex:1;height:32px;border:1.5px solid #378ADD;border-radius:7px;padding:0 4px;font-size:13px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none;min-width:0"
+            oninput="onBatchWidInput(this)" onblur="applyBatchWid()" autocomplete="off">
+          <button onclick="applyBatchWid()" style="height:32px;width:38px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">적용</button>
+        </div>
+      </div>
       <div class="tbl-outer">
         <table class="stbl">
           <colgroup>
@@ -577,13 +610,13 @@ function renderSamples(){
     <tr>
       <td class="no">${i+1}</td>
       <td><input type="text" value="${s.len||''}" inputmode="decimal"
-        class="${s.len?'filled':''}"
+        class="dim-input ${s.len?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
-        onblur="this.value=normDim(this.value);samples[${i}].len=this.value;calcTotals();saveState()" autocomplete="off"></td>
+        onblur="this.value=normDim(this.value);samples[${i}].len=this.value;if(document.getElementById('batch-len-chk').checked){syncBatchLenFromSample(this.value);}calcTotals();saveState()" autocomplete="off"></td>
       <td><input type="text" value="${s.wid||''}" inputmode="decimal"
-        class="${s.wid?'filled':''}"
+        class="dim-input ${s.wid?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
-        onblur="this.value=normDim(this.value);samples[${i}].wid=this.value;calcTotals();saveState()" autocomplete="off"></td>
+        onblur="this.value=normDim(this.value);samples[${i}].wid=this.value;if(document.getElementById('batch-wid-chk').checked){syncBatchWidFromSample(this.value);}calcTotals();saveState()" autocomplete="off"></td>
       <td><input type="text" value="${s.cnt||''}" inputmode="numeric"
         class="${s.cnt?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
@@ -594,6 +627,70 @@ function renderSamples(){
         onblur="samples[${i}].w=this.value.replace(/,/g,'');calcTotals();saveState()" autocomplete="off"></td>
     </tr>`).join('');
   setTimeout(()=>{ bindMobileFocusHandlers(); bindNextNav(); },0);
+}
+
+// ── 일괄입력 패널 열고/닫기 ─────────────────────────────
+function toggleBatchRow(){
+  const row=document.getElementById('batch-row');
+  const btn=document.getElementById('batch-toggle-btn');
+  const open=row.style.display==='none'||row.style.display==='';
+  row.style.display=open?'flex':'none';
+  if(btn){
+    btn.style.background=open?'#185FA5':'white';
+    btn.style.color=open?'white':'#185FA5';
+  }
+  if(!open){
+    // 닫을 때 체크 해제(입력값은 유지)
+    const blc=document.getElementById('batch-len-chk'), bwc=document.getElementById('batch-wid-chk');
+    if(blc) blc.checked=false;
+    if(bwc) bwc.checked=false;
+  }
+}
+
+// ── 길이/폭 일괄적용 ─────────────────────────────────
+function toggleBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  const valInput=document.getElementById('batch-len-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].len) valInput.value=samples[0].len;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchLenInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  if(!chk.checked) return;
+  const val=normDim(document.getElementById('batch-len-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.len=val; });
+  renderSamples(); calcTotals(); saveState();
+}
+function syncBatchLenFromSample(val){
+  const input=document.getElementById('batch-len-val');
+  if(input) input.value=val||'';
+}
+function toggleBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  const valInput=document.getElementById('batch-wid-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].wid) valInput.value=samples[0].wid;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchWidInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  if(!chk.checked) return;
+  const val=normDim(document.getElementById('batch-wid-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.wid=val; });
+  renderSamples(); calcTotals(); saveState();
+}
+function syncBatchWidFromSample(val){
+  const input=document.getElementById('batch-wid-val');
+  if(input) input.value=val||'';
 }
 
 // ── 추가/삭제 ────────────────────────────────────────────────
@@ -852,6 +949,13 @@ function resetAll(){
   });
   _isLocked=false; setEditMode(true);
   samples=[];
+  const blc=document.getElementById('batch-len-chk'), blv=document.getElementById('batch-len-val');
+  const bwc=document.getElementById('batch-wid-chk'), bwv=document.getElementById('batch-wid-val');
+  if(blc) blc.checked=false; if(blv){ blv.value=''; blv.classList.remove('filled'); }
+  if(bwc) bwc.checked=false; if(bwv){ bwv.value=''; bwv.classList.remove('filled'); }
+  const brow=document.getElementById('batch-row'), bbtn=document.getElementById('batch-toggle-btn');
+  if(brow) brow.style.display='none';
+  if(bbtn){ bbtn.style.background='white'; bbtn.style.color='#185FA5'; }
   renderSamples();
   window.scrollTo({top:0,behavior:'smooth'});
   setTimeout(()=>{ const f=document.getElementById('contractor_name'); if(f) f.focus(); },300);
