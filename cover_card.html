@@ -14,7 +14,7 @@
 <style>
 :root{
   --nav-h:62px;
-  --top-h:56px;
+  --top-h:66px;
   --btm-h:218px;
   --blue:#185FA5;
 }
@@ -26,14 +26,15 @@ body{font-family:'Noto Sans KR',sans-serif;color:#fff;-webkit-user-select:none;u
 .topbar{
   position:fixed;top:0;left:0;right:0;
   height:var(--top-h);
-  padding:0 16px;
-  padding-top:env(safe-area-inset-top,0px);
-  display:flex;align-items:center;justify-content:space-between;
-  background:#1a1a2e;z-index:100;
+  padding:16px 16px 14px;
+  padding-top:calc(env(safe-area-inset-top,0px) + 16px);
+  display:flex;align-items:center;gap:10px;
+  background:#185FA5;z-index:100;
 }
-.topbar-title{font-size:17px;font-weight:700;color:#fff;}
-.save-btn{background:#E05A2B;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
-.save-btn:active{opacity:.85;}
+.topbar-icon{width:32px;height:32px;flex-shrink:0;background:rgba(255,255,255,0.2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.topbar-text{flex:1;min-width:0;}
+.topbar-text h1{font-size:17px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.topbar-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px;}
 
 /* ── 캔버스 ── */
 #cvWrap{
@@ -65,6 +66,8 @@ canvas{display:block;max-width:100%;max-height:100%;}
 .mbtn.on[data-mode="field"]{background:rgba(24,95,165,0.4);border-color:#378ADD;}
 .mbtn.on[data-mode="report"]{background:rgba(224,90,43,0.4);border-color:#E05A2B;}
 .mode-reset{width:38px;height:38px;flex-shrink:0;border-radius:10px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.mode-save{flex-shrink:0;height:38px;padding:0 14px;border-radius:10px;border:none;background:#E05A2B;color:#fff;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
+.mode-save:active{opacity:.85;}
 .mode-reset:active{background:rgba(255,255,255,0.15);}
 
 /* 입력바 */
@@ -153,8 +156,11 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
 
 <!-- 탑바 -->
 <div class="topbar">
-  <span class="topbar-title">📋 표지 카드</span>
-  <button class="save-btn" id="saveBtn">💾 저장</button>
+  <div class="topbar-icon">📋</div>
+  <div class="topbar-text">
+    <h1>손해평가 표지카드</h1>
+    <div class="topbar-sub">농업재해보험 손해평가사 전용</div>
+  </div>
 </div>
 
 <!-- 캔버스 -->
@@ -169,9 +175,10 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
 <div id="btmArea">
   <!-- 모드 토글: 1차 현장조사 / 2차 조사서 -->
   <div class="mode-row" id="modeRow">
-    <button class="mbtn on" data-mode="field" id="modeFieldBtn" type="button">🚜 1차 현장</button>
+    <button class="mbtn on" data-mode="field" id="modeFieldBtn" type="button">🚜 1차 현장사진</button>
     <button class="mbtn" data-mode="report" id="modeReportBtn" type="button">📝 2차 조사서</button>
     <button class="mode-reset" id="modeResetBtn" type="button" title="현재 모드 번호 1로 초기화">⟲</button>
+    <button class="mode-save" id="saveBtn">💾 저장</button>
   </div>
 
   <!-- 입력바 -->
