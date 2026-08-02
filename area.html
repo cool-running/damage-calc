@@ -20,10 +20,18 @@ html,body{width:100%;height:100%;overflow:hidden;}
 body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-size:14px;-webkit-user-select:none;user-select:none;}
 
 .topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);padding:0 16px;padding-top:env(safe-area-inset-top,0px);display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:0.5px solid var(--border);z-index:100;}
-.topbar-title{font-size:17px;font-weight:700;}
+.topbar-title{font-size:17px;font-weight:700;flex:1;margin-left:10px;}
 .gps-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:#FFF8E1;color:#F57F17;}
 .gps-badge.ok{background:#E8F5E9;color:#2E7D32;}
 .gps-badge.err{background:#FFEBEE;color:#C62828;}
+.icon-btn{width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);color:var(--text);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.icon-btn:active{opacity:.7;}
+.search-row{position:fixed;top:var(--top-h);left:0;right:0;height:var(--mode-h);padding:8px 16px;display:none;gap:8px;align-items:center;background:#fff;border-bottom:0.5px solid var(--border);z-index:110;}
+.search-row.show{display:flex;}
+.search-input{flex:1;height:36px;border-radius:18px;border:1px solid var(--border);background:var(--bg);padding:0 14px;font-size:13px;color:var(--text);outline:none;font-family:-apple-system,'Noto Sans KR',sans-serif;}
+.search-input:focus{border-color:var(--blue);background:#fff;}
+.search-btn{width:36px;height:36px;border-radius:50%;border:none;background:var(--blue);color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.search-btn:active{opacity:.8;}
 .icon-btn{width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);color:var(--text);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .icon-btn:active{opacity:.7;}
 
@@ -70,8 +78,14 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 <body>
 
 <div class="topbar">
+  <button class="icon-btn" onclick="toggleSearch()">🔍</button>
   <span class="topbar-title">📐 면적측정</span>
   <span id="gpsBadge" class="gps-badge">현위치를 눌러 GPS 확인</span>
+</div>
+
+<div class="search-row" id="searchRow">
+  <input type="text" id="searchInput" class="search-input" placeholder="주소 또는 지번 검색" autocomplete="off" autocorrect="off" spellcheck="false"/>
+  <button class="search-btn" onclick="searchAddress()">🔍</button>
 </div>
 
 <div class="mode-row">
@@ -110,7 +124,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 <nav class="bottom-nav">
   <button class="nav-item" onclick="location.href='./cover_card.html'"><div class="nav-icon">📋</div><span>표지카드</span></button>
   <button class="nav-item" onclick="location.href='./location.html'"><div class="nav-icon">📍</div><span>위치</span></button>
-  <button class="nav-item on"><div class="nav-icon">📐</div><span>면적</span></button>
+  <button class="nav-item on"><div class="nav-icon">📐</div><span>면적측정</span></button>
   <button class="nav-item" onclick="location.href='./index.html'"><div class="nav-icon" style="padding:0;"><img src="./icon-192.png" style="width:100%;height:100%;object-fit:contain;" alt=""></div><span>계산기</span></button>
   <button class="nav-item" onclick="location.href='./help.html'"><div class="nav-icon">💡</div><span>도움말</span></button>
 </nav>
@@ -187,6 +201,31 @@ function calcPerimeter(pts){
     total += haversine(pts[i], pts[j]);
   }
   return total;
+}
+
+/* ── 주소/지번 검색 ── */
+function toggleSearch(){
+  const el=document.getElementById('searchRow');
+  el.classList.toggle('show');
+  if(el.classList.contains('show')) setTimeout(()=>document.getElementById('searchInput').focus(),50);
+}
+function searchAddress(){
+  const q=document.getElementById('searchInput').value.trim();
+  if(!q){ showToast('주소나 지번을 입력해주세요'); return; }
+  geocoder.addressSearch(q,(result,status)=>{
+    if(status===kakao.maps.services.Status.OK && result.length){
+      const lat=parseFloat(result[0].y), lng=parseFloat(result[0].x);
+      const p=new kakao.maps.LatLng(lat,lng);
+      map.setCenter(p); map.setLevel(3);
+      if(mode==='parcel'){
+        fetchParcelWhole(lat,lng);
+      } else {
+        showToast('🌾 이 위치에서 탭해서 점을 찍어주세요');
+      }
+    } else {
+      showToast('❌ 주소를 찾을 수 없어요');
+    }
+  });
 }
 
 /* ── 점 추가/삭제 ── */
@@ -378,6 +417,9 @@ function showToast(msg){
   t.textContent=msg; t.style.display='block';
   clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',2000);
 }
+
+const _searchInput=document.getElementById('searchInput');
+if(_searchInput) _searchInput.addEventListener('keydown',e=>{ if(e.key==='Enter') searchAddress(); });
 
 } // end kakao-defined guard
 </script>
