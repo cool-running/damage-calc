@@ -833,6 +833,7 @@ function loadForm(){
   }
   renderSamples();calc();
   bindSelectAll();
+  if(st.mode==='calc') applyModeUI('calc');
 }
 function markFilled(el){
   if(el.classList.contains('auto'))return;
@@ -1010,13 +1011,18 @@ function setMode(m){
   } else {
     vibrate([12]);
   }
+  applyModeUI(m);
+  if(m==='calc') saveHistory();
+}
+function applyModeUI(m){
   mode=m;
+  st.mode=m;
   $('btn-edit').classList.toggle('active',m==='edit');
   $('btn-calc').classList.toggle('active',m==='calc');
   $('result').classList.toggle('pending',m!=='calc');
   document.querySelector('.content').classList.toggle('locked',m==='calc');
   setLockBadge(m==='calc');
-  if(m==='calc') saveHistory();
+  persist();
   calc();
 }
 
