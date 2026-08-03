@@ -48,7 +48,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 #map{position:fixed;top:calc(var(--top-h) + var(--search-h) + var(--mode-h));left:0;right:0;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px));z-index:1;background:#e5e5e5;-webkit-touch-callout:none;}
 #map img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none;}
 
-.tap-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;white-space:nowrap;pointer-events:none;text-align:center;line-height:1.5;}
+.tap-hint{position:fixed;left:50%;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;white-space:nowrap;pointer-events:none;text-align:center;line-height:1.5;z-index:80;max-width:88%;}
 
 .myloc-btn{position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);width:44px;height:44px;border-radius:50%;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;}
 .myloc-btn:active{opacity:.7;}
@@ -98,9 +98,9 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   <button class="mbtn" id="modeManualBtn" onclick="setAreaMode('manual')">✏️ 수동측정</button>
 </div>
 
-<div id="map">
-  <div class="tap-hint" id="tapHint">🌾 지도를 탭하면 면적과 주소가 표시돼요</div>
-</div>
+<div id="map"></div>
+
+<div class="tap-hint" id="tapHint">🌾 지도를 탭하면 면적과 주소가 표시돼요</div>
 
 <button class="myloc-btn" onclick="locateMe()">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round">
