@@ -99,7 +99,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 </div>
 
 <div id="map">
-  <div class="tap-hint" id="tapHint">🌾 지도를 탭하면 그 지점의 필지 전체를 가져와요</div>
+  <div class="tap-hint" id="tapHint">🌾 지도를 탭하면 면적과 주소가 표시돼요</div>
 </div>
 
 <button class="myloc-btn" onclick="locateMe()">
@@ -267,8 +267,8 @@ function undoPoint(){
 
 function hintTextFor(m){
   return m==='parcel'
-    ? '🌾 지도를 탭하면 그 지점의 필지 전체를 가져와요'
-    : '🌾 지도를 탭해서 꼭짓점을 순서대로 찍어주세요<br>(3개 이상 찍으면 면적이 계산돼요)';
+    ? '🌾 지도를 탭하면 면적과 주소가 표시돼요'
+    : '🌾 핀을 선택하면서 면적을 측정할 수 있어요<br>(3개 이상 찍으면 면적이 계산돼요)';
 }
 
 function setAreaMode(m){
