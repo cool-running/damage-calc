@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://t1.daumcdn.net">
 <link rel="dns-prefetch" href="https://t1.daumcdn.net">
 <style>
-:root{--blue:#185FA5;--border:#D8D6CE;--bg:#F5F4F0;--card:#fff;--text:#1a1a1a;--sub:#666;--hint:#aaa;--nav-h:62px;--top-h:66px;--search-h:52px;--panel-h:146px;}
+:root{--blue:#185FA5;--border:#D8D6CE;--bg:#F5F4F0;--card:#fff;--text:#1a1a1a;--sub:#666;--hint:#aaa;--nav-h:62px;--top-h:66px;--search-h:52px;--panel-h:110px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;}
 body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-size:14px;-webkit-user-select:none;user-select:none;}
@@ -49,11 +49,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .myloc-btn{position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);width:44px;height:44px;border-radius:50%;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;}
 .myloc-btn:active{opacity:.7;}
 /* 패널 내 맵 컨트롤 버튼 */
-.map-ctrl-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;}
-.parcel-status{margin-left:auto;font-size:12px;font-weight:700;color:var(--sub);white-space:nowrap;}
-.parcel-status.ok{color:#2E7D32;}
-.parcel-status.err{color:#C62828;}
-.map-fbtn{height:32px;padding:0 12px;border-radius:16px;background:#f0f0f0;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:-apple-system,'Noto Sans KR',sans-serif;white-space:nowrap;color:var(--text);}
+.map-fbtn{height:32px;padding:0 12px;border-radius:16px;background:#f0f0f0;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:-apple-system,'Noto Sans KR',sans-serif;white-space:nowrap;color:var(--text);flex-shrink:0;}
 .map-fbtn.on{background:#185FA5;color:#fff;}
 .map-fbtn:active{opacity:.7;}
 
@@ -99,6 +95,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 <div class="search-row" id="searchRow">
   <input type="text" id="searchInput" class="search-input" placeholder="주소 또는 지번 검색" autocomplete="off" autocorrect="off" spellcheck="false"/>
   <button class="search-btn" onclick="searchAddress()">🔍</button>
+  <button class="map-fbtn" id="btnSat" onclick="toggleSat()">🛰 위성</button>
 </div>
 
 <div id="map"></div>
@@ -114,10 +111,6 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 </button>
 
 <div class="panel">
-  <div class="map-ctrl-row">
-    <button class="map-fbtn" id="btnSat" onclick="toggleSat()">🛰 위성</button>
-    <span id="parcelStatus" class="parcel-status"></span>
-  </div>
   <div class="tap-hint" id="tapHint">🌾 지도를 탭하거나 검색해서 위치를 확인하세요</div>
   <div id="resultInfo" style="display:none;">
     <div class="info-grid">
@@ -279,8 +272,6 @@ function onMapTap(lat,lng){
 let _polygonReqId=0;
 function fetchParcelPolygon(lat,lng){
   const myReqId = ++_polygonReqId;
-  document.getElementById('parcelStatus').className='parcel-status';
-  document.getElementById('parcelStatus').textContent='조회 중...';
   const cb='cbp_'+Date.now();
   const s=document.createElement('script');
   window[cb]=function(data){
@@ -290,8 +281,7 @@ function fetchParcelPolygon(lat,lng){
       const f=data.response.result.featureCollection.features;
       if(highlightPolygon){ highlightPolygon.setMap(null); highlightPolygon=null; }
       if(!f||!f.length){
-        document.getElementById('parcelStatus').className='parcel-status err';
-        document.getElementById('parcelStatus').textContent='❌ 필지 정보 없음';
+        showToast('❌ 필지 정보를 찾지 못했어요');
         return;
       }
       const geom=f[0].geometry;
@@ -303,20 +293,13 @@ function fetchParcelPolygon(lat,lng){
         strokeWeight:3,strokeColor:'#C62828',strokeOpacity:1,
         fillColor:'#FF1744',fillOpacity:0.3
       });
-
-      document.getElementById('parcelStatus').className='parcel-status ok';
-      document.getElementById('parcelStatus').textContent='✅ 필지 경계 표시됨';
     }catch(e){
-      document.getElementById('parcelStatus').className='parcel-status err';
-      document.getElementById('parcelStatus').textContent='❌ 필지 경계 조회 실패';
+      showToast('❌ 필지 경계 조회 실패');
     }
   };
   s.onerror=()=>{
     delete window[cb]; s.remove();
-    if(myReqId===_polygonReqId){
-      document.getElementById('parcelStatus').className='parcel-status err';
-      document.getElementById('parcelStatus').textContent='❌ 조회 실패(네트워크)';
-    }
+    if(myReqId===_polygonReqId) showToast('❌ 조회 실패(네트워크)');
   };
   s.src=`https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LP_PA_CBND_BUBUN`
     +`&key=${VWORLD_KEY}&domain=https://cool-running.github.io/func`
