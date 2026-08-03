@@ -1199,11 +1199,11 @@ function fillCaptureTemplate(){
   // 5. 결과
   const nj=nujeok(),gnj=ginujeok(),co5=coeff(),so5=sonhae();
   // (차수 표시 제거)
-  $('cap-coeff').textContent=co5===null?'-':fmtPct(co5);
-  $('cap-sonhae2').textContent=so5===null?'-':fmtPct(so5);
   $('cap-nujeok').textContent=nj===null?'-':fmtPct(nj);
   $('cap-ginujeok').textContent=fmtPct(gnj);
   $('cap-final').textContent=nj===null?'-':fmtPct(Math.max(0,nj-gnj));
+  $('cap-coeff').textContent=co5===null?'-':fmtPct(co5);
+  $('cap-sonhae2').textContent=so5===null?'-':fmtPct(so5);
   $('cap-unins').textContent=(st.uninsRate||'0')+'%';
 }
 function saveToHistoryList(imgData){
