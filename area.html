@@ -256,7 +256,7 @@ function undoPoint(){
     const last=points[points.length-1];
     updateAddress(last.lat,last.lng);
   } else {
-    document.getElementById('addrVal').textContent='지도를 탭하면 면적과 주소가 표시돼요';
+    document.getElementById('addrVal').textContent=addrPlaceholderFor(mode);
   }
 }
 
@@ -269,6 +269,12 @@ function setAreaMode(m){
   clearAll();
 }
 
+function addrPlaceholderFor(m){
+  return m==='parcel'
+    ? '지도를 탭하면 면적과 주소가 표시돼요'
+    : '핀을 선택하면서 면적을 측정할 수 있어요 (3개 이상 찍으면 면적이 계산돼요)';
+}
+
 function clearAll(){
   points=[];
   vertexOverlays.forEach(d=>d.setMap(null)); vertexOverlays=[];
@@ -276,7 +282,7 @@ function clearAll(){
   if(polygon){ polygon.setMap(null); polygon=null; }
   if(segLabelOverlay){ segLabelOverlay.setMap(null); segLabelOverlay=null; }
   updateInfoPanel();
-  document.getElementById('addrVal').textContent='지도를 탭하면 면적과 주소가 표시돼요';
+  document.getElementById('addrVal').textContent=addrPlaceholderFor(mode);
   showToast('🗑 초기화했어요');
 }
 
