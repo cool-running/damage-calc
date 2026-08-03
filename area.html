@@ -48,7 +48,6 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 #map{position:fixed;top:calc(var(--top-h) + var(--search-h) + var(--mode-h));left:0;right:0;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px));z-index:1;background:#e5e5e5;-webkit-touch-callout:none;}
 #map img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none;}
 
-.tap-hint{position:fixed;left:50%;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;white-space:nowrap;pointer-events:none;text-align:center;line-height:1.5;z-index:80;max-width:88%;}
 
 .myloc-btn{position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);width:44px;height:44px;border-radius:50%;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;}
 .myloc-btn:active{opacity:.7;}
@@ -100,8 +99,6 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 
 <div id="map"></div>
 
-<div class="tap-hint" id="tapHint">🌾 지도를 탭하면 면적과 주소가 표시돼요</div>
-
 <button class="myloc-btn" onclick="locateMe()">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round">
     <circle cx="12" cy="12" r="6"/>
@@ -118,7 +115,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
     <span class="pyeong-val" id="pyeongVal"></span>
   </div>
   <div class="meta-row">점 <span id="ptCount">0개</span> | 총 둘레: <span id="periVal">0m</span></div>
-  <div class="addr-row" id="addrVal">지도를 탭하면 주소가 표시돼요</div>
+  <div class="addr-row" id="addrVal">지도를 탭하면 면적과 주소가 표시돼요</div>
   <div class="btn-row">
     <button class="pbtn pbtn-undo" id="undoBtn" onclick="undoPoint()" style="display:none;">↩ 되돌리기</button>
     <button class="pbtn pbtn-clear" onclick="clearAll()">🗑 초기화</button>
@@ -245,7 +242,6 @@ function addPoint(lat,lng){
   updateSegmentLabel();
   updateInfoPanel();
   updateAddress(lat,lng);
-  document.getElementById('tapHint').style.display='none';
 }
 
 function undoPoint(){
@@ -260,15 +256,8 @@ function undoPoint(){
     const last=points[points.length-1];
     updateAddress(last.lat,last.lng);
   } else {
-    document.getElementById('addrVal').textContent='지도를 탭하면 주소가 표시돼요';
-    document.getElementById('tapHint').style.display='block';
+    document.getElementById('addrVal').textContent='지도를 탭하면 면적과 주소가 표시돼요';
   }
-}
-
-function hintTextFor(m){
-  return m==='parcel'
-    ? '🌾 지도를 탭하면 면적과 주소가 표시돼요'
-    : '🌾 핀을 선택하면서 면적을 측정할 수 있어요<br>(3개 이상 찍으면 면적이 계산돼요)';
 }
 
 function setAreaMode(m){
@@ -287,9 +276,7 @@ function clearAll(){
   if(polygon){ polygon.setMap(null); polygon=null; }
   if(segLabelOverlay){ segLabelOverlay.setMap(null); segLabelOverlay=null; }
   updateInfoPanel();
-  document.getElementById('addrVal').textContent='지도를 탭하면 주소가 표시돼요';
-  document.getElementById('tapHint').innerHTML=hintTextFor(mode);
-  document.getElementById('tapHint').style.display='block';
+  document.getElementById('addrVal').textContent='지도를 탭하면 면적과 주소가 표시돼요';
   showToast('🗑 초기화했어요');
 }
 
@@ -315,7 +302,6 @@ function fetchParcelWhole(lat,lng){
       redrawShape();
       updateInfoPanel();
       updateAddress(lat,lng);
-      document.getElementById('tapHint').style.display='none';
       showToast('🌾 필지 전체 면적 적용됨');
     }catch(e){ showToast('🌾 필지 조회 실패'); }
   };
