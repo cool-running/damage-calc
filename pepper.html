@@ -332,11 +332,11 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
     <div class="sec-title">2. 면적 정보</div>
     <div class="g3">
       <div class="field"><label>가입면적</label><span class="unit-badge">㎡</span>
-        <input type="text" id="insArea" class="inp" inputmode="numeric" oninput="onAreaInput(this)" onkeydown="onAreaEnter(event,this)"></div>
+        <input type="text" id="insArea" class="inp" inputmode="numeric" oninput="onAreaInput(this)" onblur="onAreaLeave(this)" onchange="onAreaLeave(this)"></div>
       <div class="field"><label>실경작면적</label><span class="unit-badge">㎡</span>
-        <input type="text" id="actArea" class="inp" inputmode="numeric" oninput="onAreaInput(this)" onkeydown="onAreaEnter(event,this)"></div>
+        <input type="text" id="actArea" class="inp" inputmode="numeric" oninput="onAreaInput(this)" onblur="onAreaLeave(this)" onchange="onAreaLeave(this)"></div>
       <div class="field"><label>피해면적</label><span class="unit-badge">㎡</span>
-        <input type="text" id="dmgArea" class="inp" inputmode="numeric" oninput="onAreaInput(this)" onkeydown="onAreaEnter(event,this)"></div>
+        <input type="text" id="dmgArea" class="inp" inputmode="numeric" oninput="onAreaInput(this)" onblur="onAreaLeave(this)" onchange="onAreaLeave(this)"></div>
     </div>
     <div class="g2" style="margin-top:8px">
       <div class="autobar" style="margin-top:0"><span>면적피해비율</span><b id="r-areapct">-</b></div>
@@ -869,34 +869,31 @@ function onAreaInput(el){
 }
 const AREA_CHAIN={insArea:'actArea',actArea:'dmgArea'};
 const AREA_FOCUS_NEXT={dmgArea:'uninsRate'};
-function onAreaEnter(e,el){
-  if(e.key!=='Enter') return;
-  e.preventDefault();
+const AREA_LAST_SENT={};
+function onAreaLeave(el){
+  const raw=(st[el.id]||'').toString();
+  if(raw===''||AREA_LAST_SENT[el.id]===raw) return;
   const nextId=AREA_CHAIN[el.id];
   if(nextId){
+    AREA_LAST_SENT[el.id]=raw;
     const nextEl=$(nextId);
     if(!nextEl) return;
-    const raw=(st[el.id]||'').toString();
-    if(raw!==''){
-      const parts=raw.split('.');
-      const formatted=(parts[0]?Number(parts[0]).toLocaleString('en-US'):'')+(raw.indexOf('.')>=0?'.'+(parts[1]||''):'');
-      nextEl.value=formatted;
-      st[nextId]=raw;
-      markFilled(nextEl);
-      if(nextId==='dmgArea') renderSamples();
-      persist();calc();
-    }
-    nextEl.focus();
-    setTimeout(()=>{try{nextEl.select();}catch(_){}},20);
+    const parts=raw.split('.');
+    const formatted=(parts[0]?Number(parts[0]).toLocaleString('en-US'):'')+(raw.indexOf('.')>=0?'.'+(parts[1]||''):'');
+    nextEl.value=formatted;
+    st[nextId]=raw;
+    markFilled(nextEl);
+    if(nextId==='dmgArea') renderSamples();
+    persist();calc();
+    setTimeout(()=>{try{nextEl.focus();nextEl.select();}catch(_){}},30);
     return;
   }
   const focusId=AREA_FOCUS_NEXT[el.id];
   if(focusId){
+    AREA_LAST_SENT[el.id]=raw;
     const fEl=$(focusId);
-    if(fEl){ fEl.focus(); setTimeout(()=>{try{fEl.select();}catch(_){}},20); }
-    return;
+    if(fEl) setTimeout(()=>{try{fEl.focus();fEl.select();}catch(_){}},30);
   }
-  el.blur();
 }
 function onField(el){
   markFilled(el);
