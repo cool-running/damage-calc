@@ -141,6 +141,11 @@ body.big-text .hist-btn{height:50px !important}
 .vr-stepper span b.proper{color:#1D9E75}
 .vr-samp-btn{width:22px;height:22px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-appearance:none;padding:0}
 .vr-samp-btn.plus{border:1.5px dashed var(--blue2);background:#EEF6E6;color:var(--blue)}
+.vr-samp-btn.nudge{animation:nudgePulse 0.5s ease-in-out 2}
+@keyframes nudgePulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(24,95,165,0.5)}
+  50%{transform:scale(1.35);box-shadow:0 0 0 6px rgba(24,95,165,0)}
+}
 .vr-samp-btn.minus{border:1.5px solid var(--red);background:#FFF5F5;color:var(--red)}
 
 .mini-info{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)}
@@ -505,7 +510,7 @@ let varieties = [];
 let _isLocked = false;
 
 function newVariety(){
-  return { name:'', mode:'select', age:'', trees:'', proper:0, samples:[] };
+  return { name:'', mode:'select', age:'', trees:'', proper:0, samplesManual:false, samples:[] };
 }
 
 // ── 품종 추가 ───────────────────────────────────
@@ -633,8 +638,18 @@ function recalcSampleCounts(){
       v.proper = 0;
     }
     if(!v.samples) v.samples = [];
+    if(!v.samplesManual){ resizeSamples(v, v.proper); }
   });
   document.getElementById('total_trees_disp').value = totalTrees>0?totalTrees.toLocaleString():'-';
+}
+function resizeSamples(v, target){
+  if(!v.samples) v.samples=[];
+  while(v.samples.length < target) v.samples.push({total:'',damaged:'',normal:''});
+  while(v.samples.length > target){
+    const last = v.samples[v.samples.length-1];
+    if(!last.total && !last.damaged && !last.normal){ v.samples.pop(); }
+    else break;
+  }
 }
 function onAreaChange(){
   const el = document.getElementById('ins_area');
@@ -717,6 +732,7 @@ function confirmSampleAdd(vi){
   document.getElementById('sample-add-overlay').style.display = 'flex';
   document.getElementById('sample-add-btn').onclick = () => {
     closeAddOverlay();
+    v.samplesManual = true;
     v.samples.push({total:'',damaged:'',normal:''});
     renderVarietySetup();
     renderSampleSection();
@@ -737,6 +753,7 @@ function confirmSampleDel(vi){
   document.getElementById('sample-add-overlay').style.display = 'flex';
   document.getElementById('sample-add-btn').onclick = () => {
     closeAddOverlay();
+    v.samplesManual = true;
     v.samples.pop();
     renderVarietySetup();
     renderSampleSection();
@@ -1048,6 +1065,8 @@ document.addEventListener('keydown', function(e){
   const idx = list.indexOf(el);
   if(idx === -1) return;
   e.preventDefault();
+  const varietyRow = el.closest('.variety-row');
+  const varietyRowIdx = varietyRow ? Array.from(document.querySelectorAll('.variety-row')).indexOf(varietyRow) : -1;
   el.blur();
   setTimeout(()=>{
     const newList = getNavList();
@@ -1055,6 +1074,15 @@ document.addEventListener('keydown', function(e){
     if(next){
       next.focus();
       try{ next.select(); }catch(_){}
+    } else if(varietyRowIdx>=0){
+      // 다음 입력칸이 없으면(표본이 아직 없으면) 표본추가 버튼으로 안내
+      const freshRows = document.querySelectorAll('.variety-row');
+      const plusBtn = freshRows[varietyRowIdx] ? freshRows[varietyRowIdx].querySelector('.vr-samp-btn.plus') : null;
+      if(plusBtn){
+        plusBtn.scrollIntoView({behavior:'smooth', block:'center'});
+        plusBtn.classList.add('nudge');
+        setTimeout(()=>plusBtn.classList.remove('nudge'), 1200);
+      }
     }
   }, 60);
 });
