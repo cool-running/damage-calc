@@ -691,14 +691,14 @@ function renderSampleSection(){
         <td class="vname-cell">${label}</td>`;
       bodyHtml += `
         <td><input type="text" inputmode="numeric" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
-          class="${s.damaged!==''?'filled':''}"
+          class="${s.damaged!==''?'filled':''}" id="samp-dmg-${vi}-${si}"
           oninput="onCommaInput(this)"
           onblur="onSampleInput(${vi},${si},'damaged',this.value.replace(/,/g,''))" autocomplete="off"></td>
         <td><input type="text" inputmode="numeric" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
-          class="${s.normal!==''?'filled':''}"
+          class="${s.normal!==''?'filled':''}" id="samp-nrm-${vi}-${si}"
           oninput="onCommaInput(this)"
           onblur="onSampleInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off"></td>
-        <td><input type="text" class="auto-cell" readonly value="${s.total!==''?Number(s.total).toLocaleString():''}"></td>
+        <td><input type="text" class="auto-cell" readonly id="samp-tot-${vi}-${si}" value="${s.total!==''?Number(s.total).toLocaleString():''}"></td>
       </tr>`;
     });
   });
@@ -709,9 +709,9 @@ function renderSampleSection(){
     <tbody>${bodyHtml}</tbody>
     <tfoot><tr>
       <td colspan="2">합계</td>
-      <td>${totalSum>0?damagedSum.toLocaleString():'-'}</td>
-      <td>${totalSum>0?normalSum.toLocaleString():'-'}</td>
-      <td>${totalSum>0?totalSum.toLocaleString():'-'}</td>
+      <td id="samp-foot-dmg">${totalSum>0?damagedSum.toLocaleString():'-'}</td>
+      <td id="samp-foot-nrm">${totalSum>0?normalSum.toLocaleString():'-'}</td>
+      <td id="samp-foot-tot">${totalSum>0?totalSum.toLocaleString():'-'}</td>
     </tr></tfoot>
   </table>`;
   setTimeout(bindMobileFocusHandlers,0);
@@ -769,9 +769,30 @@ function onSampleInput(vi,si,field,rawVal){
   if(field==='normal') s.normal = rawVal;
   if(s.damaged!=='' && s.normal!==''){ s.total = String(numSafe(s.damaged)+numSafe(s.normal)); }
   else { s.total=''; }
-  renderSampleSection();
+  // 표 전체를 다시 그리지 않고 해당 셀만 갱신 (포커스 유지, 엔터 이동 안정성)
+  const totEl = document.getElementById(`samp-tot-${vi}-${si}`);
+  if(totEl) totEl.value = s.total!==''?Number(s.total).toLocaleString():'';
+  updateSampleFooter();
   calcTotals();
   saveState();
+}
+function updateSampleFooter(){
+  let totalSum=0, damagedSum=0, normalSum=0;
+  varieties.forEach(v=>{
+    (v.samples||[]).forEach(s=>{
+      if(s.damaged!=='' || s.normal!==''){
+        totalSum += numSafe(s.total);
+        damagedSum += numSafe(s.damaged);
+        normalSum += numSafe(s.normal);
+      }
+    });
+  });
+  const dmgEl = document.getElementById('samp-foot-dmg');
+  const nrmEl = document.getElementById('samp-foot-nrm');
+  const totEl = document.getElementById('samp-foot-tot');
+  if(dmgEl) dmgEl.textContent = totalSum>0?damagedSum.toLocaleString():'-';
+  if(nrmEl) nrmEl.textContent = totalSum>0?normalSum.toLocaleString():'-';
+  if(totEl) totEl.textContent = totalSum>0?totalSum.toLocaleString():'-';
 }
 
 // ── 합계 및 피해율 계산 ────────────────────────────
