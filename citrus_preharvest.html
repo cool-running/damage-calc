@@ -1068,23 +1068,22 @@ document.addEventListener('keydown', function(e){
   const varietyRow = el.closest('.variety-row');
   const varietyRowIdx = varietyRow ? Array.from(document.querySelectorAll('.variety-row')).indexOf(varietyRow) : -1;
   el.blur();
-  setTimeout(()=>{
-    const newList = getNavList();
-    const next = newList[idx+1];
-    if(next){
-      next.focus();
-      try{ next.select(); }catch(_){}
-    } else if(varietyRowIdx>=0){
-      // 다음 입력칸이 없으면(표본이 아직 없으면) 표본추가 버튼으로 안내
-      const freshRows = document.querySelectorAll('.variety-row');
-      const plusBtn = freshRows[varietyRowIdx] ? freshRows[varietyRowIdx].querySelector('.vr-samp-btn.plus') : null;
-      if(plusBtn){
-        plusBtn.scrollIntoView({behavior:'smooth', block:'center'});
-        plusBtn.classList.add('nudge');
-        setTimeout(()=>plusBtn.classList.remove('nudge'), 1200);
-      }
+  const newList = getNavList();
+  bindMobileFocusHandlers();
+  const next = newList[idx+1];
+  if(next){
+    next.focus();
+    try{ next.select(); }catch(_){}
+  } else if(varietyRowIdx>=0){
+    // 다음 입력칸이 없으면(표본이 아직 없으면) 표본추가 버튼으로 안내
+    const freshRows = document.querySelectorAll('.variety-row');
+    const plusBtn = freshRows[varietyRowIdx] ? freshRows[varietyRowIdx].querySelector('.vr-samp-btn.plus') : null;
+    if(plusBtn){
+      plusBtn.scrollIntoView({behavior:'smooth', block:'center'});
+      plusBtn.classList.add('nudge');
+      setTimeout(()=>plusBtn.classList.remove('nudge'), 1200);
     }
-  }, 60);
+  }
 });
 
 function init(){
