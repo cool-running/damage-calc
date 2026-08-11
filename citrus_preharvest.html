@@ -115,15 +115,18 @@ body.big-text input.auto{height:50px !important;font-size:17px !important;font-w
 body.big-text .field label{font-size:13px !important}
 body.big-text .samp-tbl input{height:40px !important;font-size:15px !important;font-weight:700 !important}
 body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
+body.big-text .hist-btn{height:50px !important}
 
-/* 품종 수 선택 (인라인) */
-.count-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:4px}
-.cnt-btn-inline{height:40px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s}
-.cnt-btn-inline.active{background:#eef6e6;border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 1.5px var(--blue) inset}
-.cnt-btn-inline:active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
 
 /* 품종 한줄 로우 */
-.variety-row{display:grid;grid-template-columns:20px 1.3fr 0.55fr 0.85fr 0.75fr 24px;gap:5px;align-items:center;margin-bottom:8px}
+.add-variety-btn{width:100%;height:38px;border:1.5px dashed var(--blue2);background:#EEF6E6;border-radius:var(--rs);font-size:13px;font-weight:600;color:var(--blue);cursor:pointer;margin-top:6px}
+.add-variety-btn:active{background:var(--auto)}
+.variety-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.variety-action-row .add-variety-btn{margin-top:0}
+.del-variety-action{width:100%;height:38px;border:1.5px solid var(--red);background:#FFF5F5;border-radius:var(--rs);font-size:13px;font-weight:600;color:var(--red);cursor:pointer}
+.del-variety-action:active{background:#ffe5e5}
+.variety-row{display:grid;grid-template-columns:20px 1.4fr 0.55fr 0.85fr 1fr;gap:6px;align-items:center;margin-bottom:8px}
 .variety-row:last-child{margin-bottom:0}
 .vr-num{width:22px;height:22px;background:var(--blue);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
 .variety-row select.inp,.variety-row input.inp{height:38px;font-size:12.5px;padding:0 4px}
@@ -131,9 +134,11 @@ body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
 .vr-name-wrap{position:relative}
 .vr-name-toggle{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:20px;height:20px;border:none;background:transparent;color:var(--sub);font-size:12px;cursor:pointer;z-index:2}
 .vr-name-wrap input.inp{padding-right:22px}
-.vr-del{height:26px;width:26px;border:none;background:transparent;color:var(--red);cursor:pointer;font-size:16px;border-radius:6px}
-.vr-samp-ctrl{display:flex;align-items:center;gap:6px;margin:-2px 0 10px 25px;font-size:10.5px;color:var(--sub)}
-.vr-samp-ctrl span{flex:1}
+.vr-stepper{display:flex;align-items:center;justify-content:center;gap:3px;height:38px}
+.vr-stepper span{min-width:24px;text-align:center;font-size:11px;font-weight:800}
+.vr-stepper span b{font-style:normal}
+.vr-stepper span b.cur{color:#2563EB}
+.vr-stepper span b.proper{color:#1D9E75}
 .vr-samp-btn{width:22px;height:22px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-appearance:none;padding:0}
 .vr-samp-btn.plus{border:1.5px dashed var(--blue2);background:#EEF6E6;color:var(--blue)}
 .vr-samp-btn.minus{border:1.5px solid var(--red);background:#FFF5F5;color:var(--red)}
@@ -146,7 +151,7 @@ body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
 .samp-tbl thead th{background:#f8f8f8;padding:5px 2px;text-align:center;font-weight:600;color:var(--sub);font-size:9.5px;border-bottom:1.5px solid var(--border);line-height:1.3}
 .samp-tbl tbody td{padding:3px 2px;border-bottom:0.5px solid #eee;text-align:center;vertical-align:middle}
 .samp-tbl tbody td.no{color:var(--sub);font-size:10px;font-weight:600}
-.samp-tbl tbody td.vname-cell{font-size:10.5px;font-weight:700;color:var(--blue);background:#f5f8f1;vertical-align:middle;word-break:keep-all;padding:4px 2px}
+.samp-tbl tbody td.vname-cell{font-size:9.5px;font-weight:700;color:var(--blue);background:#f5f8f1;vertical-align:middle;word-break:keep-all;padding:4px 1px;line-height:1.25}
 .samp-tbl tbody td input{width:100%;height:32px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:12px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text)}
 .samp-tbl tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .samp-tbl tbody td input.auto-cell{border:0.5px solid var(--border);background:var(--auto);color:var(--sub);font-weight:600}
@@ -166,7 +171,7 @@ body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
 .locked input.inp:not([type=date]),.locked .samp-tbl input,.locked select.inp{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 .locked .datewrap{pointer-events:none;opacity:0.72}
-.locked .vr-del,.locked .vr-samp-btn,.locked .count-grid,.locked .custom-count-row,.locked .vr-name-toggle{pointer-events:none;opacity:0.4}
+.locked .vr-samp-btn,.locked .add-variety-btn,.locked .del-variety-action,.locked .vr-name-toggle{pointer-events:none;opacity:0.4}
 
 /* 결과 */
 .result-box{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(91,126,63,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
@@ -200,13 +205,9 @@ body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
 .hist-load{border:none;background:var(--blue);color:white}
 
 /* 품종 수 선택 (인라인) */
-.vlist-head{display:grid;grid-template-columns:20px 1.3fr 0.55fr 0.85fr 0.75fr 24px;gap:5px;padding:0 2px;margin-bottom:6px}
+.vlist-head{display:grid;grid-template-columns:20px 1.4fr 0.55fr 0.85fr 1fr;gap:6px;padding:0 2px;margin-bottom:6px}
 .vlist-head span{font-size:10px;font-weight:600;color:var(--sub);text-align:center}
 .vlist-head span:first-child{visibility:hidden}
-.custom-count-row{display:flex;align-items:center;gap:8px;margin-top:12px}
-.custom-count-row .ccr-label{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0}
-.custom-count-row input{flex:1;height:38px;border:1.5px solid var(--binp);border-radius:8px;text-align:center;font-size:13px;-webkit-appearance:none;min-width:0}
-.custom-count-row button{height:38px;padding:0 12px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -216,7 +217,7 @@ body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
   <div class="header-icon">🍊</div>
   <div style="flex:1">
     <h1>감귤 수확전손해조사</h1>
-    <div class="header-sub">온주밀감 · 수확전 과실손해조사</div>
+    <div class="header-sub">온주밀감류</div>
   </div>
   <div class="hdr-state unlocked" id="hdrState">🔓 수정 중</div>
 </div>
@@ -251,15 +252,15 @@ body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
         <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="markFilled(this);saveState()" autocomplete="off"></div>
       </div>
       <div style="width:40px;flex-shrink:0">
-        <button onclick="openHistoryModal()" title="이전 기록 불러오기"
-          style="width:100%;height:46px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
+        <button onclick="openHistoryModal()" title="이전 기록 불러오기" class="hist-btn"
+          style="width:100%;height:40px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
   </div>
 
   <div class="section">
     <div class="sec-title">1. 면적 및 표본주수 산정</div>
-    <div class="g2">
+    <div class="g3">
       <div class="field">
         <label>가입면적</label>
         <span class="unit-badge">㎡</span>
@@ -272,41 +273,23 @@ body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
         <input type="text" id="unins_rate" class="inp" inputmode="decimal"
           oninput="onCommaInput(this)" onblur="calcTotals();saveState()" autocomplete="off">
       </div>
-    </div>
-    <div style="background:#f0f5eb;border-radius:12px;padding:10px 10px 6px;margin-bottom:10px">
-      <div class="g2" style="margin-bottom:0">
-        <div class="field">
-          <label style="color:#4a6e38">총실제결과주수</label>
-          <input type="text" id="total_trees_disp" class="auto" readonly>
-        </div>
-        <div class="field">
-          <label style="color:#4a6e38">면적표본(전체)</label>
-          <input type="text" id="area_tier_disp" class="auto" readonly>
-        </div>
+      <div class="field">
+        <label style="color:#4a6e38">실제결과주수</label>
+        <input type="text" id="total_trees_disp" class="auto" readonly>
       </div>
     </div>
 
-    <div class="sec-title" style="margin-top:2px">품종 수 선택</div>
-    <div class="count-grid" id="count-grid">
-      <button onclick="selectVarietyCount(1)" class="cnt-btn-inline" data-n="1">1</button>
-      <button onclick="selectVarietyCount(2)" class="cnt-btn-inline" data-n="2">2</button>
-      <button onclick="selectVarietyCount(3)" class="cnt-btn-inline" data-n="3">3</button>
-      <button onclick="selectVarietyCount(4)" class="cnt-btn-inline" data-n="4">4</button>
-      <button onclick="selectVarietyCount(5)" class="cnt-btn-inline" data-n="5">5</button>
-    </div>
-    <div class="custom-count-row">
-      <span class="ccr-label">6개 이상</span>
-      <input type="number" id="custom-count-input" inputmode="numeric" placeholder="직접입력" min="6">
-      <button onclick="applyCustomCount()">확인</button>
-    </div>
-
-    <div class="vlist-head" style="margin-top:14px"><span>#</span><span>품종</span><span>수령</span><span>실제결과주수</span><span>적정표본</span><span></span></div>
+    <div class="vlist-head" style="margin-top:10px"><span>#</span><span>품종</span><span>수령</span><span>실제결과주수</span><span><b style="color:#2563EB">표본</b>/<b style="color:#1D9E75">적정</b></span></div>
     <div id="variety-list"></div>
+    <div class="variety-action-row">
+      <button class="add-variety-btn" onclick="addVariety()">+ 품종 추가</button>
+      <button class="del-variety-action" onclick="confirmRemoveLastVariety()">− 품종 삭제</button>
+    </div>
   </div>
 
   <div class="section">
     <div class="sec-title">2. 표본조사</div>
-    <div id="sample-guide" class="guide">품종별 실제결과주수를 입력하면 표본이 자동으로 생성됩니다</div>
+    <div id="sample-guide" class="guide">품종을 추가하고 표본을 추가하면 표본조사표가 생성됩니다</div>
     <div id="sample-section-wrap" style="display:none"></div>
   </div>
 
@@ -522,22 +505,13 @@ let varieties = [];
 let _isLocked = false;
 
 function newVariety(){
-  return { name:'', mode:'select', age:'', trees:'', proper:0, samplesManual:false, samples:[] };
+  return { name:'', mode:'select', age:'', trees:'', proper:0, samples:[] };
 }
 
-// ── 품종 수 선택 ───────────────────────────────────
-function applyCustomCount(){
-  const n = parseInt(document.getElementById('custom-count-input').value,10);
-  if(!n || n<6){ showToast('6 이상의 숫자를 입력해 주세요'); return; }
-  if(n>20){ showToast('품종은 최대 20개까지 입력 가능해요'); return; }
-  selectVarietyCount(n);
-}
-function selectVarietyCount(n){
-  const newList = [];
-  for(let i=0;i<n;i++){ newList.push(varieties[i] || newVariety()); }
-  newList.forEach(v=>{ v.samplesManual = false; });
-  varieties = newList;
-  document.getElementById('custom-count-input').value = n>5 ? n : '';
+// ── 품종 추가 ───────────────────────────────────
+function addVariety(){
+  if(varieties.length>=15){ showToast('품종은 최대 15개까지 입력 가능해요'); return; }
+  varieties.push(newVariety());
   renderVarietySetup();
   recalcSampleCounts();
   renderVarietySetup();
@@ -545,16 +519,9 @@ function selectVarietyCount(n){
   calcTotals();
   saveState();
 }
-function updateCountButtonsUI(){
-  const n = varieties.length;
-  document.querySelectorAll('.cnt-btn-inline').forEach(btn=>{
-    btn.classList.toggle('active', parseInt(btn.dataset.n,10)===n);
-  });
-}
 
 // ── 품종 한줄 로우 렌더 ─────────────────────────────
 function renderVarietySetup(){
-  updateCountButtonsUI();
   const wrap = document.getElementById('variety-list');
   wrap.innerHTML = varieties.map((v,vi)=>{
     const nameCell = v.mode==='custom'
@@ -573,13 +540,11 @@ function renderVarietySetup(){
         oninput="this.value=this.value.replace(/[^0-9]/g,'')" onblur="onVarietyAgeInput(${vi},this)" autocomplete="off">
       <input type="text" class="inp ${v.trees?'filled':''}" inputmode="numeric" placeholder="주수" value="${v.trees}"
         oninput="onCommaInput(this)" onblur="onVarietyTreesInput(${vi},this)" autocomplete="off">
-      <input type="text" class="auto" readonly value="${v.proper?v.proper+'주':'-'}">
-      ${varieties.length>1?`<button class="vr-del" onclick="confirmRemoveVariety(${vi})">🗑</button>`:'<span></span>'}
-    </div>
-    <div class="vr-samp-ctrl">
-      <span>표본 ${(v.samples||[]).length}/${v.proper||0}주</span>
-      <button class="vr-samp-btn minus" onclick="confirmSampleDel(${vi})" title="표본 삭제">−</button>
-      <button class="vr-samp-btn plus" onclick="confirmSampleAdd(${vi})" title="표본 추가">+</button>
+      <div class="vr-stepper">
+        <button class="vr-samp-btn minus" onclick="confirmSampleDel(${vi})" title="표본 삭제">−</button>
+        <span><b class="cur">${(v.samples||[]).length}</b>/<b class="proper">${v.proper||0}</b></span>
+        <button class="vr-samp-btn plus" onclick="confirmSampleAdd(${vi})" title="표본 추가">+</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -591,6 +556,10 @@ function onVarietyAgeInput(vi,el){
 }
 
 function closeVarietyDelModal(){ document.getElementById('variety-del-overlay').classList.remove('show'); }
+function confirmRemoveLastVariety(){
+  if(varieties.length<=1){ showToast('품종은 최소 1개는 있어야 해요'); return; }
+  confirmRemoveVariety(varieties.length-1);
+}
 function confirmRemoveVariety(vi){
   if(varieties.length<=1) return;
   const v = varieties[vi];
@@ -628,7 +597,6 @@ function onVarietyNameInput(vi,el){
 function removeVariety(vi){
   if(varieties.length<=1) return;
   varieties.splice(vi,1);
-  varieties.forEach(v=>{ v.samplesManual = false; });
   renderVarietySetup();
   recalcSampleCounts();
   renderVarietySetup();
@@ -664,19 +632,9 @@ function recalcSampleCounts(){
     } else {
       v.proper = 0;
     }
-    if(!v.samplesManual){ resizeSamples(v, v.proper); }
+    if(!v.samples) v.samples = [];
   });
   document.getElementById('total_trees_disp').value = totalTrees>0?totalTrees.toLocaleString():'-';
-  document.getElementById('area_tier_disp').value = tier>0?tier+'주':'-';
-}
-function resizeSamples(v, target){
-  if(!v.samples) v.samples=[];
-  while(v.samples.length < target) v.samples.push({total:'',damaged:'',normal:''});
-  while(v.samples.length > target){
-    const last = v.samples[v.samples.length-1];
-    if(!last.total && !last.damaged && !last.normal){ v.samples.pop(); }
-    else break;
-  }
 }
 function onAreaChange(){
   const el = document.getElementById('ins_area');
@@ -707,15 +665,15 @@ function renderSampleSection(){
     const n = (v.samples||[]).length;
     if(n===0) return;
     const name = v.name || `품종${vi+1}`;
-    const label = v.age ? `${name}<br>${v.age}년` : name;
+    const label = v.age ? `${name} ${v.age}년` : name;
     v.samples.forEach((s,si)=>{
       globalNo++;
       const totalNum = numSafe(s.total);
       const dmgNum = numSafe(s.damaged);
       if(s.damaged!=='' || s.normal!==''){ totalSum+=totalNum; damagedSum+=dmgNum; normalSum+=numSafe(s.normal); }
       bodyHtml += `<tr>
-        <td class="no">${globalNo}</td>`;
-      if(si===0){ bodyHtml += `<td class="vname-cell" rowspan="${n}">${label}</td>`; }
+        <td class="no">${globalNo}</td>
+        <td class="vname-cell">${label}</td>`;
       bodyHtml += `
         <td><input type="text" inputmode="numeric" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
           class="${s.damaged!==''?'filled':''}"
@@ -731,7 +689,7 @@ function renderSampleSection(){
   });
 
   wrap.innerHTML = `<table class="samp-tbl">
-    <colgroup><col style="width:9%"><col style="width:22%"><col style="width:23%"><col style="width:23%"><col style="width:23%"></colgroup>
+    <colgroup><col style="width:7%"><col style="width:20%"><col style="width:24.33%"><col style="width:24.33%"><col style="width:24.34%"></colgroup>
     <thead><tr><th>No</th><th>품종/수령</th><th>피해과</th><th>정상과</th><th>합계</th></tr></thead>
     <tbody>${bodyHtml}</tbody>
     <tfoot><tr>
@@ -759,7 +717,6 @@ function confirmSampleAdd(vi){
   document.getElementById('sample-add-overlay').style.display = 'flex';
   document.getElementById('sample-add-btn').onclick = () => {
     closeAddOverlay();
-    v.samplesManual = true;
     v.samples.push({total:'',damaged:'',normal:''});
     renderVarietySetup();
     renderSampleSection();
@@ -771,11 +728,6 @@ function confirmSampleDel(vi){
   const v = varieties[vi];
   const name = v.name || `품종${vi+1}`;
   if(v.samples.length===0){ showToast('삭제할 표본주가 없어요'); return; }
-  const properN = v.proper||0;
-  if(v.samples.length <= properN){
-    showToast(`적정 표본주(${properN}주) 이하라 삭제할 수 없어요`);
-    return;
-  }
   const lastIdx = v.samples.length;
   document.querySelector('#sample-add-overlay .modal-icon').textContent = '➖';
   document.querySelector('#sample-add-overlay .modal-title').textContent = '표본주 삭제';
@@ -785,7 +737,6 @@ function confirmSampleDel(vi){
   document.getElementById('sample-add-overlay').style.display = 'flex';
   document.getElementById('sample-add-btn').onclick = () => {
     closeAddOverlay();
-    v.samplesManual = true;
     v.samples.pop();
     renderVarietySetup();
     renderSampleSection();
@@ -876,7 +827,6 @@ function resetAll(){
   calcTotals();
   setEditMode();
   document.getElementById('total_trees_disp').value='';
-  document.getElementById('area_tier_disp').value='';
   saveState();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -907,12 +857,12 @@ function fillCaptureTemplate(){
   varieties.forEach((v,vi)=>{
     const validSamples = (v.samples||[]).filter(s=>s.damaged!=='' || s.normal!=='');
     const name = v.name || `품종${vi+1}`;
-    const label = v.age ? `${name}<br>${v.age}년` : name;
+    const label = v.age ? `${name} ${v.age}년` : name;
     validSamples.forEach((s,si)=>{
       totalSum+=numSafe(s.total); damagedSum+=numSafe(s.damaged); normalSum+=numSafe(s.normal);
       rowsHtml+=`<tr>
-        <td style="padding:5px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${no++}</td>`;
-      if(si===0){ rowsHtml+=`<td style="padding:5px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:10.5px;color:#5B7E3F" rowspan="${validSamples.length}">${label}</td>`; }
+        <td style="padding:5px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${no++}</td>
+        <td style="padding:5px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:10.5px;color:#5B7E3F">${label}</td>`;
       rowsHtml+=`
         <td style="padding:5px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.damaged).toLocaleString()}</td>
         <td style="padding:5px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.normal).toLocaleString()}</td>
