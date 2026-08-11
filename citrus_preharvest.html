@@ -1036,6 +1036,29 @@ function loadState(){
 }
 
 // ── 초기 구동 ──────────────────────────────────────
+function getNavList(){
+  return Array.from(document.querySelectorAll(
+    '#contractor_name, #farm_no, #ins_area, #unins_rate, .variety-row input.inp, .variety-row select.inp, .samp-tbl input:not(.auto-cell)'
+  ));
+}
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  const el = e.target;
+  const list = getNavList();
+  const idx = list.indexOf(el);
+  if(idx === -1) return;
+  e.preventDefault();
+  el.blur();
+  setTimeout(()=>{
+    const newList = getNavList();
+    const next = newList[idx+1];
+    if(next){
+      next.focus();
+      try{ next.select(); }catch(_){}
+    }
+  }, 60);
+});
+
 function init(){
   const loaded = loadState();
   if(!loaded){
