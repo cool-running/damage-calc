@@ -329,26 +329,22 @@ body.big-text .hist-btn{height:50px !important}
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:600px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="min-height:600px;background:linear-gradient(180deg,#2f4a1f 0%,#5B7E3F 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
     <div style="height:26px"></div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">
-      <div style="font-size:15px;font-weight:700">감귤 수확전손해조사 결과</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-        <span id="cap-date-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
-        <span id="cap-farmno-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
-      </div>
+    <div style="display:flex;align-items:center;gap:8px;color:#fff;margin-bottom:14px;white-space:nowrap">
+      <span id="cap-date-disp" style="font-size:11.5px;font-weight:700;flex-shrink:0"></span>
+      <span id="cap-contractor-farmno-disp" style="font-size:11.5px;font-weight:700;flex-shrink:0"></span>
+      <span style="font-size:13px;font-weight:800;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis">감귤 수확전손해조사 결과</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
 
       <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">1. 기본정보</div>
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;table-layout:fixed">
-          <colgroup><col style="width:34%"><col style="width:33%"><col style="width:33%"></colgroup>
+        <table style="width:50%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;table-layout:fixed">
+          <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
           <thead><tr>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">계약자명</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">가입면적</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">총실제결과주수</th>
           </tr></thead>
           <tbody><tr>
-            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-contractor">-</td>
             <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-area">-</td>
             <td style="padding:7px 4px;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-trees">-</td>
           </tr></tbody>
@@ -901,8 +897,9 @@ function resetAll(){
 function fillCaptureTemplate(){
   document.getElementById('cap-date-disp').textContent = document.getElementById('survey_date').value || '';
   const farmNo = document.getElementById('farm_no').value || '';
-  document.getElementById('cap-farmno-disp').textContent = farmNo?('농지 '+farmNo):'';
-  document.getElementById('cap-contractor').textContent = document.getElementById('contractor_name').value || '-';
+  const contractorName = document.getElementById('contractor_name').value || '';
+  document.getElementById('cap-contractor-farmno-disp').textContent =
+    contractorName ? (contractorName + (farmNo?`(${farmNo})`:'')) : (farmNo?`농지 ${farmNo}`:'');
   document.getElementById('cap-area').textContent = document.getElementById('ins_area').value ? document.getElementById('ins_area').value+' ㎡' : '-';
 
   let totalTrees=0; varieties.forEach(v=>totalTrees+=numSafe(v.trees));
