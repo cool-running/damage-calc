@@ -185,8 +185,8 @@ body.big-text .hist-btn{height:50px !important}
 .save-btn:active{background:rgba(255,255,255,0.35)}
 
 /* 팝업 공통 */
-#history-overlay,#reset-overlay,#save-done-overlay,#variety-del-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:380;align-items:center;justify-content:center;padding:16px}
-#history-overlay.show,#reset-overlay.show,#save-done-overlay.show,#variety-del-overlay.show{display:flex}
+#history-overlay,#reset-overlay,#save-done-overlay,#variety-del-overlay,#input-required-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:380;align-items:center;justify-content:center;padding:16px}
+#history-overlay.show,#reset-overlay.show,#save-done-overlay.show,#variety-del-overlay.show,#input-required-overlay.show{display:flex}
 .modal-box{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:340px}
 .modal-title{font-size:17px;font-weight:800;color:#333;text-align:center;margin-bottom:8px}
 .modal-desc{font-size:14px;line-height:1.6;color:#666;text-align:center;margin-bottom:18px}
@@ -426,6 +426,15 @@ body.big-text .hist-btn{height:50px !important}
     <div class="modal-title">📷 저장 완료</div>
     <div class="modal-desc">이미지가 갤러리(다운로드 폴더)에 저장되었습니다.</div>
     <button class="modal-ok" style="width:100%" onclick="document.getElementById('save-done-overlay').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<!-- 입력 필요 안내 -->
+<div id="input-required-overlay">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ 입력이 필요해요</div>
+    <div class="modal-desc" id="input-required-desc">가입면적을 먼저 입력해주세요.</div>
+    <button class="modal-ok" style="width:100%" onclick="closeInputRequiredModal()">확인</button>
   </div>
 </div>
 
@@ -720,8 +729,23 @@ function renderSampleSection(){
 function closeAddOverlay(){
   document.getElementById('sample-add-overlay').style.display='none';
 }
+function openInputRequiredModal(msg){
+  document.getElementById('input-required-desc').textContent = msg;
+  document.getElementById('input-required-overlay').classList.add('show');
+  vibrate([15]);
+}
+function closeInputRequiredModal(){
+  document.getElementById('input-required-overlay').classList.remove('show');
+}
+function checkVarietyReady(v){
+  const area = numSafe(document.getElementById('ins_area').value);
+  if(area<=0){ openInputRequiredModal('가입면적을 먼저 입력해주세요.'); return false; }
+  if(numSafe(v.trees)<=0){ openInputRequiredModal('실제결과주수를 먼저 입력해주세요.'); return false; }
+  return true;
+}
 function confirmSampleAdd(vi){
   const v = varieties[vi];
+  if(!checkVarietyReady(v)) return;
   const name = v.name || `품종${vi+1}`;
   const cur = v.samples.length;
   document.querySelector('#sample-add-overlay .modal-icon').textContent = '➕';
@@ -742,6 +766,7 @@ function confirmSampleAdd(vi){
 }
 function confirmSampleDel(vi){
   const v = varieties[vi];
+  if(!checkVarietyReady(v)) return;
   const name = v.name || `품종${vi+1}`;
   if(v.samples.length===0){ showToast('삭제할 표본주가 없어요'); return; }
   const lastIdx = v.samples.length;
@@ -823,7 +848,7 @@ function calcTotals(){
 }
 
 // ── 계산하기 / 수정하기 ────────────────────────────
-function setCalcMode(){
+function setCalcMode(silent){
   _isLocked = true;
   document.getElementById('hdrState').textContent = '🔒 계산완료';
   document.getElementById('hdrState').classList.remove('unlocked');
@@ -832,10 +857,10 @@ function setCalcMode(){
   document.getElementById('btn-calc').style.display='none';
   document.getElementById('btn-edit').style.display='block';
   document.querySelector('.content').classList.add('locked');
-  vibrate([20]);
+  if(!silent) vibrate([30, 40, 60]);
   saveState();
 }
-function setEditMode(){
+function setEditMode(silent){
   _isLocked = false;
   document.getElementById('hdrState').textContent = '🔓 수정 중';
   document.getElementById('hdrState').classList.add('unlocked');
@@ -843,6 +868,7 @@ function setEditMode(){
   document.getElementById('btn-edit').classList.add('active');
   document.getElementById('btn-calc').style.display='block';
   document.querySelector('.content').classList.remove('locked');
+  if(!silent) vibrate([12]);
   saveState();
 }
 
@@ -1068,7 +1094,7 @@ function loadState(){
 
     varieties = (state.varieties && state.varieties.length) ? state.varieties : [newVariety()];
 
-    if(state.isLocked){ setCalcMode(); } else { setEditMode(); }
+    if(state.isLocked){ setCalcMode(true); } else { setEditMode(true); }
     return true;
   }catch(e){ return false; }
 }
