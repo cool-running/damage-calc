@@ -159,11 +159,14 @@ body.big-text .hist-btn{height:50px !important}
 
 /* 과실 등급판정 카드 */
 .dmg-card{background:#fafaf8;border:1px solid var(--border);border-radius:10px;padding:9px;margin-bottom:8px}
-.dmg-card-head{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.dmg-card-head{margin-bottom:8px}
+.dmg-card-head-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.dmg-card-head-stats{display:flex;gap:14px;padding-left:24px}
 .dmg-no{width:18px;height:18px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
 .dmg-vname{font-size:11.5px;font-weight:700;color:var(--blue);flex:1}
 .dmg-total{font-size:10.5px;color:var(--sub);flex-shrink:0}
 .dmg-total b{color:var(--text);font-size:12px}
+.dmg-total.rate b{color:#C2560A}
 .dmg-grade-grid{display:grid;grid-template-columns:38px repeat(4,1fr);gap:3px;margin-bottom:6px}
 .dmg-grade-hcell{font-size:9px;color:var(--sub);text-align:center;font-weight:600;padding-bottom:1px}
 .dmg-grade-label{font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:5px;padding:0 2px;text-align:center;line-height:1.15}
@@ -182,6 +185,19 @@ body.big-text .hist-btn{height:50px !important}
 .dmg-summary-row b{color:var(--text);font-size:12.5px;font-weight:700}
 .dmg-summary-row.highlight{border-top:1px solid #d8e3cc;margin-top:4px;padding-top:7px}
 .dmg-summary-row.highlight span,.dmg-summary-row.highlight b{color:var(--blue);font-weight:800}
+
+/* 표본조사 요약 (접이식, 탭) */
+.dmg-review-box{background:#f5f8f1;border:1.5px solid var(--blue2);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.dmg-review-head{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;font-size:12.5px;font-weight:700;color:var(--blue);cursor:pointer}
+.dmg-review-tabs{display:flex;gap:6px;padding:0 10px 8px}
+.dmg-review-tab{flex:1;height:30px;border:1.5px solid var(--border);background:#fff;border-radius:7px;font-size:11px;font-weight:700;color:var(--sub);cursor:pointer}
+.dmg-review-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.dmg-review-table-wrap{padding:0 10px 10px;overflow-x:auto}
+.dmg-review-tbl{width:100%;border-collapse:collapse;font-size:10.5px;table-layout:fixed}
+.dmg-review-tbl th{background:#5B7E3F;color:#fff;padding:5px 1px;font-size:8.5px;font-weight:700;text-align:center;line-height:1.2}
+.dmg-review-tbl td{padding:5px 1px;text-align:center;border-bottom:1px solid #eee;background:#fff;font-size:10.5px}
+.dmg-review-tbl td b{color:var(--blue);font-weight:800}
+.dmg-review-tbl tfoot td{background:#eef3e7;font-weight:800;color:var(--blue);border-top:1.5px solid var(--blue2)}
 
 .guide{text-align:center;padding:16px 0;font-size:13px;color:var(--hint)}
 
@@ -342,6 +358,21 @@ body.big-text .hist-btn{height:50px !important}
 
   <div class="section">
     <div class="sec-title">3. 표본조사</div>
+
+    <div class="dmg-review-box" id="dmg-review-box" style="display:none">
+      <div class="dmg-review-head" onclick="toggleReviewCollapse()">
+        <span>📊 표본조사 요약</span>
+        <span id="dmg-review-arrow">▼</span>
+      </div>
+      <div id="dmg-review-body" style="display:none">
+        <div class="dmg-review-tabs">
+          <button class="dmg-review-tab active" id="dmg-tab-ig" onclick="switchReviewTab('ig')">등급내</button>
+          <button class="dmg-review-tab" id="dmg-tab-og" onclick="switchReviewTab('og')">등급외 · 정상</button>
+        </div>
+        <div id="dmg-review-table-wrap"></div>
+      </div>
+    </div>
+
     <div id="sample-guide" class="guide">품종을 추가하고 표본을 추가하면 표본조사표가 생성됩니다</div>
     <div id="sample-section-wrap" style="display:none"></div>
   </div>
@@ -782,15 +813,21 @@ function renderSampleSection(){
       const name = v.name || `품종${vi+1}`;
       const label = v.age ? `${name} ${v.age}년` : name;
       const totalDisp = hasSampleData(s) ? sampleTotal(s).toLocaleString() : '-';
+      const rateDisp = (hasSampleData(s) && sampleTotal(s)>0) ? ((sampleP(s)/sampleTotal(s))*100).toFixed(1)+'%' : '-';
       const igInputs = ['ig30','ig50','ig80','ig100'].map(f=>`<input type="text" inputmode="numeric" class="dmg-input ig ${s[f]!==''?'filled':''}" id="dmg-${f}-${vi}-${si}" value="${s[f]!==''?Number(s[f]).toLocaleString():''}"
             oninput="onCommaInput(this)" onblur="onDmgInput(${vi},${si},'${f}',this.value.replace(/,/g,''))" autocomplete="off">`).join('');
       const ogInputs = ['og30','og50','og80','og100'].map(f=>`<input type="text" inputmode="numeric" class="dmg-input og ${s[f]!==''?'filled':''}" id="dmg-${f}-${vi}-${si}" value="${s[f]!==''?Number(s[f]).toLocaleString():''}"
             oninput="onCommaInput(this)" onblur="onDmgInput(${vi},${si},'${f}',this.value.replace(/,/g,''))" autocomplete="off">`).join('');
       html += `<div class="dmg-card">
         <div class="dmg-card-head">
-          <span class="dmg-no">${globalNo}</span>
-          <span class="dmg-vname">${label}</span>
-          <span class="dmg-total">합계 <b id="dmg-tot-${vi}-${si}">${totalDisp}</b></span>
+          <div class="dmg-card-head-top">
+            <span class="dmg-no">${globalNo}</span>
+            <span class="dmg-vname">${label}</span>
+          </div>
+          <div class="dmg-card-head-stats">
+            <span class="dmg-total">합계 <b id="dmg-tot-${vi}-${si}">${totalDisp}</b></span>
+            <span class="dmg-total rate">피해율 <b id="dmg-rate-${vi}-${si}">${rateDisp}</b></span>
+          </div>
         </div>
         <div class="dmg-grade-grid">
           <div class="dmg-grade-hcell"></div>
@@ -819,6 +856,67 @@ function renderSampleSection(){
 
   wrap.innerHTML = html;
   setTimeout(bindMobileFocusHandlers,0);
+  renderReviewTable();
+}
+
+// ── 표본조사 요약 (접이식, 탭) ────────────────────
+let _reviewTab = 'ig';
+function toggleReviewCollapse(){
+  const body = document.getElementById('dmg-review-body');
+  const arrow = document.getElementById('dmg-review-arrow');
+  const collapsed = body.style.display === 'none';
+  body.style.display = collapsed ? 'block' : 'none';
+  arrow.textContent = collapsed ? '▲' : '▼';
+}
+function switchReviewTab(tab){
+  _reviewTab = tab;
+  document.getElementById('dmg-tab-ig').classList.toggle('active', tab==='ig');
+  document.getElementById('dmg-tab-og').classList.toggle('active', tab==='og');
+  renderReviewTable();
+}
+function renderReviewTable(){
+  const box = document.getElementById('dmg-review-box');
+  const wrap = document.getElementById('dmg-review-table-wrap');
+  const hasAny = varieties.some(v=>v.samples && v.samples.length>0);
+  box.style.display = hasAny ? 'block' : 'none';
+  if(!hasAny) return;
+
+  let rows=''; let no=0;
+  let sub30=0,sub50=0,sub80=0,sub100=0,subTotal=0,normalSum=0,grandTotal=0;
+
+  varieties.forEach((v,vi)=>{
+    const name = v.name || `품종${vi+1}`;
+    (v.samples||[]).forEach((s)=>{
+      no++;
+      if(_reviewTab==='ig'){
+        const a=numSafe(s.ig30),b=numSafe(s.ig50),c=numSafe(s.ig80),d=numSafe(s.ig100);
+        const sub=a+b+c+d;
+        sub30+=a; sub50+=b; sub80+=c; sub100+=d; subTotal+=sub;
+        rows+=`<tr><td>${no}</td><td>${name}</td><td>${a||'-'}</td><td>${b||'-'}</td><td>${c||'-'}</td><td>${d||'-'}</td><td><b>${sub||'-'}</b></td></tr>`;
+      } else {
+        const a=numSafe(s.og30),b=numSafe(s.og50),c=numSafe(s.og80),d=numSafe(s.og100);
+        const nrm=numSafe(s.normal); const tot=sampleTotal(s);
+        sub30+=a; sub50+=b; sub80+=c; sub100+=d; normalSum+=nrm; grandTotal+=tot;
+        rows+=`<tr><td>${no}</td><td>${name}</td><td>${a||'-'}</td><td>${b||'-'}</td><td>${c||'-'}</td><td>${d||'-'}</td><td>${nrm||'-'}</td><td><b>${tot||'-'}</b></td></tr>`;
+      }
+    });
+  });
+
+  if(_reviewTab==='ig'){
+    wrap.innerHTML = `<table class="dmg-review-tbl">
+      <colgroup><col style="width:9%"><col style="width:24%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:17%"></colgroup>
+      <thead><tr><th>No</th><th>품종</th><th>30%</th><th>50%</th><th>80%</th><th>100%</th><th>소계</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td colspan="2">합계</td><td>${sub30||'-'}</td><td>${sub50||'-'}</td><td>${sub80||'-'}</td><td>${sub100||'-'}</td><td>${subTotal||'-'}</td></tr></tfoot>
+    </table>`;
+  } else {
+    wrap.innerHTML = `<table class="dmg-review-tbl">
+      <colgroup><col style="width:8%"><col style="width:18%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:13%"><col style="width:13%"></colgroup>
+      <thead><tr><th>No</th><th>품종</th><th>30%</th><th>50%</th><th>80%</th><th>100%</th><th>정상과</th><th>합계</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td colspan="2">합계</td><td>${sub30||'-'}</td><td>${sub50||'-'}</td><td>${sub80||'-'}</td><td>${sub100||'-'}</td><td>${normalSum||'-'}</td><td>${grandTotal||'-'}</td></tr></tfoot>
+    </table>`;
+  }
 }
 
 function closeAddOverlay(){
@@ -886,15 +984,19 @@ function onDmgInput(vi,si,field,rawVal){
   const s = varieties[vi].samples[si];
   if(!s) return;
   s[field] = rawVal;
-  // 카드 전체를 다시 그리지 않고 해당 합계만 갱신 (포커스 유지, 엔터 이동 안정성)
+  // 카드 전체를 다시 그리지 않고 해당 합계/피해율만 갱신 (포커스 유지, 엔터 이동 안정성)
   const totEl = document.getElementById(`dmg-tot-${vi}-${si}`);
-  if(totEl) totEl.textContent = hasSampleData(s) ? sampleTotal(s).toLocaleString() : '-';
+  const rateEl = document.getElementById(`dmg-rate-${vi}-${si}`);
+  const total = sampleTotal(s);
+  if(totEl) totEl.textContent = hasSampleData(s) ? total.toLocaleString() : '-';
+  if(rateEl) rateEl.textContent = (hasSampleData(s) && total>0) ? ((sampleP(s)/total)*100).toFixed(1)+'%' : '-';
   calcTotals();
   saveState();
 }
 
 // ── 합계 및 피해율 계산 ────────────────────────────
 function calcTotals(){
+  renderReviewTable();
   let sumIG=0, sumOG=0, sumNormal=0, sumTotal=0, sumP=0;
   varieties.forEach(v=>{
     (v.samples||[]).forEach(s=>{
