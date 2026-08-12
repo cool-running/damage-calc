@@ -186,11 +186,13 @@ body.big-text .hist-btn{height:50px !important}
 .guide{text-align:center;padding:16px 0;font-size:13px;color:var(--hint)}
 
 /* 계산하기/수정하기 */
+.calc-hint{text-align:center;font-size:10.5px;color:var(--sub);margin-bottom:8px;line-height:1.4;padding:0 4px}
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.btn-edit,.btn-calc{height:46px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-edit{background:#eee;color:#888}
-.btn-edit.active{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
-.btn-calc{background:var(--blue);color:#fff}
+.btn-edit,.btn-calc{height:46px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-edit{border:2px solid var(--blue);background:#fff;color:var(--blue)}
+.btn-edit.active{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
+.btn-calc{border:none;background:#eee;color:#999}
+.btn-calc.active{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
 .btn-calc:active{background:#456530}
 
 /* 잠금 */
@@ -215,7 +217,7 @@ body.big-text .hist-btn{height:50px !important}
 .modal-btns button{flex:1;height:46px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer}
 .modal-cancel{border:1.5px solid #d9d9d9;background:#f7f7f7;color:#555}
 .modal-confirm{border:none;background:var(--red);color:#fff}
-.modal-ok{border:none;background:var(--blue);color:#fff}
+.modal-ok{border:none;background:var(--blue);color:#fff;height:46px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer}
 
 #history-overlay .modal-box{max-width:400px;max-height:80vh;display:flex;flex-direction:column;padding:0}
 .hist-head{padding:16px 16px 10px;font-size:16px;font-weight:800;color:#333;border-bottom:1px solid #eee}
@@ -345,6 +347,7 @@ body.big-text .hist-btn{height:50px !important}
   </div>
 
   <!-- 계산하기 / 수정하기 -->
+  <div class="calc-hint">가입면적 · 실제결과주수 · 표본조사 데이터를 모두 입력해야 계산할 수 있어요</div>
   <div class="calc-action-row">
     <button class="btn-edit active" id="btn-edit" onclick="setEditMode()">✏️ 수정하기</button>
     <button class="btn-calc" id="btn-calc" onclick="setCalcMode()">🔒 계산하기</button>
@@ -822,7 +825,7 @@ function closeAddOverlay(){
   document.getElementById('sample-add-overlay').style.display='none';
 }
 function openInputRequiredModal(msg){
-  document.getElementById('input-required-desc').textContent = msg;
+  document.getElementById('input-required-desc').innerHTML = msg;
   document.getElementById('input-required-overlay').classList.add('show');
   vibrate([15]);
 }
@@ -941,13 +944,24 @@ function calcTotals(){
 
 // ── 계산하기 / 수정하기 ────────────────────────────
 function setCalcMode(silent){
+  if(!silent){
+    const missing = [];
+    if(numSafe(document.getElementById('ins_area').value)<=0){ missing.push('• 가입면적'); }
+    const hasTrees = varieties.some(v=>numSafe(v.trees)>0);
+    if(!hasTrees){ missing.push('• 실제결과주수'); }
+    const resultPending = document.getElementById('result-section').classList.contains('pending');
+    if(resultPending){ missing.push('• 표본조사 데이터(등급판정)'); }
+    if(missing.length>0){
+      openInputRequiredModal('아래 항목을 입력해주세요.<br><br>'+missing.join('<br>'));
+      return;
+    }
+  }
   _isLocked = true;
   document.getElementById('hdrState').textContent = '🔒 계산완료';
   document.getElementById('hdrState').classList.remove('unlocked');
   document.getElementById('hdrState').classList.add('locked');
   document.getElementById('btn-edit').classList.remove('active');
-  document.getElementById('btn-calc').style.display='none';
-  document.getElementById('btn-edit').style.display='block';
+  document.getElementById('btn-calc').classList.add('active');
   document.querySelector('.content').classList.add('locked');
   if(!silent) vibrate([30, 40, 60]);
   saveState();
@@ -958,7 +972,7 @@ function setEditMode(silent){
   document.getElementById('hdrState').classList.add('unlocked');
   document.getElementById('hdrState').classList.remove('locked');
   document.getElementById('btn-edit').classList.add('active');
-  document.getElementById('btn-calc').style.display='block';
+  document.getElementById('btn-calc').classList.remove('active');
   document.querySelector('.content').classList.remove('locked');
   if(!silent) vibrate([12]);
   saveState();
