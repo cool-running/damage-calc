@@ -111,8 +111,12 @@ canvas{display:block;max-width:100%;max-height:100%;}
 .sc-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;}
 .sc-custom-inner{width:100%;height:100%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);}
 .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.bgs{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2.5px solid transparent;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.85);text-shadow:0 1px 2px rgba(0,0,0,0.5);}
+.bgs{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2.5px solid transparent;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.85);text-shadow:0 1px 2px rgba(0,0,0,0.5);position:relative;overflow:hidden;}
 .bgs.on{border-color:#E05A2B;}
+.bgs-custom{border:2px dashed #ccc;}
+.bgs-custom-inner{position:absolute;inset:0;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);}
+.bgs-custom span{position:relative;z-index:1;background:rgba(0,0,0,0.35);padding:2px 4px;border-radius:4px;}
+.bgs-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;}
 .bgs:active{transform:scale(.95);}
 
 .sz-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
@@ -200,26 +204,27 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
   <!-- 스타일 패널 -->
   <div class="panel" id="panelStyle">
     <button class="pcls" onclick="closePanel()">✕</button>
-    <div class="color-row" id="bgColorRow">
-      <div class="sc on" data-c="#4DB6AC" style="background:#4DB6AC"></div>
-      <div class="sc" data-c="#185FA5" style="background:#185FA5"></div>
-      <div class="sc" data-c="#1a6b2e" style="background:#1a6b2e"></div>
-      <div class="sc" data-c="#B71C1C" style="background:#B71C1C"></div>
-      <div class="sc" data-c="#E65100" style="background:#E65100"></div>
-      <div class="sc" data-c="#37474F" style="background:#37474F"></div>
-      <div class="sc" data-c="#212121" style="background:#212121"></div>
-      <div class="sc" data-c="#ffffff" style="background:#fff;border-color:#ddd"></div>
-      <div class="sc-custom"><div class="sc-custom-inner"></div><input type="color" id="bgCustom" value="#4DB6AC"/></div>
-    </div>
     <div class="bg-grid" id="bgGrid">
-      <div class="bgs on" data-bg="solid" id="soloTile" style="background:#4DB6AC;">단색</div>
-      <div class="bgs" data-bg="grid" style="background:#4a7c8a;background-image:linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px);background-size:18px 18px;">격자</div>
-      <div class="bgs" data-bg="g1" style="background:linear-gradient(135deg,#667eea,#764ba2)">보라</div>
-      <div class="bgs" data-bg="g2" style="background:linear-gradient(135deg,#f093fb,#f5576c)">핑크</div>
-      <div class="bgs" data-bg="g3" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">하늘</div>
-      <div class="bgs" data-bg="g4" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">민트</div>
-      <div class="bgs" data-bg="g5" style="background:linear-gradient(135deg,#fa709a,#fee140)">석양</div>
-      <div class="bgs" data-bg="g6" style="background:linear-gradient(135deg,#30cfd0,#330867)">딥씨</div>
+      <div class="bgs bgs-custom" data-type="solid" id="bgCustomTile">
+        <div class="bgs-custom-inner"></div>
+        <span>직접선택</span>
+        <input type="color" id="bgCustom" value="#B2DFDB"/>
+      </div>
+      <div class="bgs" data-type="solid" data-color="#ffffff" style="background:#fff;border:1.5px solid #ddd;color:#555;text-shadow:none;">흰색</div>
+      <div class="bgs" data-type="solid" data-color="#212121" style="background:#212121">검정</div>
+      <div class="bgs" data-type="solid" data-color="#FFCC80" style="background:#FFCC80;color:#7a4a12;text-shadow:none;">주황</div>
+      <div class="bgs" data-type="g4" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">민트</div>
+      <div class="bgs" data-type="g3" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">하늘</div>
+      <div class="bgs" data-type="g2" style="background:linear-gradient(135deg,#f093fb,#f5576c)">핑크</div>
+      <div class="bgs on" data-type="solid" data-color="#B2DFDB" style="background:#B2DFDB;color:#2b5c56;text-shadow:none;">청록</div>
+      <div class="bgs" data-type="solid" data-color="#90CAF9" style="background:#90CAF9;color:#1a4a75;text-shadow:none;">파랑</div>
+      <div class="bgs" data-type="solid" data-color="#A5D6A7" style="background:#A5D6A7;color:#2e5930;text-shadow:none;">초록</div>
+      <div class="bgs" data-type="solid" data-color="#EF9A9A" style="background:#EF9A9A;color:#7a2323;text-shadow:none;">빨강</div>
+      <div class="bgs" data-type="g1" style="background:linear-gradient(135deg,#667eea,#764ba2)">보라</div>
+      <div class="bgs" data-type="solid" data-color="#37474F" style="background:#37474F">회색</div>
+      <div class="bgs" data-type="g5" style="background:linear-gradient(135deg,#fa709a,#fee140)">석양</div>
+      <div class="bgs" data-type="g6" style="background:linear-gradient(135deg,#30cfd0,#330867)">딥씨</div>
+      <div class="bgs" data-type="grid" data-color="#4a7c8a" style="background:#4a7c8a;background-image:linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px);background-size:18px 18px;">격자</div>
     </div>
   </div>
 
@@ -296,8 +301,8 @@ function loadS(){try{return JSON.parse(localStorage.getItem(LS))||{};}catch(e){r
 function saveS(){try{localStorage.setItem(LS,JSON.stringify({bgColor,bgType,txtColor,dateSz,seqSz,curFont,curWeight,align,tx,ty,mode,fieldNum,reportNum,dateText,lastActiveDay}));}catch(e){}}
 
 const _s=loadS();
-let bgColor=_s.bgColor||'#4DB6AC', bgType=_s.bgType||'solid';
-let txtColor=_s.txtColor||'#ffffff';
+let bgColor=_s.bgColor||'#B2DFDB', bgType=_s.bgType||'solid';
+let txtColor=_s.txtColor||'#212121';
 let dateSz=_s.dateSz||60, seqSz=_s.seqSz||160;
 let curFont=_s.curFont||"'Noto Sans KR',sans-serif", curWeight=_s.curWeight||'900';
 let align=_s.align||'center';
@@ -488,12 +493,11 @@ cv.addEventListener('mousemove',e=>{const p=toCV(e.clientX,e.clientY);if(draggin
 cv.addEventListener('mouseup',()=>{if(dragging){dragging=false;cv.style.cursor='default';saveS();}});
 cv.addEventListener('dblclick',e=>{const p=toCV(e.clientX,e.clientY);if(!hitBox(p.x,p.y))return;const lg=Math.round(seqSz*0.25),th=dateSz+lg+seqSz,dy=ty-th/2+dateSz/2;openEdit(p.y<(dy+seqSz*0.3)?'date':'seq');});
 
-function togglePanel(pid,bid){const show=document.getElementById(pid).classList.contains('show');closePanel();if(!show){document.getElementById(pid).classList.add('show');document.getElementById(bid).classList.add('on');document.documentElement.style.setProperty('--btm-h','450px');}document.getElementById('dateInput').blur();document.getElementById('seqNumInput').blur();}
+function togglePanel(pid,bid){const show=document.getElementById(pid).classList.contains('show');closePanel();if(!show){document.getElementById(pid).classList.add('show');document.getElementById(bid).classList.add('on');document.documentElement.style.setProperty('--btm-h','580px');}document.getElementById('dateInput').blur();document.getElementById('seqNumInput').blur();}
 function closePanel(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));document.documentElement.style.setProperty('--btm-h','218px');}
 
-document.getElementById('bgColorRow').querySelectorAll('.sc').forEach(el=>{el.addEventListener('click',function(){document.getElementById('bgColorRow').querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));this.classList.add('on');bgColor=this.dataset.c;document.getElementById('bgCustom').value=bgColor;document.getElementById('soloTile').style.background=bgColor;draw();saveS();});});
-document.getElementById('bgCustom').addEventListener('input',function(){document.getElementById('bgColorRow').querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));bgColor=this.value;document.getElementById('soloTile').style.background=bgColor;draw();saveS();});
-document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(el=>{el.addEventListener('click',function(){document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));this.classList.add('on');bgType=this.dataset.bg;draw();saveS();});});
+document.getElementById('bgGrid').querySelectorAll('.bgs:not(.bgs-custom)').forEach(el=>{el.addEventListener('click',function(){document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));this.classList.add('on');bgType=this.dataset.type;if(this.dataset.color) bgColor=this.dataset.color;document.getElementById('bgCustom').value=bgColor;draw();saveS();});});
+document.getElementById('bgCustom').addEventListener('input',function(){document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));document.getElementById('bgCustomTile').classList.add('on');bgType='solid';bgColor=this.value;draw();saveS();});
 document.getElementById('dateSzR').addEventListener('input',function(){dateSz=+this.value;document.getElementById('dateSzV').textContent=this.value;draw();saveS();});
 document.getElementById('seqSzR').addEventListener('input',function(){seqSz=+this.value;document.getElementById('seqSzV').textContent=this.value;draw();saveS();});
 document.getElementById('fontScroll').querySelectorAll('.fc').forEach(el=>{el.addEventListener('click',function(){document.getElementById('fontScroll').querySelectorAll('.fc').forEach(f=>f.classList.remove('on'));this.classList.add('on');curFont=this.dataset.font;curWeight=this.dataset.w;document.fonts.ready.then(()=>{setTimeout(()=>{draw();saveS();},60);});});});
@@ -542,9 +546,16 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   document.getElementById('dateSzR').value=dateSz;document.getElementById('dateSzV').textContent=dateSz;
   document.getElementById('seqSzR').value=seqSz;document.getElementById('seqSzV').textContent=seqSz;
   document.getElementById('bgCustom').value=bgColor;document.getElementById('txtCustom').value=txtColor;
-  document.getElementById('soloTile').style.background=bgColor;
-  document.getElementById('bgColorRow').querySelectorAll('.sc').forEach(s=>s.classList.toggle('on',s.dataset.c===bgColor));
-  document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.toggle('on',s.dataset.bg===bgType));
+  {
+    const tiles=document.getElementById('bgGrid').querySelectorAll('.bgs');
+    let matched=false;
+    tiles.forEach(s=>{
+      const isMatch = s.id!=='bgCustomTile' && s.dataset.type===bgType && (s.dataset.type==='grid'||s.dataset.type==='solid' ? s.dataset.color===bgColor : true);
+      s.classList.toggle('on', isMatch);
+      if(isMatch) matched=true;
+    });
+    if(!matched) document.getElementById('bgCustomTile').classList.add('on');
+  }
   document.getElementById('fontScroll').querySelectorAll('.fc').forEach(f=>f.classList.toggle('on',f.dataset.font===curFont));
   document.getElementById('alignRow').querySelectorAll('.abtn').forEach(b=>b.classList.toggle('on',b.dataset.a===align));
   document.getElementById('txtColorRow').querySelectorAll('.tc').forEach(s=>s.classList.toggle('on',s.dataset.c===txtColor));
