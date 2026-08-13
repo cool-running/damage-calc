@@ -80,12 +80,6 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .sec-title{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:12px;letter-spacing:0.04em}
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .sec-head .sec-title{margin-bottom:0}
-.prior-toggle{position:relative;display:inline-block;cursor:pointer}
-.prior-toggle input{position:absolute;opacity:0;width:0;height:0}
-.prior-toggle-track{display:block;width:44px;height:26px;background:#ddd;border-radius:14px;position:relative;transition:background .2s}
-.prior-toggle-thumb{position:absolute;top:2px;left:2px;width:22px;height:22px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3);transition:transform .2s}
-.prior-toggle input:checked + .prior-toggle-track{background:var(--blue)}
-.prior-toggle input:checked + .prior-toggle-track .prior-toggle-thumb{transform:translateX(18px)}
 
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
@@ -207,7 +201,7 @@ body.big-text .hist-btn{height:50px !important}
 .locked input.inp:not([type=date]),.locked .dmg-input,.locked select.inp{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 .locked .datewrap{pointer-events:none;opacity:0.72}
-.locked .vr-samp-btn,.locked .add-variety-btn,.locked .del-variety-action,.locked .vr-name-toggle,.locked .prior-toggle{pointer-events:none;opacity:0.4}
+.locked .vr-samp-btn,.locked .add-variety-btn,.locked .del-variety-action,.locked .vr-name-toggle{pointer-events:none;opacity:0.4}
 
 /* 결과 */
 .result-box{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(91,126,63,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
@@ -324,15 +318,8 @@ body.big-text .hist-btn{height:50px !important}
   </div>
 
   <div class="section">
-    <div class="sec-head">
-      <div class="sec-title" style="margin-bottom:0">2. 이전 수확전사고</div>
-      <label class="prior-toggle">
-        <input type="checkbox" id="prior-toggle-cb" onchange="onPriorToggle()">
-        <span class="prior-toggle-track"><span class="prior-toggle-thumb"></span></span>
-      </label>
-    </div>
-    <div id="prior-guide" class="guide" style="padding:10px 0">이전에 수확전사고 조사를 했다면 켜주세요</div>
-    <div id="prior-fields" class="g2" style="display:none;margin-bottom:0">
+    <div class="sec-title">2. 이전 수확전사고</div>
+    <div id="prior-fields" class="g2" style="margin-bottom:0">
       <div class="field">
         <label>수확전사고 피해율</label>
         <span class="unit-badge">%</span>
@@ -608,17 +595,6 @@ function newVariety(){
 }
 function newSample(){
   return { ig30:'', ig50:'', ig80:'', ig100:'', og30:'', og50:'', og80:'', og100:'', normal:'', total:'' };
-}
-function onPriorToggle(){
-  const on = document.getElementById('prior-toggle-cb').checked;
-  document.getElementById('prior-guide').style.display = on ? 'none' : 'block';
-  document.getElementById('prior-fields').style.display = on ? 'grid' : 'none';
-  if(!on){
-    document.getElementById('prior_rate').value = '';
-    document.getElementById('prior_unins').value = '';
-  }
-  calcTotals();
-  saveState();
 }
 
 // ── 품종 추가 ───────────────────────────────────
@@ -1058,8 +1034,6 @@ function resetAll(){
   ['contractor_name','farm_no','ins_area','unins_rate','prior_rate','prior_unins'].forEach(id=>{
     const el=document.getElementById(id); el.value=''; el.classList.remove('filled');
   });
-  document.getElementById('prior-toggle-cb').checked = false;
-  onPriorToggle();
   document.getElementById('survey_date').value = fmt(new Date());
   markFilled(document.getElementById('survey_date'));
   varieties = [newVariety()];
@@ -1125,8 +1099,6 @@ function fillCaptureTemplate(){
   const priorRate = priorRateRaw/100;
   const priorUnins = Math.min(priorUninsRaw/100, 0.99);
 
-  const priorOn = document.getElementById('prior-toggle-cb').checked;
-  document.getElementById('cap-prior-box').style.display = priorOn ? 'block' : 'none';
   document.getElementById('cap-prior-rate').textContent = priorRateRaw?priorRateRaw+'%':'-';
   document.getElementById('cap-prior-unins').textContent = priorUninsRaw?priorUninsRaw+'%':'-';
 
@@ -1222,8 +1194,6 @@ function loadHistoryRecord(idx){
   document.getElementById('survey_date').value = r.survey_date||'';
   ['contractor_name','farm_no','ins_area','unins_rate','prior_rate','prior_unins'].forEach(id=>markFilled(document.getElementById(id)));
   markFilled(document.getElementById('survey_date'));
-  document.getElementById('prior-toggle-cb').checked = !!(r.prior_rate || r.prior_unins);
-  onPriorToggle();
 
   varieties = (r.varieties && r.varieties.length) ? JSON.parse(JSON.stringify(r.varieties)) : [newVariety()];
 
@@ -1279,7 +1249,6 @@ function saveState(){
     unins_rate: document.getElementById('unins_rate').value,
     prior_rate: document.getElementById('prior_rate').value,
     prior_unins: document.getElementById('prior_unins').value,
-    prior_on: document.getElementById('prior-toggle-cb').checked,
     survey_date: document.getElementById('survey_date').value,
     varieties: varieties,
     isLocked: _isLocked
@@ -1300,8 +1269,6 @@ function loadState(){
     document.getElementById('survey_date').value = state.survey_date||fmt(new Date());
     ['contractor_name','farm_no','ins_area','unins_rate','prior_rate','prior_unins'].forEach(id=>markFilled(document.getElementById(id)));
     markFilled(document.getElementById('survey_date'));
-    document.getElementById('prior-toggle-cb').checked = !!state.prior_on;
-    onPriorToggle();
 
     varieties = (state.varieties && state.varieties.length) ? state.varieties : [newVariety()];
 
