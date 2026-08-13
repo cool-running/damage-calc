@@ -116,7 +116,7 @@ canvas{display:block;max-width:100%;max-height:100%;}
 .bgs-custom{border:2px dashed #ccc;}
 .bgs-custom-inner{position:absolute;inset:0;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);}
 .bgs-custom span{position:relative;z-index:1;background:rgba(0,0,0,0.35);padding:2px 4px;border-radius:4px;}
-.bgs-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.bgs-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;}
 .bgs:active{transform:scale(.95);}
 
 .sz-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
@@ -207,7 +207,7 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
     <div class="bg-grid" id="bgGrid">
       <div class="bgs bgs-custom" data-type="solid" id="bgCustomTile">
         <div class="bgs-custom-inner"></div>
-        <span>직접선택</span>
+        <span>맞춤색상</span>
         <input type="color" id="bgCustom" value="#B2DFDB"/>
       </div>
       <div class="bgs" data-type="solid" data-color="#ffffff" style="background:#fff;border:1.5px solid #ddd;color:#555;text-shadow:none;">흰색</div>
@@ -493,7 +493,7 @@ cv.addEventListener('mousemove',e=>{const p=toCV(e.clientX,e.clientY);if(draggin
 cv.addEventListener('mouseup',()=>{if(dragging){dragging=false;cv.style.cursor='default';saveS();}});
 cv.addEventListener('dblclick',e=>{const p=toCV(e.clientX,e.clientY);if(!hitBox(p.x,p.y))return;const lg=Math.round(seqSz*0.25),th=dateSz+lg+seqSz,dy=ty-th/2+dateSz/2;openEdit(p.y<(dy+seqSz*0.3)?'date':'seq');});
 
-function togglePanel(pid,bid){const show=document.getElementById(pid).classList.contains('show');closePanel();if(!show){document.getElementById(pid).classList.add('show');document.getElementById(bid).classList.add('on');document.documentElement.style.setProperty('--btm-h','580px');}document.getElementById('dateInput').blur();document.getElementById('seqNumInput').blur();}
+function togglePanel(pid,bid){const show=document.getElementById(pid).classList.contains('show');closePanel();if(!show){document.getElementById(pid).classList.add('show');document.getElementById(bid).classList.add('on');document.documentElement.style.setProperty('--btm-h','400px');}document.getElementById('dateInput').blur();document.getElementById('seqNumInput').blur();}
 function closePanel(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));document.documentElement.style.setProperty('--btm-h','218px');}
 
 document.getElementById('bgGrid').querySelectorAll('.bgs:not(.bgs-custom)').forEach(el=>{el.addEventListener('click',function(){document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));this.classList.add('on');bgType=this.dataset.type;if(this.dataset.color) bgColor=this.dataset.color;document.getElementById('bgCustom').value=bgColor;draw();saveS();});});
