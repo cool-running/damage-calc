@@ -113,10 +113,16 @@ canvas{display:block;max-width:100%;max-height:100%;}
 .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .bgs{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2.5px solid transparent;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.85);text-shadow:0 1px 2px rgba(0,0,0,0.5);position:relative;overflow:hidden;}
 .bgs.on{border-color:#E05A2B;}
-.bgs-custom{border:2px dashed #ccc;}
-.bgs-custom-inner{position:absolute;inset:0;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);}
-.bgs-custom span{position:relative;z-index:1;background:rgba(0,0,0,0.35);padding:2px 4px;border-radius:4px;}
-.bgs-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;}
+.bgs-custom{border:2px dashed rgba(255,255,255,0.5);}
+
+.custom-picker{background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+.cp-label{font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.cp-label #cpPreview{width:18px;height:18px;border-radius:5px;border:1.5px solid rgba(255,255,255,0.4);display:inline-block;}
+input[type=range].hue-slider,input[type=range].light-slider{-webkit-appearance:none;width:100%;height:14px;border-radius:7px;margin-bottom:10px;outline:none;}
+input[type=range].hue-slider{background:linear-gradient(to right,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);}
+input[type=range].light-slider{background:linear-gradient(to right,#000000,#888888,#ffffff);}
+input[type=range].hue-slider::-webkit-slider-thumb,input[type=range].light-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #1a1a2e;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:pointer;}
+input[type=range].hue-slider::-moz-range-thumb,input[type=range].light-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #1a1a2e;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:pointer;}
 .bgs:active{transform:scale(.95);}
 
 .sz-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
@@ -204,12 +210,13 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
   <!-- 스타일 패널 -->
   <div class="panel" id="panelStyle">
     <button class="pcls" onclick="closePanel()">✕</button>
+    <div class="custom-picker" id="customPicker">
+      <div class="cp-label">🎨 맞춤색상 <span id="cpPreview"></span></div>
+      <input type="range" id="hueSlider" class="hue-slider" min="0" max="360" value="160">
+      <input type="range" id="lightSlider" class="light-slider" min="15" max="90" value="65">
+    </div>
     <div class="bg-grid" id="bgGrid">
-      <div class="bgs bgs-custom" data-type="solid" id="bgCustomTile">
-        <div class="bgs-custom-inner"></div>
-        <span>맞춤색상</span>
-        <input type="color" id="bgCustom" value="#B2DFDB"/>
-      </div>
+      <div class="bgs bgs-custom on" data-type="solid" id="bgCustomTile" style="background:#B2DFDB;color:#2b5c56;text-shadow:none;">맞춤색상</div>
       <div class="bgs" data-type="solid" data-color="#ffffff" style="background:#fff;border:1.5px solid #ddd;color:#555;text-shadow:none;">흰색</div>
       <div class="bgs" data-type="solid" data-color="#212121" style="background:#212121">검정</div>
       <div class="bgs" data-type="solid" data-color="#FFCC80" style="background:#FFCC80;color:#7a4a12;text-shadow:none;">주황</div>
@@ -496,8 +503,50 @@ cv.addEventListener('dblclick',e=>{const p=toCV(e.clientX,e.clientY);if(!hitBox(
 function togglePanel(pid,bid){const show=document.getElementById(pid).classList.contains('show');closePanel();if(!show){document.getElementById(pid).classList.add('show');document.getElementById(bid).classList.add('on');document.documentElement.style.setProperty('--btm-h','400px');}document.getElementById('dateInput').blur();document.getElementById('seqNumInput').blur();}
 function closePanel(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));document.documentElement.style.setProperty('--btm-h','218px');}
 
-document.getElementById('bgGrid').querySelectorAll('.bgs:not(.bgs-custom)').forEach(el=>{el.addEventListener('click',function(){document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));this.classList.add('on');bgType=this.dataset.type;if(this.dataset.color) bgColor=this.dataset.color;document.getElementById('bgCustom').value=bgColor;draw();saveS();});});
-document.getElementById('bgCustom').addEventListener('input',function(){document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));document.getElementById('bgCustomTile').classList.add('on');bgType='solid';bgColor=this.value;draw();saveS();});
+document.getElementById('bgGrid').querySelectorAll('.bgs:not(.bgs-custom)').forEach(el=>{el.addEventListener('click',function(){document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));this.classList.add('on');bgType=this.dataset.type;if(this.dataset.color) bgColor=this.dataset.color;draw();saveS();});});
+
+document.getElementById('bgCustomTile').addEventListener('click',function(){
+  document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));
+  this.classList.add('on');
+  bgType='solid'; bgColor=this.style.background;
+  draw();saveS();
+});
+
+function hslToHex(h,s,l){
+  s/=100; l/=100;
+  const k=n=>(n+h/30)%12;
+  const a=s*Math.min(l,1-l);
+  const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+  const toHex=x=>Math.round(255*x).toString(16).padStart(2,'0');
+  return '#'+toHex(f(0))+toHex(f(8))+toHex(f(4));
+}
+function hexToHsl(hex){
+  let r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0,l=(max+min)/2;
+  const d=max-min;
+  if(d!==0){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h=Math.round(h*60); if(h<0) h+=360;
+  }
+  return {h, l:Math.round(l*100)};
+}
+function updateCustomColor(){
+  const hue=+document.getElementById('hueSlider').value;
+  const light=+document.getElementById('lightSlider').value;
+  const hex=hslToHex(hue,65,light);
+  document.getElementById('lightSlider').style.background=`linear-gradient(to right,#000,hsl(${hue},65%,50%),#fff)`;
+  document.getElementById('cpPreview').style.background=hex;
+  document.getElementById('bgCustomTile').style.background=hex;
+  document.getElementById('bgGrid').querySelectorAll('.bgs').forEach(s=>s.classList.remove('on'));
+  document.getElementById('bgCustomTile').classList.add('on');
+  bgType='solid'; bgColor=hex;
+  draw();saveS();
+}
+document.getElementById('hueSlider').addEventListener('input',updateCustomColor);
+document.getElementById('lightSlider').addEventListener('input',updateCustomColor);
 document.getElementById('dateSzR').addEventListener('input',function(){dateSz=+this.value;document.getElementById('dateSzV').textContent=this.value;draw();saveS();});
 document.getElementById('seqSzR').addEventListener('input',function(){seqSz=+this.value;document.getElementById('seqSzV').textContent=this.value;draw();saveS();});
 document.getElementById('fontScroll').querySelectorAll('.fc').forEach(el=>{el.addEventListener('click',function(){document.getElementById('fontScroll').querySelectorAll('.fc').forEach(f=>f.classList.remove('on'));this.classList.add('on');curFont=this.dataset.font;curWeight=this.dataset.w;document.fonts.ready.then(()=>{setTimeout(()=>{draw();saveS();},60);});});});
@@ -545,7 +594,7 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
 (function(){
   document.getElementById('dateSzR').value=dateSz;document.getElementById('dateSzV').textContent=dateSz;
   document.getElementById('seqSzR').value=seqSz;document.getElementById('seqSzV').textContent=seqSz;
-  document.getElementById('bgCustom').value=bgColor;document.getElementById('txtCustom').value=txtColor;
+  document.getElementById('txtCustom').value=txtColor;
   {
     const tiles=document.getElementById('bgGrid').querySelectorAll('.bgs');
     let matched=false;
@@ -554,7 +603,15 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
       s.classList.toggle('on', isMatch);
       if(isMatch) matched=true;
     });
-    if(!matched) document.getElementById('bgCustomTile').classList.add('on');
+    document.getElementById('bgCustomTile').classList.toggle('on', !matched);
+    if(!matched && bgType==='solid'){
+      document.getElementById('bgCustomTile').style.background=bgColor;
+      const hsl=hexToHsl(bgColor);
+      document.getElementById('hueSlider').value=hsl.h;
+      document.getElementById('lightSlider').value=hsl.l;
+    }
+    document.getElementById('lightSlider').style.background=`linear-gradient(to right,#000,hsl(${document.getElementById('hueSlider').value},65%,50%),#fff)`;
+    document.getElementById('cpPreview').style.background=document.getElementById('bgCustomTile').style.background||bgColor;
   }
   document.getElementById('fontScroll').querySelectorAll('.fc').forEach(f=>f.classList.toggle('on',f.dataset.font===curFont));
   document.getElementById('alignRow').querySelectorAll('.abtn').forEach(b=>b.classList.toggle('on',b.dataset.a===align));
