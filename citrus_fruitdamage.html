@@ -166,9 +166,10 @@ body.big-text .hist-btn{height:50px !important}
 .dmg-input.ig{border-color:#93B8EE}
 .dmg-input.og{border-color:#F0BE84}
 .dmg-input.ig.filled,.dmg-input.og.filled{border-color:var(--green)}
-.dmg-normal-row{display:flex;align-items:center;gap:6px}
-.dmg-normal-row>span:first-child{font-size:10px;font-weight:700;color:#137a4d;flex-shrink:0}
-.dmg-normal-row .dmg-input{height:32px;font-size:12.5px;font-weight:700;flex:1;min-width:0}
+.dmg-normal-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.dmg-normal-input-group{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.dmg-normal-input-group span{font-size:10px;font-weight:700;color:#137a4d;flex-shrink:0}
+.dmg-normal-row .dmg-input{height:32px;font-size:12.5px;font-weight:700;width:72px;flex-shrink:0}
 .dmg-total{font-size:10px;color:var(--sub);flex-shrink:0;white-space:nowrap}
 .dmg-total b{color:var(--text);font-size:11.5px}
 .dmg-total.rate b{color:#C2560A}
@@ -799,9 +800,11 @@ function renderSampleSection(){
           ${ogInputs}
         </div>
         <div class="dmg-normal-row">
-          <span>정상과실수</span>
-          <input type="text" inputmode="numeric" class="dmg-input normal ${s.normal!==''?'filled':''}" id="dmg-normal-${vi}-${si}" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
-            oninput="onCommaInput(this)" onblur="onDmgInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off">
+          <div class="dmg-normal-input-group">
+            <span>정상과실수</span>
+            <input type="text" inputmode="numeric" class="dmg-input normal ${s.normal!==''?'filled':''}" id="dmg-normal-${vi}-${si}" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
+              oninput="onCommaInput(this)" onblur="onDmgInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off">
+          </div>
           <span class="dmg-total">합계 <b id="dmg-tot-${vi}-${si}">${totalDisp}</b></span>
           <span class="dmg-total rate">피해율 <b id="dmg-rate-${vi}-${si}">${rateDisp}</b></span>
         </div>
