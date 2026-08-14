@@ -161,17 +161,16 @@ body.big-text .hist-btn{height:50px !important}
 .dmg-grade-label{font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:5px;padding:0 2px;text-align:center;line-height:1.15}
 .dmg-grade-label.ig{background:#E4EEFC;color:#1D4ED8}
 .dmg-grade-label.og{background:#FDEEDA;color:#C2560A}
+.dmg-grade-label.normal{background:#E4F5EB;color:#137a4d}
 .dmg-input{width:100%;height:30px;border:1.5px solid var(--binp);border-radius:5px;text-align:center;font-size:11.5px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text);padding:0 1px}
 .dmg-input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .dmg-input.ig{border-color:#93B8EE}
 .dmg-input.og{border-color:#F0BE84}
 .dmg-input.ig.filled,.dmg-input.og.filled{border-color:var(--green)}
-.dmg-normal-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.dmg-normal-input-group{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.dmg-normal-input-group span{font-size:10px;font-weight:700;color:#137a4d;flex-shrink:0}
-.dmg-normal-row .dmg-input{height:32px;font-size:12.5px;font-weight:700;width:72px;flex-shrink:0}
-.dmg-total{font-size:10px;color:var(--sub);flex-shrink:0;white-space:nowrap}
-.dmg-total b{color:var(--text);font-size:11.5px}
+.dmg-normal-row{display:grid;grid-template-columns:38px 1fr 1.5fr 1.5fr;gap:3px;align-items:stretch;height:30px}
+.dmg-normal-row .dmg-input{height:100%;font-size:12.5px;font-weight:700}
+.dmg-total{font-size:9.5px;color:var(--sub);white-space:nowrap;display:flex;align-items:center;justify-content:center;background:var(--auto);border-radius:5px;border:0.5px solid var(--border);height:100%}
+.dmg-total b{color:var(--text);font-size:11.5px;margin-left:3px}
 .dmg-total.rate b{color:#C2560A}
 
 /* 표본조사 요약 (접이식, 탭) */
@@ -800,13 +799,11 @@ function renderSampleSection(){
           ${ogInputs}
         </div>
         <div class="dmg-normal-row">
-          <div class="dmg-normal-input-group">
-            <span>정상과실수</span>
-            <input type="text" inputmode="numeric" class="dmg-input normal ${s.normal!==''?'filled':''}" id="dmg-normal-${vi}-${si}" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
-              oninput="onCommaInput(this)" onblur="onDmgInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off">
-          </div>
-          <span class="dmg-total">합계 <b id="dmg-tot-${vi}-${si}">${totalDisp}</b></span>
-          <span class="dmg-total rate">피해율 <b id="dmg-rate-${vi}-${si}">${rateDisp}</b></span>
+          <div class="dmg-grade-label normal">정상과</div>
+          <input type="text" inputmode="numeric" class="dmg-input normal ${s.normal!==''?'filled':''}" id="dmg-normal-${vi}-${si}" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
+            oninput="onCommaInput(this)" onblur="onDmgInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off">
+          <div class="dmg-total">합계 <b id="dmg-tot-${vi}-${si}">${totalDisp}</b></div>
+          <div class="dmg-total rate">피해율 <b id="dmg-rate-${vi}-${si}">${rateDisp}</b></div>
         </div>
       </div>`;
     });
