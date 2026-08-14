@@ -141,9 +141,6 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
 .abtn.on{border-color:#E05A2B;background:#FFF5F2;}
 .tc{width:32px;height:32px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;flex-shrink:0;}
 .tc.on{border-color:#E05A2B;transform:scale(1.12);}
-.tc-custom{width:32px;height:32px;border-radius:50%;border:2px dashed #ccc;overflow:hidden;cursor:pointer;flex-shrink:0;position:relative;}
-.tc-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;}
-.tc-custom-inner{width:100%;height:100%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);}
 
 /* ── 네비바 ── */
 .bottom-nav{
@@ -266,6 +263,11 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
       <button class="abtn on" data-a="center">≡</button>
       <button class="abtn" data-a="right">↦</button>
     </div>
+    <div class="custom-picker" id="txtCustomPicker">
+      <div class="cp-label">🎨 맞춤 글자색 <span id="txtCpPreview"></span></div>
+      <input type="range" id="txtHueSlider" class="hue-slider" min="0" max="360" value="0">
+      <input type="range" id="txtLightSlider" class="light-slider" min="15" max="95" value="100">
+    </div>
     <div class="color-row" id="txtColorRow">
       <div class="tc on" data-c="#ffffff" style="background:#fff;border-color:#ddd"></div>
       <div class="tc" data-c="#212121" style="background:#212121"></div>
@@ -274,7 +276,6 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
       <div class="tc" data-c="#E05A2B" style="background:#E05A2B"></div>
       <div class="tc" data-c="#185FA5" style="background:#185FA5"></div>
       <div class="tc" data-c="#1a6b2e" style="background:#1a6b2e"></div>
-      <div class="tc-custom"><div class="tc-custom-inner"></div><input type="color" id="txtCustom" value="#ffffff"/></div>
     </div>
   </div>
 
@@ -551,8 +552,20 @@ document.getElementById('dateSzR').addEventListener('input',function(){dateSz=+t
 document.getElementById('seqSzR').addEventListener('input',function(){seqSz=+this.value;document.getElementById('seqSzV').textContent=this.value;draw();saveS();});
 document.getElementById('fontScroll').querySelectorAll('.fc').forEach(el=>{el.addEventListener('click',function(){document.getElementById('fontScroll').querySelectorAll('.fc').forEach(f=>f.classList.remove('on'));this.classList.add('on');curFont=this.dataset.font;curWeight=this.dataset.w;document.fonts.ready.then(()=>{setTimeout(()=>{draw();saveS();},60);});});});
 document.getElementById('alignRow').querySelectorAll('.abtn').forEach(el=>{el.addEventListener('click',function(){document.getElementById('alignRow').querySelectorAll('.abtn').forEach(b=>b.classList.remove('on'));this.classList.add('on');align=this.dataset.a;draw();saveS();});});
-document.getElementById('txtColorRow').querySelectorAll('.tc').forEach(el=>{el.addEventListener('click',function(){document.getElementById('txtColorRow').querySelectorAll('.tc').forEach(s=>s.classList.remove('on'));this.classList.add('on');txtColor=this.dataset.c;document.getElementById('txtCustom').value=txtColor;draw();saveS();});});
-document.getElementById('txtCustom').addEventListener('input',function(){document.getElementById('txtColorRow').querySelectorAll('.tc').forEach(s=>s.classList.remove('on'));txtColor=this.value;draw();saveS();});
+document.getElementById('txtColorRow').querySelectorAll('.tc').forEach(el=>{el.addEventListener('click',function(){document.getElementById('txtColorRow').querySelectorAll('.tc').forEach(s=>s.classList.remove('on'));this.classList.add('on');txtColor=this.dataset.c;draw();saveS();});});
+
+function updateCustomTextColor(){
+  const hue=+document.getElementById('txtHueSlider').value;
+  const light=+document.getElementById('txtLightSlider').value;
+  const hex=hslToHex(hue,65,light);
+  document.getElementById('txtLightSlider').style.background=`linear-gradient(to right,#000,hsl(${hue},65%,50%),#fff)`;
+  document.getElementById('txtCpPreview').style.background=hex;
+  document.getElementById('txtColorRow').querySelectorAll('.tc').forEach(s=>s.classList.remove('on'));
+  txtColor=hex;
+  draw();saveS();
+}
+document.getElementById('txtHueSlider').addEventListener('input',updateCustomTextColor);
+document.getElementById('txtLightSlider').addEventListener('input',updateCustomTextColor);
 
 /* 저장 완료 토스트 (중앙 큰 팝업) */
 const toast=document.createElement('div');
@@ -594,7 +607,16 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
 (function(){
   document.getElementById('dateSzR').value=dateSz;document.getElementById('dateSzV').textContent=dateSz;
   document.getElementById('seqSzR').value=seqSz;document.getElementById('seqSzV').textContent=seqSz;
-  document.getElementById('txtCustom').value=txtColor;
+  {
+    const txtMatched = Array.from(document.getElementById('txtColorRow').querySelectorAll('.tc')).some(s=>s.dataset.c===txtColor);
+    if(!txtMatched){
+      const hsl=hexToHsl(txtColor);
+      document.getElementById('txtHueSlider').value=hsl.h;
+      document.getElementById('txtLightSlider').value=hsl.l;
+    }
+    document.getElementById('txtLightSlider').style.background=`linear-gradient(to right,#000,hsl(${document.getElementById('txtHueSlider').value},65%,50%),#fff)`;
+    document.getElementById('txtCpPreview').style.background=txtColor;
+  }
   {
     const tiles=document.getElementById('bgGrid').querySelectorAll('.bgs');
     let matched=false;
