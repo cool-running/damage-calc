@@ -535,47 +535,67 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
   </div>
 
   <div class="section">
-    <div class="sec-title"><span>🌳</span> 일소피해조사 — 조사대상주수 직접 수정 안내</div>
+    <div class="sec-title"><span>☀️</span> 일소피해 계산기 — 사과·배·단감·떫은감</div>
 
-    <div class="item">
-      <div class="item-title">조사대상주수는 자동 산정됩니다</div>
-      <div class="item-body">
-        <b style="color:var(--text)">일소피해조사</b> 화면의 조사대상주수는 아래 식으로 자동 계산됩니다.<br><br>
-        <b style="color:var(--text)">조사대상주수 = 실제결과주수 − (수확완료 + 수확불능 + 고사 + 미보상 고사 + 미보상 미고사)</b><br><br>
-        입력한 주수에 따라 <b>자동으로 계산</b>되어 표시됩니다.
+    <!-- STEP 1 -->
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex-shrink:0;width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">1</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">🌳 나무조사 — 품종 수 선택 후 입력</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.9">
+          <b style="color:var(--text)">품종 수</b>를 선택하면 그 수만큼 품종 카드가 생깁니다.<br>
+          각 카드에서 <b style="color:var(--text)">숙기 · 품종 · 가입주수 · 실제결과주수 · 적과후착과수</b>를 입력합니다.<br><br>
+          <b style="color:var(--text)">🌳 나무조사</b> 버튼을 누르면 고사 · 수확불능 · 미보상고사 · 미보상미고사 · 기수확 등 자주 안 쓰는 항목이 펼쳐집니다. 평소엔 접혀 있어도 계산에는 그대로 반영됩니다.
+        </div>
       </div>
     </div>
 
-    <div class="item">
-      <div class="item-title" style="display:flex;align-items:center;gap:6px">
-        <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:#9a3412;background:#fff4e8;border:1px solid #C2410C;border-radius:5px;padding:2px 7px">수정됨 ↺</span>
-        직접 수정이 필요한 이유
-      </div>
-      <div class="item-body">
-        현장 상황상 자동 산정값과 실제 조사대상이 다른 경우가 있습니다.<br><br>
-        이때 <b>조사대상주수 칸을 직접 입력</b>하면 자동값을 덮어쓸 수 있습니다.
-        수정하면 칸이 <b style="color:#9a3412">주황색</b>으로 바뀌고
-        라벨에 <b style="color:#9a3412">수정됨 ↺</b> 표시가 나타납니다.<br><br>
-        <b>수정됨 ↺</b>를 누르면 언제든 <b>자동 산정값으로 되돌릴 수 있습니다.</b>
+    <div style="height:1px;background:#f0f0f0;margin-bottom:14px"></div>
+
+    <!-- STEP 2 -->
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex-shrink:0;width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">2</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">🍎 낙과 표본조사 — 나무조사와 별개로 입력</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.9">
+          표본주수만큼 표본 행이 생기고, 행마다 <b style="color:var(--text)">숙기 · 품종 · 표본낙과수</b>를 입력합니다.<br>
+          같은 조사원이 나무조사를 하더라도, 낙과 표본은 <b style="color:var(--text)">다른 조사원이 별도로 뽑는 경우</b>가 많아 두 표는 서로 독립적으로 품종을 선택하게 되어 있습니다.
+        </div>
       </div>
     </div>
 
-    <div class="item">
-      <div class="item-title">예시 — 소수 품종 표본 미선정으로 주수가 가감된 경우</div>
-      <div class="item-body">
-        품종구분 가능 건의 표본은 <b style="color:var(--text)">조사대상주수 비중</b>으로 배분됩니다
-        <span style="color:var(--hint)">(주 품종 3주 · 소수 품종 1주 원칙)</span>.<br><br>
-        예를 들어 <b>중생 신고 465주 · 조생 원황 20주</b>(합계 485주)인 농지라면,
-        비중이 큰 중생 신고에는 표본 3주가 배정되고 비중이 작은 <b>조생 원황(20주)에는 표본이 0주</b>로 잡힐 수 있습니다.<br><br>
-        이때 조사자에 따라 표본이 빠진 20주를 가감하면서 <b>조사대상주수가 자동 산정값과 달라질 수 있으므로,</b>
-        조사대상주수를 직접 수정해 실제 조사와 맞춥니다.
+    <div class="warning-box" style="margin-top:0;margin-bottom:14px">
+      ⚠️ <b>가장 중요합니다 — 나무조사와 표본조사의 숙기·품종은 텍스트가 정확히 일치해야 매칭됩니다.</b><br><br>
+      예를 들어 표본조사에서 <b>"부사(후지)"</b>로 입력했는데 나무조사에서는 <b>"후지"</b>만 선택했다면, 서로 다른 품종으로 인식되어 그 품종의 나무조사 데이터(조사대상주수)가 계산에서 빠집니다.<br><br>
+      이렇게 매칭이 안 되면 <b>계산하기 버튼이 눌리지 않고</b>, 어떤 품종이 빠졌는지 알려주는 안내와 함께 나무조사 섹션으로 자동 스크롤 · 빨간 테두리 깜빡임이 나타납니다. 이때는 그 품종의 숙기·품종 선택을 표본조사와 똑같이 맞춰주면 됩니다.
+    </div>
+
+    <!-- STEP 3 -->
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex-shrink:0;width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">3</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">📊 낙과 피해구성조사 — 자동 생성</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.9">
+          표본조사에서 입력한 숙기 · 품종을 기준으로 카드가 <b style="color:var(--text)">자동으로 나뉘어 생성</b>됩니다. 따로 품종을 선택할 필요 없이, 각 카드에 정상 · 50%형 · 80%형 · 100%형 개수만 입력합니다.<br>
+          품종이 1개뿐이면 카드도 1개만 나타납니다.
+        </div>
       </div>
     </div>
 
-    <div class="warning-box">
-      ⚠️ 조사대상주수는 표본 환산과 피해과실수 산정에 직접 영향을 줍니다.<br>
-      직접 수정할 때는 <b>실제 조사 내용과 일치하는지 다시 한번 확인</b>하고 신중하게 입력하세요.
+    <div style="height:1px;background:#f0f0f0;margin-bottom:14px"></div>
+
+    <!-- STEP 4 -->
+    <div style="display:flex;gap:10px;margin-bottom:0">
+      <div style="flex-shrink:0;width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">4</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">🧮 계산하기</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.9">
+          모든 입력을 마친 뒤 <b style="color:var(--text)">계산하기</b>를 누르면 품종별 조사대상주수 · 낙과피해과실수 · 피해구성비율 · 인정피해율이 각각 산정되어 합산됩니다.<br><br>
+          <b style="color:var(--text)">📷 갤러리 저장</b> 이미지는 전산 조사서와 같은 순서(표본조사 → 품종별 집계 → 과실피해구성비율 → 결과)로 구성되어, 조사서를 그대로 옮겨 적을 수 있습니다.
+        </div>
+      </div>
     </div>
+
   </div>
 
   <div class="section">
