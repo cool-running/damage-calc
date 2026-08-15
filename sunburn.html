@@ -407,7 +407,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;line-height:1.6">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력해도 되고, <b style="color:var(--blue)">품종 추가</b>로 나눠 입력해도 같은 품종끼리 자동으로 합산되어 계산됩니다 (상세입력: <b>나무조사</b> 버튼)</div>
     <input type="hidden" id="treeRowN" value="1">
     <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:34px">숙기</th><th style="width:54px">품종</th><th style="width:38px">가입주수</th><th style="width:38px">실제결과</th><th style="width:72px">착과수</th><th style="width:34px">나무조사</th></tr></thead>
+      <thead><tr><th style="width:36px">숙기</th><th style="width:64px">품종</th><th style="width:44px">가입주수</th><th style="width:90px">착과수</th><th style="width:36px">나무조사</th></tr></thead>
       <tbody id="treeRows"></tbody>
     </table>
     <div class="g2" style="margin-top:9px">
@@ -697,19 +697,19 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
       '</select></td>'+
       '<td>'+treePumjongCell(i, pj)+'</td>'+
       '<td>'+treeCellFlat('tJoinTree',v.joinTree)+'</td>'+
-      '<td>'+treeCellFlat('tRealTree',v.realTree)+'</td>'+
       '<td>'+treeCellFlatComma('tAfterCnt',v.afterCnt)+'</td>'+
       '<td><button type="button" class="tvar-detail-btn'+(open?' on':'')+'" onclick="toggleTreeDetail('+i+')">🌳</button></td>'+
     '</tr>'+
     '<tr class="tvar-detail-row" data-idx="'+i+'" style="display:'+(open?'table-row':'none')+'">'+
-      '<td colspan="6" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
+      '<td colspan="5" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
         '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">'+
           treeCell('고사','tDeadTree',v.deadTree)+
           treeCell('수불','tHarvestImposs',v.harvestImposs)+
           treeCell('미보고','tDeadNC',v.deadNC)+
           treeCell('미보미','tAliveNC',v.aliveNC)+
         '</div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px">'+
+          treeCell('실제결과','tRealTree',v.realTree)+
           treeCell('기수확','tHarvestDone',v.harvestDone)+
           '<div class="tree-cell"><label style="color:var(--blue)">조사대상</label><input class="auto tTargetBox" type="text" readonly value="0" style="height:40px;font-size:13.5px;padding:0;text-align:center;border-radius:8px;font-weight:800;color:var(--blue);background:#eaf2fb;border-color:var(--blue)"></div>'+
         '</div>'+
