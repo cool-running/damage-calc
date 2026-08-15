@@ -117,24 +117,24 @@ body.big-text input.auto{height:52px !important;font-size:20px !important;font-w
 .samp-line{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
 .samp-cell{flex:1;min-width:52px;text-align:center}
 .samp-cell .no{font-size:10px;font-weight:700;color:var(--sub);margin-bottom:3px}
-.samp-cell input{height:42px;padding:0 2px;font-size:15px}
+.samp-cell input{height:40px;padding:0 2px;font-size:15px}
 .samp-total{flex:1;min-width:60px;text-align:center}
 .samp-total .no{font-size:10px;font-weight:700;color:var(--blue);margin-bottom:3px}
-.samp-total .box{height:42px;border:1.5px solid var(--blue);border-radius:var(--rs);background:#eaf2fb;color:var(--blue);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
+.samp-total .box{height:40px;border:1.5px solid var(--blue);border-radius:var(--rs);background:#eaf2fb;color:var(--blue);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
 
 /* 표본조사 세로 표: 표본번호·숙기/품종·표본낙과수 */
 .samp-table{width:100%;border-collapse:collapse}
 .samp-table th{font-size:11px;font-weight:700;color:var(--sub);padding:0 4px 7px;text-align:center}
 .samp-table td{padding:3px 3px;vertical-align:middle}
 .samp-table .samp-no{text-align:center;font-size:14px;font-weight:800;color:var(--blue);padding:3px 1px}
-.samp-table input{height:42px;padding:0 8px;font-size:15px;text-align:center}
+.samp-table input{height:40px;padding:0 8px;font-size:15px;text-align:center}
 .samp-table input.samp-variety{font-size:13px}
 .samp-table .samp-cell{display:flex;flex-direction:row;gap:5px;align-items:center}
-.samp-table select.samp-sukgi{flex:0 0 62px;height:42px;font-size:12px;padding:0 2px;text-align:center;text-align-last:center}
+.samp-table select.samp-sukgi{flex:0 0 62px;height:40px;font-size:12px;padding:0 2px;text-align:center;text-align-last:center}
 .samp-table .pj-wrap{flex:1;min-width:0;display:block}
-.samp-table select.samp-pumjong-sel,.samp-table input.samp-pumjong-txt{width:100%;height:42px;font-size:12px;padding:0 4px;text-align:center;text-align-last:center}
+.samp-table select.samp-pumjong-sel,.samp-table input.samp-pumjong-txt{width:100%;height:40px;font-size:12px;padding:0 4px;text-align:center;text-align-last:center}
 .samp-total-row .samp-total-label{text-align:right;font-size:12px;font-weight:800;color:var(--blue);padding-right:10px}
-.samp-total-box{height:42px;border:1.5px solid var(--blue);border-radius:var(--rs);background:#eaf2fb;color:var(--blue);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
+.samp-total-box{height:40px;border:1.5px solid var(--blue);border-radius:var(--rs);background:#eaf2fb;color:var(--blue);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
 /* 숙기/품종 헤더 라벨 분리 — 각 드롭다운 위에 정렬 (셀의 62px+gap5+flex 구조와 동일) */
 .samp-table th.th-supj{padding:0 3px 7px}
 .samp-table .th-supj-row{display:flex;gap:5px}
@@ -386,7 +386,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     </div>
   </div>
 
-  <!-- 나무조사 (표본조사와 별개 — 숙기/품종 직접 선택, 적과후착과수 조사와 동일한 품종수 선택 방식) -->
+    <!-- 나무조사 -->
   <div class="section">
     <div class="sec-title" style="justify-content:space-between; align-items:center;">
       <span style="display:flex;align-items:center;gap:6px">🌳 나무조사</span>
@@ -396,6 +396,35 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
       </span>
     </div>
     <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력 (상세입력: <b>나무조사</b> 버튼)</div>
+    <input type="hidden" id="treeRowN" value="1">
+    <table class="tree-table" style="margin-top:14px">
+      <thead><tr><th style="width:46px">숙기</th><th>품종</th><th style="width:52px">가입<br>주수</th><th style="width:52px">실제<br>결과</th><th style="width:42px">나무<br>조사</th></tr></thead>
+      <tbody id="treeRows"></tbody>
+    </table>
+    <div class="g2" style="margin-top:9px">
+      <div class="field">
+        <label>가입주수 <span class="unit">(주, 합계)</span></label>
+        <input class="auto" id="joinTree" type="text" readonly value="0">
+      </div>
+      <div class="field">
+        <label>조사대상주수 <span class="unit">(주, 합계)</span></label>
+        <input class="auto" id="targetSum" type="text" readonly value="0">
+      </div>
+    </div>
+    <div class="g3" style="margin-top:9px">
+      <div class="field">
+        <label>낙과피해과실수 <span class="unit">(개)</span></label>
+        <input class="auto" id="autoFallDmg" type="text" readonly value="-">
+      </div>
+      <div class="field">
+        <label>인정피해율 <span class="unit">(%)</span></label>
+        <input class="auto" id="autoAdmitRate" type="text" readonly value="-">
+      </div>
+      <div class="field">
+        <label>낙과인정피해과실수</label>
+        <input class="auto" id="autoAdmitCnt" type="text" readonly value="-">
+      </div>
+    </div>
   </div>
 
   <!-- 낙과 표본/전수 조사 -->
