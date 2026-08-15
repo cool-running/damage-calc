@@ -636,17 +636,17 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
       '<td><button type="button" class="tvar-detail-btn'+(open?' on':'')+'" onclick="toggleTreeDetail('+i+')">🌳</button></td>'+
     '</tr>'+
     '<tr class="tvar-detail-row" data-idx="'+i+'" style="display:'+(open?'table-row':'none')+'">'+
-      '<td colspan="5">'+
-        treeCell('적과후착과수','tAfterCnt',v.afterCnt,true)+
-        '<div class="tree-row3" style="margin-top:6px">'+
-          treeCell('수확완료','tHarvestDone',v.harvestDone)+treeCell('수확불능','tHarvestImposs',v.harvestImposs)+treeCell('고사','tDeadTree',v.deadTree)+
+      '<td colspan="5" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">'+
+          treeCell('고사','tDeadTree',v.deadTree)+
+          treeCell('수불','tHarvestImposs',v.harvestImposs)+
+          treeCell('미보고','tDeadNC',v.deadNC)+
+          treeCell('미보미','tAliveNC',v.aliveNC)+
         '</div>'+
-        '<div class="tree-row2" style="margin-top:6px">'+
-          treeCell('미보상고사','tDeadNC',v.deadNC)+treeCell('미보상미고사','tAliveNC',v.aliveNC)+
-        '</div>'+
-        '<div class="field" style="margin-top:6px">'+
-          '<label>조사대상주수 <span class="unit">(주)</span></label>'+
-          '<input class="auto tTargetBox" type="text" readonly value="0">'+
+        '<div style="display:grid;grid-template-columns:0.8fr 1.2fr 1fr;gap:4px;margin-top:6px">'+
+          treeCell('기수확','tHarvestDone',v.harvestDone)+
+          treeCell('적과후착과수','tAfterCnt',v.afterCnt,true)+
+          '<div class="tree-cell"><label style="color:var(--blue)">조사대상</label><input class="auto tTargetBox" type="text" readonly value="0" style="height:40px;font-size:13.5px;padding:0;text-align:center;border-radius:8px;font-weight:800;color:var(--blue);background:#eaf2fb;border-color:var(--blue)"></div>'+
         '</div>'+
       '</td>'+
     '</tr>';
