@@ -968,7 +968,7 @@ function splitVar(s){
   return {su:'',pj:s};
 }
 /* 품목 변경 시 품종 목록 갱신 (값 보존하며 표 재생성) */
-function updatePumjongList(){ buildSampleRows(); }
+function updatePumjongList(){ buildSampleRows(); buildTreeRows(); }
 
 /* 전차 인정피해율(적과전 사고) 자동 산정 */
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
