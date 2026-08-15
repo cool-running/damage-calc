@@ -178,8 +178,8 @@ body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-
 .tree-cell label{font-size:10px;text-align:center;display:block;height:12px;line-height:12px;margin-bottom:3px;color:var(--sub);font-weight:700;white-space:nowrap;overflow:hidden}
 .tree-cell input{height:40px;font-size:13.5px;padding:0 2px;text-align:center}
 .tree-row-block+.tree-row-block{margin-top:14px;padding-top:13px;border-top:1px dashed var(--border)}
-.tree-table{width:100%;border-collapse:collapse;margin-top:4px}
-.tree-table th{font-size:9.5px;font-weight:700;color:var(--sub);padding:0 2px 6px;text-align:center;line-height:1.2}
+.tree-table{width:100%;border-collapse:collapse;margin-top:4px;table-layout:fixed}
+.tree-table th{font-size:9px;font-weight:700;color:var(--sub);padding:0 1px 6px;text-align:center;line-height:1.2;white-space:nowrap}
 .tree-table td{padding:3px 2px;vertical-align:middle}
 .tree-table tr.tree-row-block{border-top:1px solid #f0efe9}
 .tree-table tr.tree-row-block:first-child{border-top:none}
@@ -369,7 +369,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="g3" style="margin-top:9px">
       <div class="field">
         <label>적과후착과수 <span class="unit">(개, 합계)</span></label>
-        <input class="auto" id="afterCnt" type="text" readonly value="0">
+        <input class="inp" id="afterCnt" type="text" inputmode="numeric" oninput="onComma(this);updatePrev();saveState()">
       </div>
       <div class="field">
         <label>착과율 <span class="unit">(%)</span></label>
@@ -398,7 +398,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력 (상세입력: <b>나무조사</b> 버튼)</div>
     <input type="hidden" id="treeRowN" value="1">
     <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:46px">숙기</th><th>품종</th><th style="width:52px">가입<br>주수</th><th style="width:52px">실제<br>결과</th><th style="width:42px">나무<br>조사</th></tr></thead>
+      <thead><tr><th style="width:44px">숙기</th><th style="width:70px">품종</th><th style="width:54px">가입주수</th><th style="width:54px">실제결과</th><th style="width:40px">나무조사</th></tr></thead>
       <tbody id="treeRows"></tbody>
     </table>
     <div class="g2" style="margin-top:9px">
@@ -724,7 +724,6 @@ function updateTreeGroups(){
     sumJoin+=jt; sumAfter+=ac; sumTarget+=target;
   });
   var jEl=document.getElementById('joinTree'); if(jEl) jEl.value=fmt(sumJoin);
-  /* var aEl=document.getElementById('afterCnt'); if(aEl) aEl.value=fmt(sumAfter); */
   var tEl=document.getElementById('targetSum'); if(tEl) tEl.value=fmt(sumTarget);
   if(typeof updatePrev==='function') updatePrev();
 }
