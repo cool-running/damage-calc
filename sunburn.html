@@ -1371,15 +1371,16 @@ function buildCapture(){
     tbl('<colgroup><col style="width:28%"><col style="width:44%"><col style="width:28%"></colgroup>'+
       '<thead><tr><th style="'+TH+'">표본주번호</th><th style="'+TH+'">숙기/품종</th><th style="'+THl+'">낙과수</th></tr></thead><tbody>'+t1+'</tbody>'));
 
-  // 2) 품종별 집계
+  // 2) 품종별 집계 — 전산 조사서 양식(금차품종별착과수/표본낙과수계/조사표본주수/조사대상주수/품종별낙과수)과 동일 구성
+  // (피해구성비율 칸은 전산 서식에서도 공란으로 남기고 바로 아래 '과실피해구성비율' 표에서 산정하므로 생략)
   var t2='';
   groups.forEach(function(gr){
-    t2+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.afterCnt)+'</td><td style="'+nTD+'">'+fmt(gr.target)+'</td><td style="'+nTD+'">'+fmt(gr.fall)+'</td><td style="'+nTDl+'">'+fmt(gr.fallDamage)+'</td></tr>';
+    t2+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.afterCnt)+'</td><td style="'+nTD+'">'+fmt(gr.fall)+'</td><td style="'+nTD+'">'+fmt(gr.count)+'</td><td style="'+nTD+'">'+fmt(gr.target)+'</td><td style="'+nTDl+'">'+fmt(gr.fallDamage)+'</td></tr>';
   });
-  t2+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(L.afterCnt)+'</td><td style="'+nTG+'">'+fmt(L.target)+'</td><td style="'+nTG+'">'+fmt(L.fallSum)+'</td><td style="'+nTGl+'">'+fmt(L.fallDamage)+'</td></tr>';
+  t2+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(L.afterCnt)+'</td><td style="'+nTG+'">'+fmt(L.fallSum)+'</td><td style="'+nTG+'">'+fmt(L.sampleN)+'</td><td style="'+nTG+'">'+fmt(L.target)+'</td><td style="'+nTGl+'">'+fmt(L.fallDamage)+'</td></tr>';
   var c2=card('품종별 집계',
-    tbl('<colgroup><col style="width:28%"><col style="width:20%"><col style="width:18%"><col style="width:17%"><col style="width:17%"></colgroup>'+
-      '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">적과후<br>착과수</th><th style="'+nTH+'">조사<br>대상주수</th><th style="'+nTH+'">표본<br>낙과수계</th><th style="'+nTHl+'">낙과<br>피해과실수</th></tr></thead><tbody>'+t2+'</tbody>'));
+    tbl('<colgroup><col style="width:20%"><col style="width:20%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup>'+
+      '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">금차<br>품종별착과수</th><th style="'+nTH+'">표본<br>낙과수계</th><th style="'+nTH+'">조사<br>표본주수</th><th style="'+nTH+'">조사<br>대상주수</th><th style="'+nTHl+'">품종별<br>낙과수</th></tr></thead><tbody>'+t2+'</tbody>'));
 
   // 3) 과실피해구성비율 — 숙기/품종별 각각 산정
   var t3='', sg0=0,sg50=0,sg80=0,sg100=0;
@@ -1430,11 +1431,11 @@ function buildCapture(){
   return '<div style="width:430px;background:#f3f4f6;font-family:-apple-system,Noto Sans KR,sans-serif">'+
     '<div style="background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 12%,#f3f4f6 12%,#f3f4f6 100%);padding:0 16px 22px;box-sizing:border-box">'+
       '<div style="height:24px"></div>'+
-      '<div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">'+
-        '<div style="font-size:16px;font-weight:800">☀️ '+crop+' 일소피해 계산결과</div>'+
-        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">'+
-          '<span style="font-size:14px;font-weight:800;color:#fff">조사일자 '+date+'</span>'+
-          '<span style="font-size:14px;font-weight:800;color:#fff">'+(contractorName?contractorName+'('+farmNo+')':'농지번호 '+farmNo)+'</span></div></div>'+
+      '<div style="display:flex;align-items:baseline;gap:6px;color:#fff;margin-bottom:14px;font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
+        '<span>'+date+'</span><span style="opacity:0.6">·</span>'+
+        '<span>'+(contractorName?contractorName+'('+farmNo+')':'농지 '+farmNo)+'</span><span style="opacity:0.6">·</span>'+
+        '<span style="font-size:15px">☀️ '+crop+' 일소피해 계산결과</span>'+
+      '</div>'+
       '<div style="display:flex;flex-direction:column;gap:12px">'+headLine+(census?cCensus:(c1+c2))+c3+c3b+c4+foot+'</div>'+
     '</div></div>';
 }
