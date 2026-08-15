@@ -68,6 +68,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 
 .content{padding:12px 14px 40px}
 .section{background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);padding:12px 13px 13px;margin-bottom:11px}
+.btn-add{height:28px;padding:0 12px;border:1.5px solid var(--blue);border-radius:6px;background:#ebf4ff;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .sec-title{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.01em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .sec-title .tag{font-size:10px;font-weight:700;color:var(--blue);background:#eaf2fb;border-radius:6px;padding:2px 7px}
 .subhead{font-size:11px;font-weight:800;color:var(--blue);margin:11px 0 6px;letter-spacing:-0.01em}
@@ -93,8 +94,8 @@ input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shad
 input.inp::placeholder{color:var(--hint);font-weight:500;opacity:1}
 input.inp::-webkit-input-placeholder{color:var(--hint);font-weight:500}
 input.inp:-ms-input-placeholder{color:var(--hint);font-weight:500}
-input.auto{height:42px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 6px;font-size:15px;font-weight:700;background:var(--auto);color:var(--text);width:100%;text-align:center;-webkit-appearance:none}
-body.big-text input.auto{height:52px !important;font-size:18px !important;font-weight:800 !important}
+input.auto{height:42px;border:1.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:15px;font-weight:700;background:var(--auto);color:var(--text);width:100%;text-align:center;-webkit-appearance:none}
+body.big-text input.auto{height:52px !important;font-size:20px !important;font-weight:700 !important;border-width:2px !important}
 .hint{font-size:10.5px;color:var(--hint);margin-top:7px;line-height:1.5}
 
 .datewrap{position:relative}
@@ -387,25 +388,14 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 
   <!-- 나무조사 (표본조사와 별개 — 숙기/품종 직접 선택, 적과후착과수 조사와 동일한 품종수 선택 방식) -->
   <div class="section">
-    <div class="sec-title">🌳 나무조사</div>
-    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">품종 수 선택</div>
-    <div class="cnt-grid" id="treeCntGrid">
-      <button class="cnt-btn" data-n="1" onclick="selectTreeCount(1)">1</button>
-      <button class="cnt-btn" data-n="2" onclick="selectTreeCount(2)">2</button>
-      <button class="cnt-btn" data-n="3" onclick="selectTreeCount(3)">3</button>
-      <button class="cnt-btn" data-n="4" onclick="selectTreeCount(4)">4</button>
-      <button class="cnt-btn" data-n="5" onclick="selectTreeCount(5)">5</button>
-      <button class="cnt-btn" data-n="6" onclick="selectTreeCount(6)">6</button>
-      <button class="cnt-btn" data-n="7" onclick="selectTreeCount(7)">7</button>
-      <button class="cnt-btn" data-n="8" onclick="selectTreeCount(8)">8</button>
-      <button class="cnt-btn" data-n="9" onclick="selectTreeCount(9)">9</button>
-      <button class="cnt-btn" data-n="10" onclick="selectTreeCount(10)">10</button>
+    <div class="sec-title" style="justify-content:space-between; align-items:center;">
+      <span style="display:flex;align-items:center;gap:6px">🌳 나무조사</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <button class="btn-add" onclick="minusTreeRow()" style="background:#fff;border-color:var(--border);color:var(--sub)">- 삭제</button>
+        <button class="btn-add" onclick="addTreeRow()">+ 품종 추가</button>
+      </span>
     </div>
-    <div class="cnt-custom-row">
-      <span class="cnt-custom-label">11개 이상</span>
-      <input type="number" id="treeCntCustom" class="inp cnt-custom-input" inputmode="numeric" placeholder="직접입력" min="11" onkeydown="if(event.key==='Enter'){event.preventDefault();applyTreeCountCustom();}">
-      <button class="cnt-custom-btn" onclick="applyTreeCountCustom()">확인</button>
-    </div>
+    <div class="hint" style="color:#666;margin-top:0;margin-bottom:10px">품종별 가입주수 및 실제결과주수를 입력하고, 고사/수불 등은 <b>나무조사</b> 버튼을 눌러 입력하세요.</div>
     <input type="hidden" id="treeRowN" value="1">
     <table class="tree-table" style="margin-top:14px">
       <thead><tr><th style="width:46px">숙기</th><th>품종</th><th style="width:52px">가입<br>주수</th><th style="width:52px">실제<br>결과</th><th style="width:42px">나무<br>조사</th></tr></thead>
@@ -694,7 +684,7 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
   wrap.innerHTML=html;
   document.querySelectorAll('#treeRows .inp').forEach(mark);
   updateTreeGroups();
-  syncTreeUI();
+  
 }
 function toggleTreeDetail(idx){
   var main=document.querySelector('#treeRows .tree-row-block[data-idx="'+idx+'"]'); if(!main) return;
@@ -710,22 +700,16 @@ function currentTreeOpen(){
   document.querySelectorAll('#treeRows .tvar-detail-row').forEach(function(r){ o[r.dataset.idx]=(r.style.display==='table-row'); });
   return o;
 }
-function syncTreeUI(){
+function addTreeRow(){
   var n=parseInt(num('treeRowN'))||1;
-  document.querySelectorAll('#treeCntGrid .cnt-btn').forEach(function(btn){
-    btn.classList.toggle('on', parseInt(btn.dataset.n)===n);
-  });
-}
-function selectTreeCount(n){
-  document.getElementById('treeRowN').value=n;
-  document.getElementById('treeCntCustom').value='';
+  if(n>=MAXTREE){ showToast('최대 '+MAXTREE+'개 품종까지 가능합니다'); return; }
+  document.getElementById('treeRowN').value=n+1;
   buildTreeRows(); liveUpdate(); saveState();
 }
-function applyTreeCountCustom(){
-  var v=parseInt(document.getElementById('treeCntCustom').value)||0;
-  if(v<11){ showToast('11 이상 숫자를 입력하세요'); return; }
-  if(v>MAXTREE) v=MAXTREE;
-  document.getElementById('treeRowN').value=v;
+function minusTreeRow(){
+  var n=parseInt(num('treeRowN'))||1;
+  if(n<=MINTREE){ showToast('최소 '+MINTREE+'개 품종은 필수입니다'); return; }
+  document.getElementById('treeRowN').value=n-1;
   buildTreeRows(); liveUpdate(); saveState();
 }
 function updateTreeGroups(){
