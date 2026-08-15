@@ -724,7 +724,7 @@ function updateTreeGroups(){
     sumJoin+=jt; sumAfter+=ac; sumTarget+=target;
   });
   var jEl=document.getElementById('joinTree'); if(jEl) jEl.value=fmt(sumJoin);
-  var aEl=document.getElementById('afterCnt'); if(aEl) aEl.value=fmt(sumAfter);
+  /* var aEl=document.getElementById('afterCnt'); if(aEl) aEl.value=fmt(sumAfter); */
   var tEl=document.getElementById('targetSum'); if(tEl) tEl.value=fmt(sumTarget);
   if(typeof updatePrev==='function') updatePrev();
 }
