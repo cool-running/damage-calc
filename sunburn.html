@@ -193,7 +193,10 @@ body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-
 .tree-table .pj-wrap{display:block;width:100%}
 .tree-table select.tree-pumjong-sel,.tree-table input.tree-pumjong-txt{width:100%;height:40px;font-size:11px;padding:0 2px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
 .tree-table select.tree-pumjong-sel{padding:0 2px}
-.tree-table input.tJoinTree,.tree-table input.tRealTree{width:100%;height:40px;font-size:12.5px;padding:0 1px;text-align:center}
+.tree-table input.tJoinTree,.tree-table input.tRealTree{width:100%;height:40px;font-size:12px;padding:0 1px;text-align:center;-moz-appearance:textfield}
+.tree-table input.tJoinTree::-webkit-inner-spin-button,.tree-table input.tJoinTree::-webkit-outer-spin-button,
+.tree-table input.tRealTree::-webkit-inner-spin-button,.tree-table input.tRealTree::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.tree-table input.tAfterCnt{width:100%;height:40px;font-size:11.5px;padding:0 1px;text-align:center}
 .tree-table .tvar-detail-btn{width:36px;height:36px;padding:0;border:1.5px solid var(--green);border-radius:8px;background:#fff;color:var(--green);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto}
 .tree-table .tvar-detail-btn.on{background:var(--green);color:#fff}
 .tvar-detail-row td{padding:8px 2px 2px}
@@ -404,7 +407,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;line-height:1.6">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력해도 되고, <b style="color:var(--blue)">품종 추가</b>로 나눠 입력해도 같은 품종끼리 자동으로 합산되어 계산됩니다 (상세입력: <b>나무조사</b> 버튼)</div>
     <input type="hidden" id="treeRowN" value="1">
     <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:38px">숙기</th><th style="width:60px">품종</th><th style="width:46px">가입주수</th><th style="width:46px">실제결과</th><th style="width:58px">착과수</th><th style="width:36px">나무조사</th></tr></thead>
+      <thead><tr><th style="width:34px">숙기</th><th style="width:54px">품종</th><th style="width:38px">가입주수</th><th style="width:38px">실제결과</th><th style="width:72px">착과수</th><th style="width:34px">나무조사</th></tr></thead>
       <tbody id="treeRows"></tbody>
     </table>
     <div class="g2" style="margin-top:9px">
