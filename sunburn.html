@@ -183,10 +183,10 @@ body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-
 .tree-table td{padding:3px 2px;vertical-align:middle}
 .tree-table tr.tree-row-block{border-top:1px solid #f0efe9}
 .tree-table tr.tree-row-block:first-child{border-top:none}
-.tree-table select.tree-sukgi{width:100%;height:40px;font-size:11px;padding:0 1px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 2px center;padding-right:12px}
+.tree-table select.tree-sukgi{width:100%;height:40px;font-size:11px;padding:0 1px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
 .tree-table .pj-wrap{display:block;width:100%}
 .tree-table select.tree-pumjong-sel,.tree-table input.tree-pumjong-txt{width:100%;height:40px;font-size:11px;padding:0 2px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
-.tree-table select.tree-pumjong-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 3px center;padding-right:14px;padding-left:3px}
+.tree-table select.tree-pumjong-sel{padding:0 2px}
 .tree-table input.tJoinTree,.tree-table input.tRealTree{width:100%;height:40px;font-size:12.5px;padding:0 1px;text-align:center}
 .tree-table .tvar-detail-btn{width:36px;height:36px;padding:0;border:1.5px solid var(--green);border-radius:8px;background:#fff;color:var(--green);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto}
 .tree-table .tvar-detail-btn.on{background:var(--green);color:#fff}
@@ -398,7 +398,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력 (상세입력: <b>나무조사</b> 버튼)</div>
     <input type="hidden" id="treeRowN" value="1">
     <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:38px">숙기</th><th style="width:60px">품종</th><th style="width:46px">가입주수</th><th style="width:58px">적과후<br>착과수</th><th style="width:46px">실제결과</th><th style="width:36px">나무조사</th></tr></thead>
+      <thead><tr><th style="width:38px">숙기</th><th style="width:60px">품종</th><th style="width:46px">가입주수</th><th style="width:46px">실제결과</th><th style="width:58px">착과수</th><th style="width:36px">나무조사</th></tr></thead>
       <tbody id="treeRows"></tbody>
     </table>
     <div class="g2" style="margin-top:9px">
@@ -665,8 +665,8 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
       '</select></td>'+
       '<td>'+treePumjongCell(i, pj)+'</td>'+
       '<td>'+treeCellFlat('tJoinTree',v.joinTree)+'</td>'+
-      '<td>'+treeCellFlatComma('tAfterCnt',v.afterCnt)+'</td>'+
       '<td>'+treeCellFlat('tRealTree',v.realTree)+'</td>'+
+      '<td>'+treeCellFlatComma('tAfterCnt',v.afterCnt)+'</td>'+
       '<td><button type="button" class="tvar-detail-btn'+(open?' on':'')+'" onclick="toggleTreeDetail('+i+')">🌳</button></td>'+
     '</tr>'+
     '<tr class="tvar-detail-row" data-idx="'+i+'" style="display:'+(open?'table-row':'none')+'">'+
