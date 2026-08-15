@@ -395,37 +395,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
         <button class="btn-add" onclick="addTreeRow()">+ 품종 추가</button>
       </span>
     </div>
-    <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11px;line-height:1.4;">※ 수령·재배방식 구분 없이 <b>품종별 주수</b>만 정확히 입력하세요.<br>고사·수불 등은 <b>[나무조사]</b> 버튼을 눌러 입력합니다.</div>
-    <input type="hidden" id="treeRowN" value="1">
-    <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:46px">숙기</th><th>품종</th><th style="width:52px">가입<br>주수</th><th style="width:52px">실제<br>결과</th><th style="width:42px">나무<br>조사</th></tr></thead>
-      <tbody id="treeRows"></tbody>
-    </table>
-    <div class="g2" style="margin-top:9px">
-      <div class="field">
-        <label>가입주수 <span class="unit">(주, 합계)</span></label>
-        <input class="auto" id="joinTree" type="text" readonly value="0">
-      </div>
-      <div class="field">
-        <label>조사대상주수 <span class="unit">(주, 합계)</span></label>
-        <input class="auto" id="targetSum" type="text" readonly value="0">
-      </div>
-    </div>
-    <div class="g3" style="margin-top:9px">
-      <div class="field">
-        <label>낙과피해과실수 <span class="unit">(개)</span></label>
-        <input class="auto" id="autoFallDmg" type="text" readonly value="-">
-      </div>
-      <div class="field">
-        <label>인정피해율 <span class="unit">(%)</span></label>
-        <input class="auto" id="autoAdmitRate" type="text" readonly value="-">
-      </div>
-      <div class="field">
-        <label>낙과인정피해과실수</label>
-        <input class="auto" id="autoAdmitCnt" type="text" readonly value="-">
-      </div>
-    </div>
-    <div class="hint" style="color:#374151;font-weight:700;font-size:11.5px;word-break:keep-all;line-height:1.5;display:flex;gap:4px;align-items:flex-start"><span style="flex:0 0 auto">※</span><span>나무조사는 표본조사와 별개로 숙기/품종을 직접 선택합니다<br>고사·수확불능 등은 각 품종의 <b style="color:#1D9E75">나무조사</b> 버튼을 눌러 입력 (금차+과거 <b style="color:#c0392b">누계</b>)</span></div>
+    <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력 (상세입력: <b>나무조사</b> 버튼)</div>
   </div>
 
   <!-- 낙과 표본/전수 조사 -->
