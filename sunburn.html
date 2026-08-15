@@ -533,6 +533,29 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
   </div>
 </div>
 
+<!-- 나무조사 품종 삭제 확인 -->
+<div class="overlay" id="treeConfirmOverlay">
+  <div class="modal">
+    <div style="font-size:28px;text-align:center;margin-bottom:4px">🗑️</div>
+    <h3>나무조사 품종 삭제</h3>
+    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px"><span id="treeConfirmNum">0</span>번째 품종을 삭제할까요?<br><span style="color:var(--red);font-weight:700">입력된 값도 함께 삭제됩니다.</span></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button onclick="closeSampPopup('treeConfirmOverlay')" style="height:44px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-weight:700;cursor:pointer">취소</button>
+      <button onclick="closeSampPopup('treeConfirmOverlay');doMinusTreeRow()" style="height:44px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;cursor:pointer">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 나무조사 품종 삭제 불가 -->
+<div class="overlay" id="treeDelOverlay">
+  <div class="modal">
+    <div style="font-size:28px;text-align:center;margin-bottom:4px">🚫</div>
+    <h3>삭제 불가</h3>
+    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px">최소 <strong style="color:var(--blue)">1개 품종</strong>은<br>더 이상 삭제할 수 없습니다.</p>
+    <button onclick="closeSampPopup('treeDelOverlay')" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-weight:700;cursor:pointer">확인</button>
+  </div>
+</div>
+
 <!-- 표본주 추가 확인 -->
 <div class="overlay" id="sampAddOverlay">
   <div class="modal">
@@ -547,7 +570,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 </div>
 
 <!-- 갤러리 저장용 캡처 템플릿 -->
-<div id="captureBox" style="position:fixed;left:-99999px;top:0;width:430px;background:#f3f4f6;padding:0;z-index:-1"></div>
+<div id="captureBox" style="position:fixed;left:-99999px;top:0;width:794px;background:#f3f4f6;padding:0;z-index:-1"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -711,7 +734,13 @@ function addTreeRow(){
 }
 function minusTreeRow(){
   var n=parseInt(num('treeRowN'))||1;
-  if(n<=MINTREE){ showToast('최소 '+MINTREE+'개 품종은 필수입니다'); return; }
+  if(n<=MINTREE){ document.getElementById('treeDelOverlay').classList.add('show'); return; }
+  document.getElementById('treeConfirmNum').textContent=n;
+  document.getElementById('treeConfirmOverlay').classList.add('show');
+}
+function doMinusTreeRow(){
+  var n=parseInt(num('treeRowN'))||1;
+  if(n<=MINTREE) return;
   document.getElementById('treeRowN').value=n-1;
   buildTreeRows(); liveUpdate(); saveState();
 }
