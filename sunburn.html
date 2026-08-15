@@ -736,7 +736,9 @@ function showToast(m){ var t=document.getElementById('toast'); t.innerHTML=m; t.
 
 function todayStr(){
   var d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var m=d.getMonth()+1;
+  var day=d.getDate();
+  return d.getFullYear()+'-'+(m<10?'0'+m:m)+'-'+(day<10?'0'+day:day);
 }
 function syncDate(){
   var inp=document.getElementById('surveyDate'), disp=document.getElementById('dateDisp');
@@ -1464,8 +1466,10 @@ function saveToSharedHistory(imgDataUrl){
   }
   applyMethod();
   /* 조사일자는 항상 오늘 날짜로 (마늘 참고) */
-  document.getElementById('surveyDate').value=todayStr();
-  syncDate();
+  if(!document.getElementById('surveyDate').value){
+            document.getElementById('surveyDate').value=todayStr();
+          }
+          syncDate();
   /* 품목 기본값(사과) 완료색 보장 */
   mark(document.getElementById('crop'));
   updatePumjongList();
