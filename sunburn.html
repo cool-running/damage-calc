@@ -10,10 +10,8 @@
 <title>일소피해 피해율 계산기</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-/* 입력칸 커서/탭 시 전체선택 (마늘 참고) */
 function bindMobileFocusHandlers(){
-  var selectors='input.inp, select.inp, input[type=number], input[type=text], .samp-cell input, .grade-cell input';
-  document.querySelectorAll(selectors).forEach(function(el){
+  document.querySelectorAll('input.inp, select.inp').forEach(function(el){
     if(el.dataset.mobileFocusBound==='1') return;
     if(el.readOnly) return;
     el.dataset.mobileFocusBound='1';
@@ -22,17 +20,6 @@ function bindMobileFocusHandlers(){
     var isDate=el.type==='date';
     if(!isSelect && !isDate){
       el.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
-    }
-    if(!isSelect && !isDate){
-      var _tsx=0,_tsy=0,_scrolling=false;
-      el.addEventListener('touchstart',function(e){ _tsx=e.touches[0].clientX; _tsy=e.touches[0].clientY; _scrolling=false; },{passive:true});
-      el.addEventListener('touchmove',function(e){ if(Math.abs(e.touches[0].clientX-_tsx)>6||Math.abs(e.touches[0].clientY-_tsy)>6) _scrolling=true; },{passive:true});
-      el.addEventListener('touchend',function(e){
-        if(_scrolling) return;
-        if(e.cancelable) e.preventDefault();
-        el.focus();
-        setTimeout(function(){ try{ el.select(); }catch(_){ try{ el.setSelectionRange(0,(el.value||'').length); }catch(__){} } },50);
-      },{passive:false});
     }
   });
 }
@@ -47,1276 +34,589 @@ document.addEventListener('DOMContentLoaded',function(){
   --auto:#F3F1EA;--border:#D8D6CE;--binp:#378ADD;
   --text:#1a1a1a;--sub:#666;--hint:#aaa;
   --bg:#F5F4F0;--card:#fff;
-  --red:#e24b4a;--green:#1D9E75;--amber:#C2410C;
+  --red:#e24b4a;--green:#1D9E75;
   --r:12px;--rs:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;-webkit-user-select:none;user-select:none;padding-bottom:env(safe-area-inset-bottom,30px)}
+body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;padding-bottom:env(safe-area-inset-bottom,30px)}
 .header{background:var(--blue);color:white;padding:13px 14px 11px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
 .back-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;flex-shrink:0;color:#fff;text-decoration:none}
-.header-icon{width:30px;height:30px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px}
 .header h1{font-size:16px;font-weight:700;flex:1}
 .header-sub{font-size:10.5px;opacity:0.72;margin-top:1px}
 .hdr-state{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,0.92);border:1px solid rgba(255,255,255,0.6);white-space:nowrap;transition:all .15s}
 .hdr-state.unlocked{color:#137a4d}
 .hdr-state.locked{color:#c0392b}
-.legend{display:flex;gap:12px;padding:8px 16px;background:var(--card);border-bottom:0.5px solid var(--border)}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
-.dot-inp{width:10px;height:10px;border-radius:2px;background:white;border:1.5px solid var(--binp)}
-.dot-filled{width:10px;height:10px;border-radius:2px;background:#e8faf3;border:1.5px solid var(--green)}
-.dot-auto{width:10px;height:10px;border-radius:2px;background:var(--auto);border:0.5px solid var(--border)}
 
 .content{padding:12px 14px 40px}
-.section{background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);padding:12px 13px 13px;margin-bottom:11px}
-.sec-title{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-0.01em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.sec-title .tag{font-size:10px;font-weight:700;color:var(--blue);background:#eaf2fb;border-radius:6px;padding:2px 7px}
-.subhead{font-size:11px;font-weight:800;color:var(--blue);margin:11px 0 6px;letter-spacing:-0.01em}
+.section{background:var(--card);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 13px;margin-bottom:12px}
+.sec-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.sec-title .btn-add{height:28px;padding:0 12px;border:1.5px solid var(--blue);border-radius:6px;background:#ebf4ff;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer}
 
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.g4 .field label{font-size:10px}
-.g4 input{font-size:13px;padding:0 3px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;align-items:end}
-.field{display:flex;flex-direction:column;gap:4px;position:relative}
-.field label{font-size:11px;color:var(--sub);font-weight:600;line-height:1.25}
-/* 기본정보 드롭다운 글자 잘림 방지 (가입상품·적과전사고·재해종류) */
-#product,#prevAcc,#disaster{font-size:12.5px;padding:0 4px;letter-spacing:-0.03em}
-#method,#product,#prevAcc,#disaster{text-align:center;text-align-last:center}
-body.big-text #product,body.big-text #prevAcc,body.big-text #disaster{font-size:15px !important;padding:0 18px !important}
-.field .unit{font-size:10px;color:var(--hint);font-weight:500}
-input.inp,select.inp{height:42px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:15px;font-weight:600;background:white;color:var(--text);width:100%;text-align:center;transition:background .15s,border-color .15s;-webkit-appearance:none;appearance:none}
-select.inp{text-align:left;-webkit-appearance:auto;appearance:auto}
-input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.18);background:#dceeff;color:var(--blue)}
-input.inp.filled{background:#e8faf3;border-color:var(--green);color:#0d5c35}
-select.inp.filled{background:#e8faf3;border-color:var(--green);color:#0d5c35;font-weight:700}
-input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.18);background:#dceeff;color:var(--blue)}
-input.inp::placeholder{color:var(--hint);font-weight:500;opacity:1}
-input.inp::-webkit-input-placeholder{color:var(--hint);font-weight:500}
-input.inp:-ms-input-placeholder{color:var(--hint);font-weight:500}
-input.auto{height:42px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 6px;font-size:15px;font-weight:700;background:var(--auto);color:var(--text);width:100%;text-align:center;-webkit-appearance:none}
-body.big-text input.auto{height:52px !important;font-size:18px !important;font-weight:800 !important}
-.hint{font-size:10.5px;color:var(--hint);margin-top:7px;line-height:1.5}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3, 1fr);gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4, 1fr);gap:6px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--sub);font-weight:600}
+.field label.red{color:var(--red)}
+
+input.inp, select.inp{height:42px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;font-weight:600;background:white;color:var(--text);width:100%;text-align:center;-webkit-appearance:none;appearance:none;transition:all .15s}
+select.inp{text-align-last:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:20px}
+input.inp.filled, select.inp.filled{background:#e8faf3;border-color:var(--green);color:#0d5c35}
+input.inp:focus, select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.18);background:#dceeff}
 
 .datewrap{position:relative}
 .datewrap input[type=date]{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
-.date-disp{height:42px;border:1.5px solid var(--binp);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;background:#fff;color:var(--text)}
+.date-disp{height:42px;border:1.5px solid var(--binp);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:#fff;color:var(--text)}
 .date-disp.ph{color:var(--hint);font-weight:500}
 .date-disp.filled{background:#e8faf3;border-color:var(--green);color:#0d5c35}
 
-.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.bigtext-btn{height:34px;padding:0 12px;background:transparent;border:1.5px solid var(--blue2);border-radius:var(--rs);color:var(--blue2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
-.bigtext-btn.on{background:var(--blue2);color:#fff;box-shadow:0 2px 8px rgba(55,138,221,0.35)}
-.reset-btn{height:34px;padding:0 14px;background:transparent;border:1.5px solid var(--red);border-radius:var(--rs);color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
+/* Cards */
+.card{background:#fdfdfc;border:1px solid #e0e0db;border-radius:10px;padding:12px;margin-bottom:10px;position:relative}
+.card-num{position:absolute;top:-8px;left:-8px;width:24px;height:24px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:2px solid #fff}
+.del-btn{width:28px;height:28px;background:#ffeaea;color:var(--red);border:none;border-radius:6px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sub-head{font-size:11px;font-weight:700;color:#555;background:#f0f0f0;padding:4px 0;text-align:center;border-radius:4px;margin:10px 0 6px}
+.res-line{font-size:13px;font-weight:800;color:var(--blue);text-align:right;margin-top:10px;padding-top:8px;border-top:1px dashed #ccc}
 
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.seg-btn{height:40px;border:1.5px solid var(--border);border-radius:var(--rs);background:#fff;color:var(--sub);font-size:13px;font-weight:700;cursor:pointer;transition:all .12s}
-.seg-btn.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(24,95,165,0.28)}
-
-/* 표본 낙과수 가로 1행 */
-.samp-line{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
-.samp-cell{flex:1;min-width:52px;text-align:center}
-.samp-cell .no{font-size:10px;font-weight:700;color:var(--sub);margin-bottom:3px}
-.samp-cell input{height:42px;padding:0 2px;font-size:15px}
-.samp-total{flex:1;min-width:60px;text-align:center}
-.samp-total .no{font-size:10px;font-weight:700;color:var(--blue);margin-bottom:3px}
-.samp-total .box{height:42px;border:1.5px solid var(--blue);border-radius:var(--rs);background:#eaf2fb;color:var(--blue);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
-
-/* 표본조사 세로 표: 표본번호·숙기/품종·표본낙과수 */
-.samp-table{width:100%;border-collapse:collapse}
-.samp-table th{font-size:11px;font-weight:700;color:var(--sub);padding:0 4px 7px;text-align:center}
-.samp-table td{padding:3px 3px;vertical-align:middle}
-.samp-table .samp-no{text-align:center;font-size:14px;font-weight:800;color:var(--blue);padding:3px 1px}
-.samp-table input{height:42px;padding:0 8px;font-size:15px;text-align:center}
-.samp-table input.samp-variety{font-size:13px}
-.samp-table .samp-cell{display:flex;flex-direction:row;gap:5px;align-items:center}
-.samp-table select.samp-sukgi{flex:0 0 62px;height:42px;font-size:12px;padding:0 2px;text-align:center;text-align-last:center}
-.samp-table .pj-wrap{flex:1;min-width:0;display:block}
-.samp-table select.samp-pumjong-sel,.samp-table input.samp-pumjong-txt{width:100%;height:42px;font-size:12px;padding:0 4px;text-align:center;text-align-last:center}
-.samp-total-row .samp-total-label{text-align:right;font-size:12px;font-weight:800;color:var(--blue);padding-right:10px}
-.samp-total-box{height:42px;border:1.5px solid var(--blue);border-radius:var(--rs);background:#eaf2fb;color:var(--blue);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
-/* 숙기/품종 헤더 라벨 분리 — 각 드롭다운 위에 정렬 (셀의 62px+gap5+flex 구조와 동일) */
-.samp-table th.th-supj{padding:0 3px 7px}
-.samp-table .th-supj-row{display:flex;gap:5px}
-.samp-table .th-su{flex:0 0 62px;text-align:center}
-.samp-table .th-pj{flex:1;text-align:center}
-/* 메인 셀렉트: 화살표 제거 + 중앙정렬 (고추 방식) */
-#method,#product,#prevAcc,#disaster{
-  -webkit-appearance:none !important;appearance:none !important;
-  text-align:center;text-align-last:center;
-  background-image:none;
-  padding-left:6px;padding-right:6px;
-}
-/* 표본 표 셀렉트는 기존 화살표 유지 */
-.samp-table select.samp-sukgi,.samp-table select.samp-pumjong-sel{
-  -webkit-appearance:none !important;appearance:none !important;
-  text-align:center;text-align-last:center;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 6px center;padding-right:18px;padding-left:18px;
-}
-.samp-table select.samp-sukgi{padding-right:14px;padding-left:6px}
-/* 가입상품: '적과전종합Ⅱ'(7자) 잘림 방지 (화살표 제거로 여유 확보, 폰트만 소폭 축소·중앙) */
-#product{font-size:13px;letter-spacing:-0.02em;padding-left:6px;padding-right:6px}
-body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-left:4px;padding-right:4px}
-
-.grade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.grade-cell label{font-size:10.5px;text-align:center;display:block;height:13px;line-height:13px;margin-bottom:3px;color:var(--sub);font-weight:700;white-space:nowrap;overflow:hidden}
-.grade-cell input{height:40px;font-size:14px;padding:0 2px}
-.grade-100 label{color:var(--red)}
-.grade-row6{display:grid;grid-template-columns:0.85fr 0.85fr 0.85fr 0.9fr 1.05fr 1.3fr;gap:5px;align-items:end}
-.grade-row6 .grade-cell label{font-size:9.5px;height:12px;line-height:12px}
-.grade-row6 .grade-cell input{height:38px;font-size:12.5px;padding:0 1px;text-align:center}
-.tree-row3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.tree-row3+.tree-row3,.tree-row3+.tree-row2,.tree-row2+.tree-row3{margin-top:6px}
-.tree-row2{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
-.tree-row-head{display:flex;gap:6px;align-items:center;margin-bottom:8px}
-.tree-row-head .tree-no{flex:0 0 20px;text-align:center;font-size:14px;font-weight:800;color:var(--blue)}
-.tree-row-head select.tree-sukgi{flex:0 0 62px;height:40px;font-size:12px;padding:0 2px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;padding-right:18px;padding-left:6px}
-.tree-row-head .pj-wrap{flex:1;min-width:0}
-.tree-row-head select.tree-pumjong-sel,.tree-row-head input.tree-pumjong-txt{width:100%;height:40px;font-size:12px;padding:0 4px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
-.tree-row-head select.tree-pumjong-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;padding-right:18px;padding-left:18px}
-.tree-cell label{font-size:10px;text-align:center;display:block;height:12px;line-height:12px;margin-bottom:3px;color:var(--sub);font-weight:700;white-space:nowrap;overflow:hidden}
-.tree-cell input{height:40px;font-size:13.5px;padding:0 2px;text-align:center}
-.tree-row-block+.tree-row-block{margin-top:14px;padding-top:13px;border-top:1px dashed var(--border)}
-.tree-table{width:100%;border-collapse:collapse;margin-top:4px}
-.tree-table th{font-size:9.5px;font-weight:700;color:var(--sub);padding:0 2px 6px;text-align:center;line-height:1.2}
-.tree-table td{padding:3px 2px;vertical-align:middle}
-.tree-table tr.tree-row-block{border-top:1px solid #f0efe9}
-.tree-table tr.tree-row-block:first-child{border-top:none}
-.tree-table select.tree-sukgi{width:100%;height:40px;font-size:11px;padding:0 1px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 2px center;padding-right:12px}
-.tree-table .pj-wrap{display:block;width:100%}
-.tree-table select.tree-pumjong-sel,.tree-table input.tree-pumjong-txt{width:100%;height:40px;font-size:11px;padding:0 2px;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
-.tree-table select.tree-pumjong-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 3px center;padding-right:14px;padding-left:3px}
-.tree-table input.tJoinTree,.tree-table input.tRealTree{width:100%;height:40px;font-size:12.5px;padding:0 1px;text-align:center}
-.tree-table .tvar-detail-btn{width:36px;height:36px;padding:0;border:1.5px solid var(--green);border-radius:8px;background:#fff;color:var(--green);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto}
-.tree-table .tvar-detail-btn.on{background:var(--green);color:#fff}
-.tvar-detail-row td{padding:8px 2px 2px}
-.cnt-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:10px}
-.cnt-btn{height:48px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:18px;font-weight:700;color:#333;cursor:pointer}
-.cnt-btn.on{border-color:var(--blue);background:#eaf2fb;color:var(--blue);font-weight:800}
-.cnt-custom-row{display:flex;align-items:center;gap:8px;padding-top:10px;border-top:1px dashed var(--border)}
-.cnt-custom-label{font-size:11.5px;color:var(--sub);white-space:nowrap;flex-shrink:0;font-weight:600}
-.cnt-custom-input.inp{height:40px;font-size:13px;text-align:center}
-.cnt-custom-btn{flex-shrink:0;height:40px;padding:0 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-weight:700;font-size:13px;cursor:pointer}
-
-.grade-block+.grade-block{margin-top:14px;padding-top:13px;border-top:1px dashed var(--border)}
-.grade-key{font-size:11.5px;font-weight:800;color:var(--blue);margin-bottom:7px;background:#eaf2fb;display:inline-block;padding:3px 9px;border-radius:6px}
+.samp-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;background:#fdfdfc;border:1px solid #e0e0db;padding:8px;border-radius:8px}
+.samp-num{font-size:12px;font-weight:800;color:var(--blue);width:20px;text-align:center}
 
 .calc-action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 12px}
-.btn-calc{height:48px;border:none;border-radius:12px;background:var(--blue);color:white;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-calc{height:48px;border:none;border-radius:12px;background:var(--blue);color:white;font-size:15px;font-weight:700;cursor:pointer}
 .btn-calc.active{background:linear-gradient(135deg,#185FA5 0%,#2478cc 100%);box-shadow:0 4px 14px rgba(24,95,165,0.35)}
 .btn-edit{height:48px;border:2px solid var(--green);border-radius:12px;background:white;color:var(--green);font-size:15px;font-weight:700;cursor:pointer}
 .btn-edit.active{background:var(--green);color:white;box-shadow:0 4px 14px rgba(29,158,117,0.3)}
-.locked .section input.inp:not([type=date]),.locked .section select.inp,.locked .seg-btn,.locked .samp-cell input{pointer-events:none;opacity:0.78}
 
-.result-box{background:linear-gradient(135deg,#6b7280 0%,#8a929d 100%);border-radius:18px;padding:16px 16px 14px;margin-bottom:10px;color:white;box-shadow:0 8px 28px rgba(90,98,110,0.4),inset 0 1px 0 rgba(255,255,255,0.2)}
+.result-box{background:linear-gradient(135deg,#6b7280 0%,#8a929d 100%);border-radius:18px;padding:16px 12px;margin-bottom:10px;color:white}
 .result-box.pending{background:linear-gradient(135deg,#9a9a9a 0%,#bbb 100%);box-shadow:none}
-.rb-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.rb-label{font-size:12px;opacity:0.82;font-weight:600}
-.rb-badge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.3)}
-.rb-hero{font-size:40px;font-weight:900;letter-spacing:-0.02em;line-height:1.05}
-.rb-hero small{font-size:18px;font-weight:700;opacity:0.85}
-.rb-sub{font-size:12px;opacity:0.85;margin-top:5px}
-.rb-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
-.rb-mini .m{background:rgba(255,255,255,0.13);border-radius:10px;padding:8px 10px}
-.rb-mini .m .k{font-size:10px;opacity:0.8}
-.rb-mini .m .v{font-size:16px;font-weight:800;margin-top:1px}
-.save-btn{height:36px;padding:0 10px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);color:#fff;border-radius:12px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;flex-shrink:0}
-.save-btn:active{background:rgba(255,255,255,0.35)}
+.save-btn{height:36px;padding:0 10px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);color:#fff;border-radius:12px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 .save-btn:disabled{opacity:0.45;cursor:default}
+.locked input.inp, .locked select.inp, .locked .del-btn, .locked .btn-add{pointer-events:none;opacity:0.75}
 
-.res-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:10px;overflow:hidden;border:0.5px solid var(--border)}
-.res-table td{padding:9px 10px;border-bottom:1px solid #eee}
-.res-table tr:last-child td{border-bottom:none}
-.res-table td.k{color:var(--sub);font-weight:600;width:54%}
-.res-table td.v{text-align:right;font-weight:800;color:var(--text)}
-.res-table tr.hl td{background:#eaf2fb}
-.res-table tr.hl td.v{color:var(--blue)}
-.res-table .formula{font-size:10px;color:var(--hint);font-weight:500;display:block;margin-top:1px}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;font-weight:600;z-index:400;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:0.95}
 
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;padding:20px}
 .overlay.show{display:flex}
-.modal{background:#fff;border-radius:16px;padding:18px 16px;width:100%;max-width:340px;max-height:80vh;display:flex;flex-direction:column}
+.modal{background:#fff;border-radius:16px;padding:18px 16px;width:100%;max-width:340px;display:flex;flex-direction:column}
 .modal h3{font-size:17px;font-weight:800;text-align:center;margin-bottom:6px;color:#333}
-.hist-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
-.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;font-weight:600;z-index:400;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center}
-.toast.on{opacity:0.95}
-.save-modal{background:#fff;border-radius:16px;padding:24px 20px;text-align:center;width:260px}
-.save-modal p{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text)}
-.save-modal .btn-ok{width:100%;height:44px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer}
-
-body.big-text input.inp,body.big-text select.inp{height:52px !important;font-size:20px !important;font-weight:700 !important;border-width:2px !important}
-body.big-text .date-disp{height:52px !important;font-size:17px !important;font-weight:800 !important}
-body.big-text .field label{font-size:13px !important}
-body.big-text .samp-cell input{height:50px !important;font-size:18px !important}
-body.big-text .samp-total .box{height:50px !important;font-size:18px !important}
-body.big-text .samp-table input{height:50px !important;font-size:18px !important}
-body.big-text .samp-table input.samp-variety{font-size:15px !important}
-body.big-text .samp-table select.samp-sukgi,body.big-text .samp-table select.samp-pumjong-sel,body.big-text .samp-table input.samp-pumjong-txt{height:46px !important;font-size:13px !important}
-body.big-text .samp-total-box{height:50px !important;font-size:18px !important}
-body.big-text .grade-cell input{height:48px !important;font-size:16px !important}
-body.big-text .seg-btn{height:48px !important;font-size:15px !important}
+.modal .btn-ok{height:44px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px}
 </style>
 </head>
 <body>
 
 <div class="header">
   <a class="back-btn" href="./index.html">‹</a>
-  <div class="header-icon">☀️</div>
   <div style="flex:1">
-    <h1>일소피해 피해율 계산기</h1>
-    <div class="header-sub">과수4종 · 적과후 · 낙과(표본)조사</div>
+    <h1>일소피해 조사계산기</h1>
+    <div class="header-sub">과수4종 · 적과후 · 원장/현장조사 완벽지원</div>
   </div>
-  <div class="hdr-state unlocked" id="hdrState">🔓 수정 중</div>
-</div>
-
-<div class="legend">
-  <div class="legend-item"><span class="dot-inp"></span>직접입력</div>
-  <div class="legend-item"><span class="dot-filled"></span>입력완료</div>
-  <div class="legend-item"><span class="dot-auto"></span>자동계산</div>
+  <div class="hdr-state unlocked" id="hdrState">🔓 수정 중 - sunburn</div>
 </div>
 
 <div class="content" id="content">
 
-  <!-- 크게 / 전체초기화 / 품목 / 농지번호 / 이전기록 -->
+  <!-- 1. 원장 및 기본정보 -->
   <div class="section">
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px">
-      <button class="bigtext-btn" id="bigtextBtn" onclick="toggleBigText()">🔍 <span id="bigtextLabel">크게</span></button>
-      <button class="reset-btn" onclick="openReset()">전체 초기화</button>
-    </div>
-    <div style="display:flex;gap:6px;align-items:flex-end">
-      <div class="field" style="flex:1;min-width:0">
+    <div class="sec-title">📝 원장 및 기본정보 <button class="btn-add" onclick="doReset()" style="background:#fff5f5;color:var(--red);border-color:var(--red)">초기화</button></div>
+    <div class="g3" style="margin-bottom:8px">
+      <div class="field">
         <label>품목</label>
-        <select class="inp filled" id="crop" onchange="mark(this);updatePumjongList();saveState()" style="text-align:center;text-align-last:center">
+        <select class="inp filled" id="crop" onchange="mark(this);updateAll();">
           <option value="사과" selected>사과</option>
           <option value="배">배</option>
           <option value="단감">단감</option>
           <option value="떫은감">떫은감</option>
         </select>
       </div>
-      <div class="field" style="flex:0 0 28%;min-width:0">
-        <label>계약자명</label>
-        <input type="text" id="contractorName" class="inp" placeholder="이름"
-          oninput="mark(this);saveState()" autocomplete="off">
-      </div>
-      <div class="field" style="flex:0 0 22%;min-width:0">
-        <label>농지번호</label>
-        <input type="text" id="farmNo" class="inp" inputmode="numeric" placeholder="4자리" maxlength="4"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);mark(this);saveState()"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
-      </div>
-      <div style="flex:0 0 40px">
-        <button onclick="openHistory()" title="이전 기록 불러오기"
-          style="width:100%;height:42px;border:1.5px solid var(--blue2);border-radius:var(--rs);background:white;color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
-      </div>
+      <div class="field"><label>계약자명</label><input type="text" id="contractorName" class="inp" placeholder="이름" oninput="mark(this);saveState()"/></div>
+      <div class="field"><label>농지번호</label><input type="text" id="farmNo" class="inp" inputmode="numeric" placeholder="4자리" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);mark(this);saveState()"/></div>
     </div>
-  </div>
-
-  <!-- 기본정보 -->
-  <div class="section">
-    <div class="sec-title">📋 기본정보</div>
-    <div class="g3">
+    <div class="g2" style="margin-bottom:8px">
       <div class="field">
         <label>조사일자</label>
         <div class="datewrap">
           <div class="date-disp ph" id="dateDisp">조사일자</div>
-          <input type="date" id="surveyDate" onchange="syncDate();saveState()" autocomplete="off">
+          <input type="date" id="surveyDate" onchange="syncDate();saveState()">
         </div>
       </div>
       <div class="field">
-        <label>조사방식</label>
-        <select class="inp filled" id="method" onchange="mark(this);applyMethod();saveState()">
-          <option value="표본조사" selected>표본조사</option>
-          <option value="전수조사">전수조사</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>평년착과수 <span class="unit">(개)</span></label>
-        <input class="inp" id="avgCnt" type="text" inputmode="numeric" oninput="onComma(this);updatePrev();saveState()">
+        <label>적과후착과수 (총합계)</label>
+        <input type="text" id="totalAfterCnt" class="inp" inputmode="numeric" placeholder="개" oninput="onComma(this);liveUpdate();"/>
       </div>
     </div>
-    <div class="g3" style="margin-top:9px">
+    <div class="g2">
       <div class="field">
-        <label>가입상품</label>
-        <select class="inp filled" id="product" onchange="mark(this);refreshPrevUI();saveState()">
-          <option value="normal" selected>적과전종합Ⅱ</option>
-          <option value="five">5종한정특약</option>
-        </select>
+        <label>전차 인정피해율</label>
+        <input type="number" id="prevRate" class="inp" inputmode="decimal" placeholder="%" oninput="mark(this);liveUpdate();"/>
       </div>
-      <div class="field">
-        <label>적과전 사고</label>
-        <select class="inp filled" id="prevAcc" onchange="mark(this);refreshPrevUI();saveState()">
-          <option value="n" selected>없음</option>
-          <option value="y">있음</option>
-        </select>
-      </div>
-      <div class="field" id="disasterWrap">
-        <label>재해종류</label>
-        <select class="inp" id="disaster" onchange="mark(this);updatePrev();saveState()">
-          <option value="">선택</option>
-          <option value="태풍">태풍(강풍)</option>
-          <option value="우박">우박</option>
-          <option value="호우">집중호우</option>
-          <option value="지진">지진</option>
-          <option value="냉동">냉해·동상해</option>
-          <option value="가뭄">가뭄·폭염</option>
-          <option value="기타">기타 자연재해</option>
-          <option value="조수">조수해</option>
-          <option value="화재">화재</option>
-        </select>
-      </div>
-    </div>
-    <div class="g3" style="margin-top:9px">
-      <div class="field">
-        <label>적과후착과수 <span class="unit">(개, 합계)</span></label>
-        <input class="auto" id="afterCnt" type="text" readonly value="0">
-      </div>
-      <div class="field">
-        <label>착과율 <span class="unit">(%)</span></label>
-        <input class="auto" id="autoSetRate" type="text" readonly value="-">
-      </div>
-      <div class="field">
-        <label>전차 인정피해율 <span class="unit">(%)</span></label>
-        <input class="auto" id="autoPrevRate" type="text" readonly value="0.00">
-      </div>
-    </div>
-    <div class="field" id="manualWrap" style="display:none;margin-top:9px">
-      <label>전차 인정피해율 직접입력 <span class="unit">(%)</span></label>
-      <input class="inp" id="prevManual" type="number" inputmode="decimal" placeholder="유과타박률 등 별도 조사값" oninput="mark(this);updatePrev();saveState()">
-    </div>
-  </div>
-
-  <!-- 나무조사 (표본조사와 별개 — 숙기/품종 직접 선택, 적과후착과수 조사와 동일한 품종수 선택 방식) -->
-  <div class="section">
-    <div class="sec-title">🌳 나무조사</div>
-    <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">품종 수 선택</div>
-    <div class="cnt-grid" id="treeCntGrid">
-      <button class="cnt-btn" data-n="1" onclick="selectTreeCount(1)">1</button>
-      <button class="cnt-btn" data-n="2" onclick="selectTreeCount(2)">2</button>
-      <button class="cnt-btn" data-n="3" onclick="selectTreeCount(3)">3</button>
-      <button class="cnt-btn" data-n="4" onclick="selectTreeCount(4)">4</button>
-      <button class="cnt-btn" data-n="5" onclick="selectTreeCount(5)">5</button>
-      <button class="cnt-btn" data-n="6" onclick="selectTreeCount(6)">6</button>
-      <button class="cnt-btn" data-n="7" onclick="selectTreeCount(7)">7</button>
-      <button class="cnt-btn" data-n="8" onclick="selectTreeCount(8)">8</button>
-      <button class="cnt-btn" data-n="9" onclick="selectTreeCount(9)">9</button>
-      <button class="cnt-btn" data-n="10" onclick="selectTreeCount(10)">10</button>
-    </div>
-    <div class="cnt-custom-row">
-      <span class="cnt-custom-label">11개 이상</span>
-      <input type="number" id="treeCntCustom" class="inp cnt-custom-input" inputmode="numeric" placeholder="직접입력" min="11" onkeydown="if(event.key==='Enter'){event.preventDefault();applyTreeCountCustom();}">
-      <button class="cnt-custom-btn" onclick="applyTreeCountCustom()">확인</button>
-    </div>
-    <input type="hidden" id="treeRowN" value="1">
-    <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:46px">숙기</th><th>품종</th><th style="width:52px">가입<br>주수</th><th style="width:52px">실제<br>결과</th><th style="width:42px">나무<br>조사</th></tr></thead>
-      <tbody id="treeRows"></tbody>
-    </table>
-    <div class="g2" style="margin-top:9px">
-      <div class="field">
-        <label>가입주수 <span class="unit">(주, 합계)</span></label>
-        <input class="auto" id="joinTree" type="text" readonly value="0">
-      </div>
-      <div class="field">
-        <label>조사대상주수 <span class="unit">(주, 합계)</span></label>
-        <input class="auto" id="targetSum" type="text" readonly value="0">
-      </div>
-    </div>
-    <div class="g3" style="margin-top:9px">
-      <div class="field">
-        <label>낙과피해과실수 <span class="unit">(개)</span></label>
-        <input class="auto" id="autoFallDmg" type="text" readonly value="-">
-      </div>
-      <div class="field">
-        <label>인정피해율 <span class="unit">(%)</span></label>
-        <input class="auto" id="autoAdmitRate" type="text" readonly value="-">
-      </div>
-      <div class="field">
-        <label>낙과인정피해과실수</label>
-        <input class="auto" id="autoAdmitCnt" type="text" readonly value="-">
-      </div>
-    </div>
-    <div class="hint" style="color:#374151;font-weight:700;font-size:11.5px;word-break:keep-all;line-height:1.5;display:flex;gap:4px;align-items:flex-start"><span style="flex:0 0 auto">※</span><span>나무조사는 표본조사와 별개로 숙기/품종을 직접 선택합니다<br>고사·수확불능 등은 각 품종의 <b style="color:#1D9E75">나무조사</b> 버튼을 눌러 입력 (금차+과거 <b style="color:#c0392b">누계</b>)</span></div>
-  </div>
-
-  <!-- 낙과 표본/전수 조사 -->
-  <div class="section">
-    <div class="sec-title" style="justify-content:space-between">
-      <span style="display:flex;align-items:center;gap:6px"><span id="sampSecTitle">🍎 일소(낙과) 표본조사</span> <span class="tag" id="sampTag">표본주수 3주</span></span>
-      <span style="display:flex;align-items:center;gap:6px" id="sampBtns">
-        <button id="btnSampMinus" onclick="sampMinus()" style="width:28px;height:28px;border:1.5px solid var(--border);border-radius:6px;background:transparent;font-size:16px;color:var(--hint);cursor:not-allowed;opacity:0.4;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">－</button>
-        <button id="btnSampPlus" onclick="sampPlus()" style="width:28px;height:28px;border:1.5px solid var(--binp);border-radius:6px;background:transparent;font-size:16px;color:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">＋</button>
-      </span>
-    </div>
-    <input type="hidden" id="sampleN" value="3">
-    <div id="sampRows"></div>
-    <div id="censusMode" style="display:none">
-      <div class="field">
-        <label>전체 낙과수 <span class="unit">(개)</span></label>
-        <input class="inp" id="totalFall" type="text" inputmode="numeric" oninput="onComma(this);liveUpdate();saveState()">
+      <div class="field" style="justify-content:flex-end">
+        <div style="font-size:11px;color:#888;line-height:1.3;padding-bottom:4px">※ 일소피해는 <strong>적과후착과수의 6%</strong> 초과 시 인정됩니다.</div>
       </div>
     </div>
   </div>
 
-  <!-- 낙과 피해구성조사 (숙기/품종별 자동 분리) -->
+  <!-- 2. 품종별 나무조사 -->
   <div class="section">
-    <div class="sec-title">📊 낙과 피해구성조사</div>
-    <div id="gradeGroups"></div>
+    <div class="sec-title">🌳 품종별 나무조사 <button class="btn-add" onclick="addTree()">+ 품종 추가</button></div>
+    <div style="font-size:11px;color:#666;margin-bottom:10px">원장의 과거 조사값과 현장 조사값을 입력하여 <strong>조사대상주수</strong>를 산출합니다.</div>
+    <div id="treeList"></div>
+  </div>
+
+  <!-- 3. 표본(낙과)조사 -->
+  <div class="section">
+    <div class="sec-title">🍎 낙과 표본조사 <button class="btn-add" onclick="addSample()">+ 표본주 추가</button></div>
+    <div id="sampList"></div>
+    <div class="res-line" style="text-align:center" id="sampSum">총 표본낙과수: 0개</div>
+  </div>
+
+  <!-- 4. 피해구성조사 -->
+  <div class="section">
+    <div class="sec-title">📊 과실 피해구성조사</div>
+    <div style="font-size:11px;color:#666;margin-bottom:10px">표본조사에서 선택한 품종별로 입력칸이 자동 생성됩니다.</div>
+    <div id="gradeList"></div>
   </div>
 
   <div class="calc-action-row">
-    <button class="btn-edit" id="btnEdit" onclick="edit()">✏️ 수정하기</button>
-    <button class="btn-calc active" id="btnCalc" onclick="calc()">🧮 계산하기</button>
+    <button class="btn-edit active" id="btnEdit" onclick="edit()">✏️ 수정하기</button>
+    <button class="btn-calc" id="btnCalc" onclick="calc()">🧮 계산하기</button>
   </div>
 
-  <!-- 결과 -->
-  <div class="result-box pending" id="resultBox" style="padding:0 12px">
-    <div style="display:flex;align-items:center;padding:13px 0;gap:2px">
+  <!-- 5. 결과 -->
+  <div class="result-box pending" id="resultBox">
+    <div style="display:flex;align-items:center;padding:8px 0;gap:2px">
       <div style="padding:0 6px;flex:1;min-width:0;text-align:center">
-        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:500;line-height:1.2;word-break:keep-all;min-height:25px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">적착대비 피해율</div>
-        <div id="mRate" style="font-size:21px;font-weight:800;color:#FFD0D0;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:600;margin-bottom:4px">적착대비 피해율</div>
+        <div id="mRate" style="font-size:22px;font-weight:900;color:#FFD0D0;">- -</div>
       </div>
-      <div style="width:1px;height:40px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
+      <div style="width:1px;height:40px;background:rgba(255,255,255,0.3);"></div>
       <div style="padding:0 6px;flex:1;min-width:0;text-align:center">
-        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:500;line-height:1.2;word-break:keep-all;min-height:25px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">금차 인정피해과실수</div>
-        <div id="rbHero" style="font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1;white-space:nowrap">—</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:600;margin-bottom:4px">금차 인정피해과실수</div>
+        <div id="rbHero" style="font-size:22px;font-weight:900;color:#fff;">—</div>
       </div>
-      <div style="width:1px;height:40px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
+      <div style="width:1px;height:40px;background:rgba(255,255,255,0.3);"></div>
       <div style="padding-left:6px;flex-shrink:0">
-        <button class="save-btn" id="saveBtn" onclick="saveImage()" disabled><span style="font-size:14px">📷</span><span>갤러리 저장</span></button>
+        <button class="save-btn" id="saveBtn" onclick="saveImage()" disabled><span style="font-size:15px">📷</span><span>저장</span></button>
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- 이미지 저장 완료 -->
-<div class="overlay" id="saveDoneOverlay">
-  <div class="save-modal">
-    <div style="font-size:36px;margin-bottom:10px">📷</div>
-    <p>이미지가 저장되었어요!</p>
-    <button class="btn-ok" onclick="document.getElementById('saveDoneOverlay').classList.remove('show')">확인</button>
-  </div>
-</div>
-
-<!-- 초기화 -->
-<div class="overlay" id="resetOverlay">
-  <div class="modal">
-    <h3>전체 초기화</h3>
-    <p style="text-align:center;color:#666;font-size:13px;margin:8px 0 16px">입력한 모든 값이 지워집니다.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="closeReset()" style="height:44px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-weight:700;cursor:pointer">취소</button>
-      <button onclick="doReset()" style="height:44px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;cursor:pointer">초기화</button>
-    </div>
-  </div>
-</div>
-
-<!-- 이전기록 -->
-<div class="overlay" id="historyOverlay">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <h3 style="margin:0">이전 기록</h3>
-      <button onclick="closeHistory()" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer">✕</button>
-    </div>
-    <div id="historyList" style="overflow-y:auto"></div>
-  </div>
-</div>
-
-<!-- 표본주 삭제 확인 -->
-<div class="overlay" id="sampConfirmOverlay">
-  <div class="modal">
-    <div style="font-size:28px;text-align:center;margin-bottom:4px">🗑️</div>
-    <h3>표본주 삭제</h3>
-    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px"><span id="sampConfirmNum">0</span>번 표본주를 삭제할까요?<br><span style="color:var(--red);font-weight:700">입력된 값도 함께 삭제됩니다.</span></p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="closeSampPopup('sampConfirmOverlay')" style="height:44px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-weight:700;cursor:pointer">취소</button>
-      <button onclick="closeSampPopup('sampConfirmOverlay');doSampMinus()" style="height:44px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;cursor:pointer">삭제</button>
-    </div>
-  </div>
-</div>
-
-<!-- 표본주 삭제 불가 -->
-<div class="overlay" id="sampDelOverlay">
-  <div class="modal">
-    <div style="font-size:28px;text-align:center;margin-bottom:4px">🚫</div>
-    <h3>삭제 불가</h3>
-    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px">적정 표본주수 <strong style="color:var(--blue)">3주</strong>로<br>더 이상 삭제할 수 없습니다.</p>
-    <button onclick="closeSampPopup('sampDelOverlay')" style="width:100%;height:44px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-weight:700;cursor:pointer">확인</button>
-  </div>
-</div>
-
-<!-- 표본주 추가 확인 -->
-<div class="overlay" id="sampAddOverlay">
-  <div class="modal">
-    <div style="font-size:28px;text-align:center;margin-bottom:4px">⚠️</div>
-    <h3>표본주 추가</h3>
-    <p style="text-align:center;color:#555;font-size:13px;line-height:1.7;margin:8px 0 16px">적정 표본주수 <strong style="color:var(--blue)">3주</strong>를<br>이미 충족하고 있습니다.<br><span style="color:var(--red);font-weight:700">그래도 추가하시겠습니까?</span></p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="closeSampPopup('sampAddOverlay')" style="height:44px;border:1.5px solid #ddd;border-radius:10px;background:#f5f5f5;color:#666;font-weight:700;cursor:pointer">취소</button>
-      <button onclick="closeSampPopup('sampAddOverlay');doSampAdd()" style="height:44px;border:none;border-radius:10px;background:var(--red);color:#fff;font-weight:700;cursor:pointer">추가</button>
-    </div>
-  </div>
-</div>
-
-<!-- 갤러리 저장용 캡처 템플릿 -->
+<!-- 캡처 템플릿 -->
 <div id="captureBox" style="position:fixed;left:-99999px;top:0;width:430px;background:#f3f4f6;padding:0;z-index:-1"></div>
 
 <div class="toast" id="toast"></div>
 
+<!-- 완료 모달 -->
+<div class="overlay" id="saveDoneOverlay">
+  <div class="modal" style="align-items:center;padding:24px">
+    <div style="font-size:36px;margin-bottom:10px">📷</div>
+    <h3 style="margin-bottom:16px">갤러리에 저장되었습니다.</h3>
+    <button class="btn-ok" style="width:100%" onclick="document.getElementById('saveDoneOverlay').classList.remove('show')">확인</button>
+  </div>
+</div>
+
 <script>
-var KEY_STATE='sunburn_state', KEY_HIST='sunburn_history', KEY_BIG='sunburn_bigtext';
-var FIELDS=['crop','contractorName','farmNo','surveyDate','method','avgCnt','product','prevAcc','disaster','prevManual','sampleN','treeRowN','totalFall'];
-var LAST=null;
+var STATE = {
+  trees: [ {su:'만생', pj:'부사(후지)', join:'', real:'', pd:'', pi:'', pud:'', pua:'', cdone:'', cdead:'', cimp:'', cud:'', cua:''} ],
+  samples: [ {su:'만생', pj:'부사(후지)', fall:''} ],
+  grades: {}
+};
+var LAST = null;
+var KEY_STATE = 'sunburn_v3_state';
 
-function num(id){ var v=(document.getElementById(id).value||'').toString().replace(/,/g,''); var n=parseFloat(v); return isNaN(n)?0:n; }
-function mark(el){ if(el&&el.classList) el.classList.toggle('filled', el.value!==''&&el.value!=='0'); }
+var SUKGI_OPTS = '<option value="">숙기</option><option>조생</option><option>중생</option><option>만생</option>';
+
+function num(v){ var n=parseFloat((v||'').toString().replace(/,/g,'')); return isNaN(n)?0:n; }
+function val(id){ return document.getElementById(id)?document.getElementById(id).value:''; }
+function mark(el){ if(el) el.classList.toggle('filled', el.value!=='' && el.value!=='0'); }
 function onComma(el){ var v=el.value.replace(/[^0-9]/g,''); el.value=v?parseInt(v,10).toLocaleString('en-US'):''; mark(el); }
+function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+function showToast(m){ var t=document.getElementById('toast'); t.innerHTML=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2000); }
 
-/* ── 나무조사: 표본조사와 별개인 독립 행 테이블 (숙기/품종 직접 선택, +/- 추가삭제) ── */
-var MINTREE=1, MAXTREE=20;
-function treePumjongCell(idx, pj){
-  var list=cropList();
-  var isCustom=(pj!=='' && list.indexOf(pj)<0);
-  var sel='<select class="inp tree-pumjong-sel'+(pj!==''?' filled':'')+'" data-idx="'+idx+'" onchange="onTreePumjongSel(this)" style="'+(isCustom?'display:none':'')+'">'+
-    '<option value=""'+(pj===''?' selected':'')+'>품종</option>'+
-    list.map(function(v){ return '<option'+(v===pj?' selected':'')+'>'+v+'</option>'; }).join('')+
-    '<option value="__custom__"'+(isCustom?' selected':'')+'>직접입력</option>'+
-  '</select>';
-  var txt='<input class="inp tree-pumjong-txt'+(isCustom?' filled':'')+'" data-idx="'+idx+'" type="text" placeholder="품종 입력" value="'+(isCustom?esc(pj):'')+'" style="'+(isCustom?'':'display:none')+'" oninput="mark(this);saveState()" onblur="onTreePumjongBlur(this)" autocomplete="off">';
-  return '<span class="pj-wrap tree-pj-wrap" data-idx="'+idx+'">'+sel+txt+'</span>';
-}
-function onTreePumjongSel(sel){
-  var wrap=sel.parentNode, txt=wrap.querySelector('.tree-pumjong-txt');
-  if(sel.value==='__custom__'){ sel.style.display='none'; txt.style.display=''; txt.value=''; mark(txt); txt.focus(); }
-  else{ mark(sel); if(txt){ txt.style.display='none'; txt.value=''; mark(txt); } }
-  liveUpdate(); saveState();
-}
-function onTreePumjongBlur(txt){
-  if((txt.value||'').trim()===''){
-    var wrap=txt.parentNode, sel=wrap.querySelector('.tree-pumjong-sel');
-    txt.style.display='none'; if(sel){ sel.style.display=''; sel.value=''; mark(sel); }
-  }
-  liveUpdate(); saveState();
-}
-function readTreePumjong(idx){
-  var wrap=document.querySelector('#treeRows .tree-pj-wrap[data-idx="'+idx+'"]'); if(!wrap) return '';
-  var txt=wrap.querySelector('.tree-pumjong-txt'), sel=wrap.querySelector('.tree-pumjong-sel');
-  if(txt && txt.style.display!=='none') return (txt.value||'').trim();
-  if(sel) return (sel.value==='__custom__'?'':(sel.value||''));
-  return '';
-}
-function getTreeVarieties(){ var o={};
-  document.querySelectorAll('#treeRows .tree-sukgi').forEach(function(s){ var idx=s.dataset.idx; o[idx]=joinVar(s.value||'', readTreePumjong(idx)); });
-  return o;
-}
-/* 나무조사 필드는 메인행(숙기/품종/가입주수/실제결과주수)과 상세행(적과후착과수 등)에 나뉘어 있어
-   인덱스로 두 행을 모두 찾아 클래스명으로 조회한다 */
-function treeField(idx, cls){
-  var main=document.querySelector('#treeRows .tree-row-block[data-idx="'+idx+'"]');
-  if(main){ var el=main.querySelector('.'+cls); if(el) return el; }
-  var det=document.querySelector('#treeRows .tvar-detail-row[data-idx="'+idx+'"]');
-  if(det){ var el2=det.querySelector('.'+cls); if(el2) return el2; }
-  return null;
-}
-function treeIndices(){
-  var arr=[]; document.querySelectorAll('#treeRows .tree-row-block').forEach(function(b){ arr.push(b.dataset.idx); }); return arr;
-}
-function currentTreeValues(){
-  var o={};
-  treeIndices().forEach(function(idx){
-    o[idx]={ joinTree:treeField(idx,'tJoinTree').value, afterCnt:treeField(idx,'tAfterCnt').value, realTree:treeField(idx,'tRealTree').value,
-      harvestDone:treeField(idx,'tHarvestDone').value, harvestImposs:treeField(idx,'tHarvestImposs').value, deadTree:treeField(idx,'tDeadTree').value,
-      deadNC:treeField(idx,'tDeadNC').value, aliveNC:treeField(idx,'tAliveNC').value };
-  });
-  return o;
-}
-function treeCell(label,cls,val,comma){
-  val=(val!==undefined&&val!=='')?val:'0';
-  var oi = comma ? "onTreeComma(this);updateTreeGroups();saveState()" : "mark(this);updateTreeGroups();saveState()";
-  var type = comma ? 'text' : 'number';
-  return '<div class="tree-cell"><label>'+label+'</label><input class="inp '+cls+'" type="'+type+'" inputmode="numeric" value="'+val+'" oninput="'+oi+'"></div>';
-}
-/* 라벨 없는 표 셀용 (표 헤더가 라벨 역할) */
-function treeCellFlat(cls,val){
-  val=(val!==undefined&&val!=='')?val:'0';
-  return '<input class="inp '+cls+'" type="number" inputmode="numeric" value="'+val+'" oninput="mark(this);updateTreeGroups();saveState()">';
-}
-/* 나무조사 칸 전용 콤마 입력 (적과후착과수처럼 큰 수) */
-function onTreeComma(el){ var v=el.value.replace(/[^0-9]/g,''); el.value=v?parseInt(v,10).toLocaleString('en-US'):''; mark(el); }
-function buildTreeRows(savedVals, savedVars, savedOpen){
-  var n=parseInt(num('treeRowN'))||1; if(n>MAXTREE) n=MAXTREE; if(n<MINTREE) n=MINTREE;
-  var wrap=document.getElementById('treeRows'); if(!wrap) return;
-  var prevVal={}, prevVar={}, prevOpen={};
-  treeIndices().forEach(function(idx){
-    prevVal[idx]={ joinTree:treeField(idx,'tJoinTree').value, afterCnt:treeField(idx,'tAfterCnt').value, realTree:treeField(idx,'tRealTree').value,
-      harvestDone:treeField(idx,'tHarvestDone').value, harvestImposs:treeField(idx,'tHarvestImposs').value, deadTree:treeField(idx,'tDeadTree').value,
-      deadNC:treeField(idx,'tDeadNC').value, aliveNC:treeField(idx,'tAliveNC').value };
-    var detRow=document.querySelector('#treeRows .tvar-detail-row[data-idx="'+idx+'"]');
-    prevOpen[idx]= detRow ? detRow.style.display==='table-row' : false;
-  });
-  wrap.querySelectorAll('.tree-sukgi').forEach(function(s){ var idx=s.dataset.idx; prevVar[idx]=joinVar(s.value||'', readTreePumjong(idx)); });
-  if(savedVals) prevVal=savedVals;
-  if(savedVars) prevVar=savedVars;
-  if(savedOpen) prevOpen=savedOpen;
-  var html='';
-  for(var i=1;i<=n;i++){
-    var v=prevVal[i]||{};
-    var vr=(prevVar[i]!==undefined)?String(prevVar[i]):'';
-    var sv=splitVar(vr); var su=sv.su, pj=sv.pj;
-    var open=!!prevOpen[i];
-    html+='<tr class="tree-row-block" data-idx="'+i+'">'+
-      '<td><select class="inp tree-sukgi'+(su!==''?' filled':'')+'" data-idx="'+i+'" onchange="mark(this);liveUpdate();saveState()">'+
-        '<option value=""'+(su===''?' selected':'')+'>숙기</option>'+
-        '<option'+(su==='조생'?' selected':'')+'>조생</option>'+
-        '<option'+(su==='중생'?' selected':'')+'>중생</option>'+
-        '<option'+(su==='만생'?' selected':'')+'>만생</option>'+
-      '</select></td>'+
-      '<td>'+treePumjongCell(i, pj)+'</td>'+
-      '<td>'+treeCellFlat('tJoinTree',v.joinTree)+'</td>'+
-      '<td>'+treeCellFlat('tRealTree',v.realTree)+'</td>'+
-      '<td><button type="button" class="tvar-detail-btn'+(open?' on':'')+'" onclick="toggleTreeDetail('+i+')">🌳</button></td>'+
-    '</tr>'+
-    '<tr class="tvar-detail-row" data-idx="'+i+'" style="display:'+(open?'table-row':'none')+'">'+
-      '<td colspan="5">'+
-        treeCell('적과후착과수','tAfterCnt',v.afterCnt,true)+
-        '<div class="tree-row3" style="margin-top:6px">'+
-          treeCell('수확완료','tHarvestDone',v.harvestDone)+treeCell('수확불능','tHarvestImposs',v.harvestImposs)+treeCell('고사','tDeadTree',v.deadTree)+
-        '</div>'+
-        '<div class="tree-row2" style="margin-top:6px">'+
-          treeCell('미보상고사','tDeadNC',v.deadNC)+treeCell('미보상미고사','tAliveNC',v.aliveNC)+
-        '</div>'+
-        '<div class="field" style="margin-top:6px">'+
-          '<label>조사대상주수 <span class="unit">(주)</span></label>'+
-          '<input class="auto tTargetBox" type="text" readonly value="0">'+
-        '</div>'+
-      '</td>'+
-    '</tr>';
-  }
-  wrap.innerHTML=html;
-  document.querySelectorAll('#treeRows .inp').forEach(mark);
-  updateTreeGroups();
-  syncTreeUI();
-}
-function toggleTreeDetail(idx){
-  var main=document.querySelector('#treeRows .tree-row-block[data-idx="'+idx+'"]'); if(!main) return;
-  var det=document.querySelector('#treeRows .tvar-detail-row[data-idx="'+idx+'"]'); if(!det) return;
-  var btn=main.querySelector('.tvar-detail-btn');
-  var open = det.style.display!=='table-row';
-  det.style.display = open?'table-row':'none';
-  if(btn) btn.classList.toggle('on', open);
-  saveState();
-}
-function currentTreeOpen(){
-  var o={};
-  document.querySelectorAll('#treeRows .tvar-detail-row').forEach(function(r){ o[r.dataset.idx]=(r.style.display==='table-row'); });
-  return o;
-}
-function syncTreeUI(){
-  var n=parseInt(num('treeRowN'))||1;
-  document.querySelectorAll('#treeCntGrid .cnt-btn').forEach(function(btn){
-    btn.classList.toggle('on', parseInt(btn.dataset.n)===n);
-  });
-}
-function selectTreeCount(n){
-  document.getElementById('treeRowN').value=n;
-  document.getElementById('treeCntCustom').value='';
-  buildTreeRows(); liveUpdate(); saveState();
-}
-function applyTreeCountCustom(){
-  var v=parseInt(document.getElementById('treeCntCustom').value)||0;
-  if(v<11){ showToast('11 이상 숫자를 입력하세요'); return; }
-  if(v>MAXTREE) v=MAXTREE;
-  document.getElementById('treeRowN').value=v;
-  buildTreeRows(); liveUpdate(); saveState();
-}
-function updateTreeGroups(){
-  var sumJoin=0, sumAfter=0, sumTarget=0;
-  treeIndices().forEach(function(idx){
-    var jt=parseFloat((treeField(idx,'tJoinTree').value||'').replace(/,/g,''))||0;
-    var ac=parseFloat((treeField(idx,'tAfterCnt').value||'').replace(/,/g,''))||0;
-    var rt=parseFloat(treeField(idx,'tRealTree').value)||0, hd=parseFloat(treeField(idx,'tHarvestDone').value)||0,
-        hi=parseFloat(treeField(idx,'tHarvestImposs').value)||0, dt=parseFloat(treeField(idx,'tDeadTree').value)||0,
-        dnc=parseFloat(treeField(idx,'tDeadNC').value)||0, anc=parseFloat(treeField(idx,'tAliveNC').value)||0;
-    var target=Math.max(0, rt-hd-hi-dt-dnc-anc);
-    var tb=treeField(idx,'tTargetBox'); if(tb) tb.value=fmt(target);
-    sumJoin+=jt; sumAfter+=ac; sumTarget+=target;
-  });
-  var jEl=document.getElementById('joinTree'); if(jEl) jEl.value=fmt(sumJoin);
-  var aEl=document.getElementById('afterCnt'); if(aEl) aEl.value=fmt(sumAfter);
-  var tEl=document.getElementById('targetSum'); if(tEl) tEl.value=fmt(sumTarget);
-  if(typeof updatePrev==='function') updatePrev();
-}
-/* 숙기/품종 텍스트로 나무조사 행을 그룹화 (표본조사 품종과 키로 매칭) */
-function getTreeGroupsData(){
-  var map={};
-  treeIndices().forEach(function(idx){
-    var sukgiEl=treeField(idx,'tree-sukgi');
-    var su=sukgiEl?sukgiEl.value:'';
-    var pj=readTreePumjong(idx);
-    var key=joinVar(su,pj)||'미입력';
-    var rt=parseFloat(treeField(idx,'tRealTree').value)||0, hd=parseFloat(treeField(idx,'tHarvestDone').value)||0,
-        hi=parseFloat(treeField(idx,'tHarvestImposs').value)||0, dt=parseFloat(treeField(idx,'tDeadTree').value)||0,
-        dnc=parseFloat(treeField(idx,'tDeadNC').value)||0, anc=parseFloat(treeField(idx,'tAliveNC').value)||0;
-    var afterCntG=parseFloat((treeField(idx,'tAfterCnt').value||'').replace(/,/g,''))||0;
-    var target=Math.max(0, rt-hd-hi-dt-dnc-anc);
-    if(!map[key]) map[key]={realTree:0, afterCnt:0, target:0};
-    map[key].realTree+=rt; map[key].afterCnt+=afterCntG; map[key].target+=target;
-  });
-  return map;
-}
-
-/* ── 조사방식: 표본조사 / 전수조사 토글 ── */
-function isCensus(){ var e=document.getElementById('method'); return e && e.value==='전수조사'; }
-function applyMethod(){
-  var census=isCensus();
-  var title=document.getElementById('sampSecTitle'); if(title) title.textContent= census ? '🍎 일소(낙과) 전수조사' : '🍎 일소(낙과) 표본조사';
-  var tag=document.getElementById('sampTag'); if(tag) tag.style.display = census ? 'none' : '';
-  var btns=document.getElementById('sampBtns'); if(btns) btns.style.display = census ? 'none' : 'flex';
-  var rows=document.getElementById('sampRows'); if(rows) rows.style.display = census ? 'none' : '';
-  var cm=document.getElementById('censusMode'); if(cm) cm.style.display = census ? 'block' : 'none';
-  if(typeof liveUpdate==='function' && !document.getElementById('content').classList.contains('locked')) liveUpdate();
-}
-function fmt(n){ return (Math.round(n)).toLocaleString('en-US'); }
-function fmt1(n){ return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:4}); }
-function vibrate(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
-function showToast(m){ var t=document.getElementById('toast'); t.innerHTML=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('on');},2000); }
-
-function todayStr(){
-  var d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
+function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function syncDate(){
   var inp=document.getElementById('surveyDate'), disp=document.getElementById('dateDisp');
   if(inp.value){ var d=inp.value.split('-'); disp.textContent=d[0]+'.'+d[1]+'.'+d[2]; disp.classList.remove('ph'); disp.classList.add('filled'); }
   else { disp.textContent='조사일자'; disp.classList.add('ph'); disp.classList.remove('filled'); }
 }
 
-/* 표본조사 세로 표 — 표본번호 · 숙기/품종 · 표본낙과수 + 합계 */
-function buildSampleRows(savedFall, savedVar){
-  var n=parseInt(num('sampleN'))||0; if(n>30) n=30;
-  var wrap=document.getElementById('sampRows');
-  var prevF={}, prevV={};
-  wrap.querySelectorAll('.samp-fall').forEach(function(i){ prevF[i.dataset.idx]=i.value; });
-  wrap.querySelectorAll('.samp-sukgi').forEach(function(s){ var idx=s.dataset.idx; prevV[idx]=joinVar(s.value||'', readPumjong(idx)); });
-  if(savedFall) prevF=savedFall;
-  if(savedVar) prevV=savedVar;
-  var rows='';
-  for(var i=1;i<=n;i++){
-    var f=(prevF[i]!==undefined)?prevF[i]:'';
-    var v=(prevV[i]!==undefined)?String(prevV[i]):'';
-    var sv=splitVar(v); var su=sv.su, pj=sv.pj;
-    rows+='<tr>'+
-      '<td class="samp-no">'+i+'</td>'+
-      '<td><div class="samp-cell">'+
-        '<select class="inp samp-sukgi'+(su!==''?' filled':'')+'" data-idx="'+i+'" onchange="mark(this);buildGradeGroups();liveUpdate();saveState()">'+
-          '<option value=""'+(su===''?' selected':'')+'>숙기</option>'+
-          '<option'+(su==='조생'?' selected':'')+'>조생</option>'+
-          '<option'+(su==='중생'?' selected':'')+'>중생</option>'+
-          '<option'+(su==='만생'?' selected':'')+'>만생</option>'+
-        '</select>'+
-        pumjongCell(i, pj)+
-      '</div></td>'+
-      '<td><input class="inp samp-fall'+(f!==''&&f!=='0'?' filled':'')+'" data-idx="'+i+'" type="number" inputmode="numeric" value="'+f+'" oninput="mark(this);sumSamples();saveState()"></td>'+
-    '</tr>';
-  }
-  wrap.innerHTML=
-    '<table class="samp-table"><colgroup><col style="width:40px"><col><col style="width:84px"></colgroup>'+
-    '<thead><tr><th>표본</th><th class="th-supj"><div class="th-supj-row"><span class="th-su">숙기</span><span class="th-pj">품종</span></div></th><th>표본낙과수</th></tr></thead>'+
-    '<tbody>'+rows+
-    '<tr class="samp-total-row"><td colspan="2" class="samp-total-label">합계 (개)</td>'+
-    '<td><div class="samp-total-box" id="sampTotalBox">0</div></td></tr>'+
-    '</tbody></table>';
-  sumSamples();
-  syncSampUI();
-  if(typeof buildGradeGroups==='function') buildGradeGroups();
+function PUMJONG(){
+  var c = val('crop')||'사과';
+  if(c==='사과') return ['후지','홍로','쓰가루','감홍','양광','시나노골드','아리수','홍옥'];
+  if(c==='배') return ['신고','원황','화산','추황배','황금배','만풍배','신화'];
+  if(c==='단감') return ['부유','차랑','태추','서촌조생','로망'];
+  return ['대봉','청도반시','둥시','상주둥시','갑주백목','고종시'];
 }
-/* 표본조사 행을 숙기/품종 기준으로 그룹화 (입력 순서 유지) */
-function getGroups(){
-  var samps=[]; document.querySelectorAll('#sampRows .samp-fall').forEach(function(i){ samps.push(parseFloat((i.value||'').replace(/,/g,''))||0); });
-  var vm=getVarieties(); var varis=[];
-  document.querySelectorAll('#sampRows .samp-sukgi').forEach(function(s){ varis.push((vm[s.dataset.idx]||'').trim()); });
-  var order=[], grp={};
-  varis.forEach(function(name,i){ var key=name||'미입력'; if(!(key in grp)){ grp[key]={fall:0,count:0}; order.push(key); } grp[key].fall+=(samps[i]||0); grp[key].count+=1; });
-  return {order:order, grp:grp, samps:samps, varis:varis};
+function pjSelect(su, pj){
+  var list = PUMJONG();
+  var isC = pj!=='' && list.indexOf(pj)<0;
+  var html = '<select class="inp sel-pj '+(pj&&!isC?'filled':'')+'" onchange="chgPj(this)" style="'+(isC?'display:none':'')+'">';
+  html += '<option value="">품종</option>';
+  list.forEach(v => html += '<option '+(v===pj?'selected':'')+'>'+v+'</option>');
+  html += '<option value="custom" '+(isC?'selected':'')+'>직접입력</option></select>';
+  html += '<input type="text" class="inp txt-pj '+(isC?'filled':'')+'" placeholder="품종명" value="'+(isC?pj:'')+'" style="'+(isC?'':'display:none')+'" oninput="mark(this);liveUpdate();" onblur="blurPj(this)"/>';
+  return html;
 }
-function sumSamples(){
-  var s=0; document.querySelectorAll('#sampRows .samp-fall').forEach(function(i){ s+=parseFloat((i.value||'').replace(/,/g,''))||0; });
-  var box=document.getElementById('sampTotalBox'); if(box) box.textContent=fmt(s);
-  return s;
+function chgPj(sel){
+  var w = sel.parentNode; var txt = w.querySelector('.txt-pj');
+  if(sel.value==='custom'){ sel.style.display='none'; txt.style.display=''; txt.value=''; mark(txt); txt.focus(); }
+  else { mark(sel); txt.style.display='none'; txt.value=''; mark(txt); liveUpdate(); }
 }
-function getSamples(){ var o={}; document.querySelectorAll('#sampRows .samp-fall').forEach(function(i){ o[i.dataset.idx]=i.value; }); return o; }
-
-/* ── 표본주 추가/삭제 ── (적정 3주 이하 삭제 불가) */
-var MINSAMP=3, MAXSAMP=30;
-function syncSampUI(){
-  var n=parseInt(num('sampleN'))||0;
-  var tag=document.getElementById('sampTag'); if(tag) tag.textContent='표본주수 '+n+'주';
-  var minus=document.getElementById('btnSampMinus');
-  if(minus){
-    if(n<=MINSAMP){ minus.style.borderColor='var(--border)'; minus.style.color='var(--hint)'; minus.style.cursor='not-allowed'; minus.style.opacity='0.4'; }
-    else { minus.style.borderColor='var(--red)'; minus.style.color='var(--red)'; minus.style.cursor='pointer'; minus.style.opacity='1'; }
+function blurPj(txt){
+  if(!txt.value.trim()){
+    var w = txt.parentNode; var sel = w.querySelector('.sel-pj');
+    txt.style.display='none'; sel.style.display=''; sel.value=''; mark(sel); liveUpdate();
   }
 }
-function closeSampPopup(id){ var el=document.getElementById(id); if(el) el.classList.remove('show'); }
-function sampMinus(){
-  var n=parseInt(num('sampleN'))||0;
-  if(n<=MINSAMP){ document.getElementById('sampDelOverlay').classList.add('show'); return; }
-  document.getElementById('sampConfirmNum').textContent=n;
-  document.getElementById('sampConfirmOverlay').classList.add('show');
+function getPjVal(w){
+  var sel = w.querySelector('.sel-pj'); var txt = w.querySelector('.txt-pj');
+  if(txt && txt.style.display!=='none') return txt.value.trim();
+  return sel.value==='custom' ? '' : sel.value;
 }
-function doSampMinus(){
-  var n=parseInt(num('sampleN'))||0;
-  if(n<=MINSAMP) return;
-  document.getElementById('sampleN').value=n-1;
-  buildSampleRows();        /* 마지막 행 자동 제거(값 함께 삭제) */
-  liveUpdate(); saveState();
-}
-function sampPlus(){
-  var n=parseInt(num('sampleN'))||0;
-  if(n>=MAXSAMP){ showToast('표본주는 최대 '+MAXSAMP+'주까지 가능합니다'); return; }
-  if(n>=MINSAMP){ document.getElementById('sampAddOverlay').classList.add('show'); return; }
-  doSampAdd();
-}
-function doSampAdd(){
-  var n=parseInt(num('sampleN'))||0;
-  if(n>=MAXSAMP) return;
-  document.getElementById('sampleN').value=n+1;
-  buildSampleRows();        /* 빈 행 한 줄 추가 */
-  liveUpdate(); saveState();
-}
-
-/* 품목별 품종 목록 (목록에 없으면 '직접입력' 선택 후 입력) */
-var PUMJONG={
-  '사과':['후지','홍로','쓰가루','감홍','양광','시나노골드','아리수','홍옥'],
-  '배':['신고','원황','화산','추황배','황금배','만풍배','신화'],
-  '단감':['부유','차랑','태추','서촌조생','로망'],
-  '떫은감':['대봉','청도반시','둥시','상주둥시','갑주백목','고종시']
-};
-function cropList(){ var crop=(document.getElementById('crop')||{}).value||'사과'; return PUMJONG[crop]||[]; }
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
-
-/* 품종 칸: 드롭다운(목록+직접입력) ↔ 직접입력 텍스트 토글 */
-function pumjongCell(idx, pj){
-  var list=cropList();
-  var isCustom=(pj!=='' && list.indexOf(pj)<0);
-  var sel='<select class="inp samp-pumjong-sel'+(pj!==''?' filled':'')+'" data-idx="'+idx+'" onchange="onPumjongSel(this)" style="'+(isCustom?'display:none':'')+'">'+
-    '<option value=""'+(pj===''?' selected':'')+'>품종</option>'+
-    list.map(function(v){ return '<option'+(v===pj?' selected':'')+'>'+v+'</option>'; }).join('')+
-    '<option value="__custom__"'+(isCustom?' selected':'')+'>직접입력</option>'+
-  '</select>';
-  var txt='<input class="inp samp-pumjong-txt'+(isCustom?' filled':'')+'" data-idx="'+idx+'" type="text" placeholder="품종 입력" value="'+(isCustom?esc(pj):'')+'" style="'+(isCustom?'':'display:none')+'" oninput="mark(this);saveState()" onblur="onPumjongBlur(this)" autocomplete="off">';
-  return '<span class="pj-wrap" data-idx="'+idx+'">'+sel+txt+'</span>';
-}
-function onPumjongSel(sel){
-  var wrap=sel.parentNode, txt=wrap.querySelector('.samp-pumjong-txt');
-  if(sel.value==='__custom__'){ sel.style.display='none'; txt.style.display=''; txt.value=''; mark(txt); txt.focus(); }
-  else{ mark(sel); if(txt){ txt.style.display='none'; txt.value=''; mark(txt); } }
-  if(typeof buildGradeGroups==='function'){ buildGradeGroups(); liveUpdate(); }
-  saveState();
-}
-function onPumjongBlur(txt){
-  if((txt.value||'').trim()===''){
-    var wrap=txt.parentNode, sel=wrap.querySelector('.samp-pumjong-sel');
-    txt.style.display='none'; if(sel){ sel.style.display=''; sel.value=''; mark(sel); }
-  }
-  if(typeof buildGradeGroups==='function'){ buildGradeGroups(); liveUpdate(); }
-  saveState();
-}
-/* idx의 현재 품종 값 읽기 (텍스트 우선) */
-function readPumjong(idx){
-  var wrap=document.querySelector('#sampRows .pj-wrap[data-idx="'+idx+'"]'); if(!wrap) return '';
-  var txt=wrap.querySelector('.samp-pumjong-txt'), sel=wrap.querySelector('.samp-pumjong-sel');
-  if(txt && txt.style.display!=='none') return (txt.value||'').trim();
-  if(sel) return (sel.value==='__custom__'?'':(sel.value||''));
-  return '';
-}
-/* 숙기 + 품종 → "숙기/품종" 한 문자열 */
 function joinVar(su, pj){ su=(su||'').trim(); pj=(pj||'').trim(); return (su&&pj)?(su+'/'+pj):(su||pj); }
-function getVarieties(){ var o={};
-  document.querySelectorAll('#sampRows .samp-sukgi').forEach(function(s){ var idx=s.dataset.idx; o[idx]=joinVar(s.value||'', readPumjong(idx)); });
-  return o;
-}
-/* 저장된 "숙기/품종" 문자열을 분리 (옛 자유입력 호환) */
-function splitVar(s){
-  s=(s||'').trim(); var SU=['조생','중생','만생'];
-  var i=s.indexOf('/');
-  if(i>=0){ var a=s.slice(0,i).trim(), b=s.slice(i+1).trim(); if(SU.indexOf(a)>=0) return {su:a,pj:b}; return {su:'',pj:s}; }
-  if(SU.indexOf(s)>=0) return {su:s,pj:''};
-  return {su:'',pj:s};
-}
-/* 품목 변경 시 품종 목록 갱신 (값 보존하며 표 재생성) */
-function updatePumjongList(){ buildSampleRows(); }
 
-/* 전차 인정피해율(적과전 사고) 자동 산정 */
-function val(id){ var e=document.getElementById(id); return e?e.value:''; }
-function calcPrevRate(){
-  if(val('prevAcc')!=='y') return {rate:0, setRate:null, note:''};
-  var dis=val('disaster');
-  if(!dis) return {rate:0, setRate:null, note:'재해종류를 선택하세요.'};
-  // 조수해·화재는 적과종료 후 착과손해(추가감수량) 대상이 아님
-  if(dis==='조수'||dis==='화재') return {rate:0, setRate:null, note:'조수해·화재는 착과손해(추가감수량) 대상이 아니라 전차 인정피해율 0%.'};
+/* Render Trees */
+function renderTrees(){
+  var html = '';
+  STATE.trees.forEach((t, i) => {
+    html += '<div class="card tree-card" data-idx="'+i+'">';
+    html += '<div class="card-num">'+(i+1)+'</div>';
+    html += '<div style="display:flex;gap:6px;margin-bottom:8px;padding-left:20px;">';
+    html += '<select class="inp tc-su '+(t.su?'filled':'')+'" onchange="mark(this);liveUpdate();">'+SUKGI_OPTS.replace('>'+t.su+'<',' selected>'+t.su+'<')+'</select>';
+    html += '<div style="flex:1" class="pj-wrap">'+pjSelect(t.su, t.pj)+'</div>';
+    html += '<button class="del-btn" onclick="delTree('+i+')">✕</button></div>';
+    
+    html += '<div class="g2"><div class="field"><label>가입주수</label><input type="number" class="inp tc-join" value="'+t.join+'" oninput="mark(this);saveState()"/></div>';
+    html += '<div class="field"><label>실제결과주수</label><input type="number" class="inp tc-real" value="'+t.real+'" oninput="mark(this);liveUpdate()"/></div></div>';
+    
+    html += '<div class="sub-head">과거 나무조사 (원장 기준)</div>';
+    html += '<div class="g3">';
+    html += '<div class="field"><label class="label-sm">고사</label><input type="number" class="inp tc-pd" value="'+t.pd+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm">수불</label><input type="number" class="inp tc-pi" value="'+t.pi+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm">미보상(고+미)</label><input type="number" class="inp tc-pu" value="'+(num(t.pud)+num(t.pua)||'')+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '</div>';
 
-  if(val('product')==='normal'){
-    // 보통약관 + 적과전 자연재해 → 착과손해 자동산정(착과율 기반)
-    var avgCnt=num('avgCnt'), afterCnt=num('afterCnt');
-    if(avgCnt<=0||afterCnt<=0) return {rate:0, setRate:null, note:'평년착과수·적과후착과수를 입력하면 자동 산정됩니다.'};
-    var setRate=Math.round(afterCnt/avgCnt*10000)/10000;   // 착과율 (소수4자리)
-    var dec;
-    if(setRate>=1){ dec=0; }                               // 착과율 100%↑ → 착과손해 없음
-    else if(setRate<0.6){ dec=0.05; }                      // 60% 미만 → 5%
-    else { dec=Math.round(0.05*(1-setRate)/0.4*10000)/10000; } // 60%↑ → 5%×(100%−착과율)÷40%
-    var nt = dec>0 ? '보통약관 적과전 자연재해 → 착과손해 자동산정.' : '착과율 100% 이상 → 착과손해 없음(0%).';
-    return {rate:dec*100, setRate:setRate, note:nt};
-  } else {
-    // 5종 한정특약 → 추가감수량(착과손해) 미적용. 적과전 사고 인정피해율은 별도 조사(유과타박률·나무피해율·낙엽률) → 직접입력
-    var m=parseFloat(val('prevManual'));
-    if(!isNaN(m)&&m>0) return {rate:m, setRate:null, note:'5종 특약: 직접입력한 인정피해율 적용.'};
-    return {rate:0, setRate:null, note:'5종 특약은 착과손해 미적용. 적과전 우박 등은 유과타박률·나무피해율 등 별도 조사값을 직접입력하세요.'};
-  }
-}
-function updatePrev(){
-  var r=calcPrevRate();
-  var sr=document.getElementById('autoSetRate'), pr=document.getElementById('autoPrevRate');
-  if(sr) sr.value=(r.setRate!==null)?(r.setRate*100).toFixed(2):'-';
-  if(pr) pr.value=r.rate.toFixed(2);
-}
-function refreshPrevUI(){
-  var acc=val('prevAcc')==='y';
-  var ds=document.getElementById('disaster');
-  if(ds){ ds.disabled=!acc; ds.style.opacity=acc?'1':'0.45'; if(!acc&&ds.value!==''){ ds.value=''; mark(ds); } }
-  var mw=document.getElementById('manualWrap'); if(mw) mw.style.display=(acc&&val('product')==='five')?'flex':'none';
-  updatePrev();
-}
+    html += '<div class="sub-head">금차 나무조사 (현장)</div>';
+    html += '<div class="g4">';
+    html += '<div class="field"><label class="label-sm">수확완료</label><input type="number" class="inp tc-cdone" value="'+t.cdone+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm">고사</label><input type="number" class="inp tc-cd" value="'+t.cdead+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm">수불</label><input type="number" class="inp tc-ci" value="'+t.cimp+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm">미보상(고+미)</label><input type="number" class="inp tc-cu" value="'+(num(t.cud)+num(t.cua)||'')+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '</div>';
 
-/* 낙과 피해구성조사 — 숙기/품종별 블록 동적 생성 (품종 1개면 기존처럼 1세트) */
-function currentGradeValues(){
-  var o={};
-  document.querySelectorAll('#gradeGroups .grade-block').forEach(function(b){
-    o[b.dataset.key]={ g0:b.querySelector('.g0').value, g50:b.querySelector('.g50').value, g80:b.querySelector('.g80').value, g100:b.querySelector('.g100').value };
+    html += '<div class="res-line">조사대상주수 : <span class="tc-target">0</span> 주</div>';
+    html += '</div>';
   });
-  return o;
+  document.getElementById('treeList').innerHTML = html;
+  document.querySelectorAll('.tree-card .inp').forEach(mark);
+  bindMobileFocusHandlers();
 }
-function gradeCell(label,cls,val,red){
-  val=(val!==undefined&&val!=='')?val:'0';
-  return '<div class="grade-cell'+(red?' grade-100':'')+'"><label>'+label+'</label><input class="inp '+cls+'" type="number" inputmode="numeric" value="'+val+'" oninput="mark(this);updateGrade();saveState()"></div>';
-}
-function gradeAutoCell(label,cls,val){
-  return '<div class="grade-cell"><label>'+label+'</label><input class="auto '+cls+'" type="text" readonly value="'+(val||'0')+'"></div>';
-}
-function buildGradeGroups(saved){
-  var wrap=document.getElementById('gradeGroups'); if(!wrap) return;
-  var prev = saved || currentGradeValues();
-  var keys;
-  if(isCensus()){ keys=['전체']; }
-  else{ var g=getGroups(); keys = g.order.length? g.order.slice() : ['미입력']; }
-  var multi=keys.length>1;
-  var html='';
-  keys.forEach(function(key){
-    var v=prev[key]||{};
-    html+='<div class="grade-block" data-key="'+esc(key)+'">'+
-      (multi?'<div class="grade-key">'+esc(key)+'</div>':'')+
-      '<div class="grade-row6">'+
-        gradeCell('정상','g0',v.g0)+gradeCell('50%형','g50',v.g50)+gradeCell('80%형','g80',v.g80)+gradeCell('100%형','g100',v.g100,true)+
-        gradeAutoCell('합계','sumBox')+gradeAutoCell('구성비율','ratioBox','0.00')+
-      '</div>'+
-    '</div>';
-  });
-  wrap.innerHTML=html;
-  document.querySelectorAll('#gradeGroups .inp').forEach(mark);
-  updateGrade();
-}
-/* 합계·피해구성비율 실시간 갱신 (블록별) */
-function updateGrade(){
-  document.querySelectorAll('#gradeGroups .grade-block').forEach(function(b){
-    var g0=parseFloat(b.querySelector('.g0').value)||0, g50=parseFloat(b.querySelector('.g50').value)||0,
-        g80=parseFloat(b.querySelector('.g80').value)||0, g100=parseFloat(b.querySelector('.g100').value)||0;
-    var sum=g0+g50+g80+g100;
-    var ratio=sum>0?(g50*0.5+g80*0.8+g100*1)/sum*100:0;
-    var sb=b.querySelector('.sumBox'); if(sb) sb.value=fmt(sum);
-    var rb=b.querySelector('.ratioBox'); if(rb) rb.value=ratio.toFixed(2);
+function syncTreeData(){
+  STATE.trees = [];
+  document.querySelectorAll('.tree-card').forEach(c => {
+    STATE.trees.push({
+      su: c.querySelector('.tc-su').value,
+      pj: getPjVal(c.querySelector('.pj-wrap')),
+      join: c.querySelector('.tc-join').value,
+      real: c.querySelector('.tc-real').value,
+      pd: c.querySelector('.tc-pd').value,
+      pi: c.querySelector('.tc-pi').value,
+      pud: c.querySelector('.tc-pu').value, pua: '',
+      cdone: c.querySelector('.tc-cdone').value,
+      cdead: c.querySelector('.tc-cd').value,
+      cimp: c.querySelector('.tc-ci').value,
+      cud: c.querySelector('.tc-cu').value, cua: ''
+    });
   });
 }
+function addTree(){ syncTreeData(); STATE.trees.push({su:'',pj:'',join:'',real:'',pd:'',pi:'',pud:'',pua:'',cdone:'',cdead:'',cimp:'',cud:'',cua:''}); renderTrees(); liveUpdate(); }
+function delTree(i){ if(STATE.trees.length<=1){ showToast('최소 1개 품종은 필요합니다'); return;} syncTreeData(); STATE.trees.splice(i,1); renderTrees(); liveUpdate(); }
 
-/* 숙기/품종별 낙과피해과실수·인정피해율·인정피해과실수를 한번에 산정
-   (전산 방식: 품종별 조사대상주수 안분 → 품종별 낙과피해과실수 → 품종별 피해구성비율(전차인정피해율 차감) → 품종별 인정피해과실수 → 합산) */
-function computeAll(){
-  var afterCnt=num('afterCnt');
-  var prevRate=calcPrevRate().rate;
-  var sampleN=num('sampleN');
-  var census=isCensus();
-  var treeMap=getTreeGroupsData();
-  var realTree=0, target=0;
-  for(var _k in treeMap){ realTree+=treeMap[_k].realTree; target+=treeMap[_k].target; }
-  var R={afterCnt:afterCnt, realTree:realTree, target:target, sampleN:sampleN, census:census, prevRate:prevRate, ready:false};
-  if(afterCnt<=0||realTree<=0) return R;
-
-  var blocks=document.querySelectorAll('#gradeGroups .grade-block');
-  function readBlock(el){
-    if(!el) return {g0:0,g50:0,g80:0,g100:0};
-    return { g0:parseFloat(el.querySelector('.g0').value)||0, g50:parseFloat(el.querySelector('.g50').value)||0,
-      g80:parseFloat(el.querySelector('.g80').value)||0, g100:parseFloat(el.querySelector('.g100').value)||0 };
-  }
-  function ratioOf(v){ var s=v.g0+v.g50+v.g80+v.g100; return s>0?(v.g50*0.5+v.g80*0.8+v.g100*1)/s*100:0; }
-
-  if(census){
-    var totalFall=num('totalFall');
-    if(totalFall<=0) return R;
-    var v=readBlock(blocks[0]);
-    var dmgRatio=ratioOf(v);
-    var fallDamage=totalFall;
-    var covered=fallDamage>afterCnt*0.06;
-    var admitRate=Math.max(0,dmgRatio-prevRate);
-    var admitCnt=covered?Math.round(fallDamage*admitRate/100):0;
-    R.ready=true; R.fallSum=totalFall; R.fallDamage=fallDamage; R.dmgRatio=dmgRatio; R.covered=covered;
-    R.admitRate=admitRate; R.admitCnt=admitCnt; R.multi=false;
-    R.groups=[{key:'전체',count:0,fall:totalFall,target:target,fallDamage:fallDamage,perTree:0,dmgRatio:dmgRatio,admitRate:admitRate,admitCnt:admitCnt,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100}];
-    return R;
-  }
-
-  if(sampleN<=0||target<=0) return R;
-  var g=getGroups();
-  var order=g.order.length?g.order:['미입력'];
-  var multi=order.length>1;
-  var groups=[], fallSumAll=0, totalFallDamage=0;
-  order.forEach(function(key,gi){
-    var gc=(g.grp[key]&&g.grp[key].count)||0, gf=(g.grp[key]&&g.grp[key].fall)||0;
-    fallSumAll+=gf;
-    var tg = treeMap[key] || {target:0, afterCnt:0};
-    var gT = tg.target;
-    var gAfter = tg.afterCnt;
-    var perTree = gc>0 ? (gf/gc) : 0;
-    var gFD = gc>0 ? Math.round(perTree*gT) : 0;
-    totalFallDamage+=gFD;
-    var v=readBlock(blocks[gi]);
-    var dmgRatio=ratioOf(v);
-    var admitRate=Math.max(0,dmgRatio-prevRate);
-    groups.push({key:key,count:gc,fall:gf,target:gT,afterCnt:gAfter,perTree:perTree,fallDamage:gFD,dmgRatio:dmgRatio,admitRate:admitRate,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100});
+/* Render Samples */
+function renderSamples(){
+  var html = '';
+  STATE.samples.forEach((s, i) => {
+    html += '<div class="samp-row" data-idx="'+i+'">';
+    html += '<div class="samp-num">'+(i+1)+'</div>';
+    html += '<select class="inp sc-su '+(s.su?'filled':'')+'" style="width:70px;padding:0 2px" onchange="mark(this);liveUpdate();">'+SUKGI_OPTS.replace('>'+s.su+'<',' selected>'+s.su+'<')+'</select>';
+    html += '<div style="flex:1" class="pj-wrap">'+pjSelect(s.su, s.pj)+'</div>';
+    html += '<input type="number" class="inp sc-fall" style="width:70px" placeholder="낙과수" value="'+s.fall+'" oninput="mark(this);liveUpdate()"/>';
+    html += '<button class="del-btn" style="width:30px;height:36px;margin-left:2px" onclick="delSample('+i+')">✕</button>';
+    html += '</div>';
   });
-  var covered=totalFallDamage>afterCnt*0.06;
-  var totalAdmitCnt=0;
-  groups.forEach(function(gr){ gr.admitCnt=covered?Math.round(gr.fallDamage*gr.admitRate/100):0; totalAdmitCnt+=gr.admitCnt; });
-  var blendedRate = totalFallDamage>0 ? (totalAdmitCnt/totalFallDamage*100) : 0;
+  document.getElementById('sampList').innerHTML = html;
+  document.querySelectorAll('.samp-row .inp').forEach(mark);
+  bindMobileFocusHandlers();
+}
+function syncSampData(){
+  STATE.samples = [];
+  document.querySelectorAll('.samp-row').forEach(r => {
+    STATE.samples.push({
+      su: r.querySelector('.sc-su').value,
+      pj: getPjVal(r.querySelector('.pj-wrap')),
+      fall: r.querySelector('.sc-fall').value
+    });
+  });
+}
+function addSample(){ syncSampData(); STATE.samples.push({su:'',pj:'',fall:''}); renderSamples(); liveUpdate(); }
+function delSample(i){ if(STATE.samples.length<=1){ showToast('최소 1개 표본은 필요합니다'); return;} syncSampData(); STATE.samples.splice(i,1); renderSamples(); liveUpdate(); }
 
-  R.ready=true; R.fallSum=fallSumAll; R.fallDamage=totalFallDamage; R.groups=groups; R.multi=multi;
-  R.covered=covered; R.admitRate=blendedRate; R.admitCnt=totalAdmitCnt;
-  return R;
+/* Render Grades */
+function renderGrades(keys){
+  // Preserve existing data
+  var old = {};
+  document.querySelectorAll('.grade-card').forEach(c => {
+    old[c.dataset.key] = {
+      g0: c.querySelector('.gc-0').value, g50: c.querySelector('.gc-50').value,
+      g80: c.querySelector('.gc-80').value, g100: c.querySelector('.gc-100').value
+    };
+  });
+  
+  var html = '';
+  keys.forEach(k => {
+    var v = old[k] || STATE.grades[k] || {g0:'',g50:'',g80:'',g100:''};
+    html += '<div class="card grade-card" data-key="'+esc(k)+'" style="padding:10px">';
+    html += '<div style="font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px">'+(k||'미입력')+'</div>';
+    html += '<div class="g4">';
+    html += '<div class="field"><label class="label-sm">정상</label><input type="number" class="inp gc-0" value="'+v.g0+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm">50%형</label><input type="number" class="inp gc-50" value="'+v.g50+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm">80%형</label><input type="number" class="inp gc-80" value="'+v.g80+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '<div class="field"><label class="label-sm red">100%형</label><input type="number" class="inp gc-100" value="'+v.g100+'" oninput="mark(this);liveUpdate()"/></div>';
+    html += '</div>';
+    html += '<div class="res-line" style="display:flex;justify-content:space-between"><span>합계: <span class="gc-sum">0</span>개</span> <span>구성비율: <span class="gc-ratio">0.00%</span></span></div>';
+    html += '</div>';
+  });
+  document.getElementById('gradeList').innerHTML = html;
+  document.querySelectorAll('.grade-card .inp').forEach(mark);
+  bindMobileFocusHandlers();
 }
 
-/* 계산하기 전에도 나무조사 자동칸 실시간 반영 */
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function updateAll(){ renderTrees(); renderSamples(); liveUpdate(); }
+
+/* Calculation Logic */
 function liveUpdate(){
-  updateGrade(); updateTreeGroups(); updatePrev();
-  var R=computeAll();
-  var fd=document.getElementById('autoFallDmg'), ar=document.getElementById('autoAdmitRate'), ac=document.getElementById('autoAdmitCnt');
-  var box=document.getElementById('resultBox'), mR=document.getElementById('mRate'), rH=document.getElementById('rbHero');
+  // 1. Trees Target Update
+  var totalTarget = 0;
+  document.querySelectorAll('.tree-card').forEach(c => {
+    var real = num(c.querySelector('.tc-real').value);
+    var minus = num(c.querySelector('.tc-pd').value) + num(c.querySelector('.tc-pi').value) + num(c.querySelector('.tc-pu').value) +
+                num(c.querySelector('.tc-cdone').value) + num(c.querySelector('.tc-cd').value) + num(c.querySelector('.tc-ci').value) + num(c.querySelector('.tc-cu').value);
+    var target = Math.max(0, real - minus);
+    c.querySelector('.tc-target').textContent = fmt(target);
+    totalTarget += target;
+  });
+
+  // 2. Extract Keys from Samples
+  var sampKeys = [];
+  var sampFalls = 0;
+  document.querySelectorAll('.samp-row').forEach(r => {
+    var su = r.querySelector('.sc-su').value;
+    var pj = getPjVal(r.querySelector('.pj-wrap'));
+    var k = joinVar(su, pj) || '미입력';
+    if(sampKeys.indexOf(k)<0) sampKeys.push(k);
+    sampFalls += num(r.querySelector('.sc-fall').value);
+  });
+  document.getElementById('sampSum').textContent = '총 표본낙과수: ' + fmt(sampFalls) + '개';
+
+  // 3. Render/Update Grades based on SampKeys
+  var curGrades = Array.from(document.querySelectorAll('.grade-card')).map(c=>c.dataset.key);
+  if(sampKeys.sort().join('|') !== curGrades.sort().join('|')) {
+    renderGrades(sampKeys);
+  }
+
+  document.querySelectorAll('.grade-card').forEach(c => {
+    var sum = num(c.querySelector('.gc-0').value) + num(c.querySelector('.gc-50').value) + num(c.querySelector('.gc-80').value) + num(c.querySelector('.gc-100').value);
+    var ratio = sum>0 ? (num(c.querySelector('.gc-50').value)*0.5 + num(c.querySelector('.gc-80').value)*0.8 + num(c.querySelector('.gc-100').value)*1)/sum*100 : 0;
+    c.querySelector('.gc-sum').textContent = fmt(sum);
+    c.querySelector('.gc-ratio').textContent = ratio.toFixed(2) + '%';
+  });
+
+  var R = computeAll();
+  var box = document.getElementById('resultBox');
+  var mR = document.getElementById('mRate'), rH = document.getElementById('rbHero');
+  
   if(R.ready){
-    if(fd) fd.value=fmt(R.fallDamage);
-    if(ar) ar.value=R.admitRate.toFixed(2);
-    if(ac) ac.value=fmt(R.admitCnt);
-    var pctOfAfter=R.afterCnt>0?(R.admitCnt/R.afterCnt*100):0;
-    if(mR) mR.textContent=pctOfAfter.toFixed(2)+'%';
-    if(rH) rH.innerHTML=fmt(R.admitCnt)+' <small>개</small>';
-    if(box) box.classList.remove('pending');
-  }else{
-    if(fd) fd.value='-'; if(ar) ar.value='-'; if(ac) ac.value='-';
-    if(mR) mR.textContent='- -';
-    if(rH) rH.innerHTML='—';
-    if(box) box.classList.add('pending');
+    mR.textContent = R.blendedPct.toFixed(2) + '%';
+    rH.textContent = fmt(R.totalAdmitCnt) + ' 개';
+    box.classList.remove('pending');
+  } else {
+    mR.textContent = '- -';
+    rH.textContent = '—';
+    box.classList.add('pending');
   }
 }
 
-function saveState(){
-  try{
-    var st={samples:getSamples(),sampleVars:getVarieties(),grades:currentGradeValues(),trees:currentTreeValues(),treeVars:getTreeVarieties(),treeOpen:currentTreeOpen()};
-    FIELDS.forEach(function(id){ var el=document.getElementById(id); if(el) st[id]=el.value; });
-    st.calcDone=document.getElementById('content').classList.contains('locked');
-    localStorage.setItem(KEY_STATE, JSON.stringify(st));
-  }catch(e){}
-}
-function restoreState(){
-  var st=null; try{ st=JSON.parse(localStorage.getItem(KEY_STATE)||'null'); }catch(e){}
-  if(!st) return false;
-  FIELDS.forEach(function(id){ var el=document.getElementById(id); if(el&&st[id]!==undefined) el.value=st[id]; });
-  buildSampleRows(st.samples||null, st.sampleVars||null);
-  buildGradeGroups(st.grades||null);
-  buildTreeRows(st.trees||null, st.treeVars||null, st.treeOpen||null);
-  syncDate();
-  document.querySelectorAll('.inp').forEach(mark);
-  applyMethod();
-  updateGrade();
-  refreshPrevUI();
-  liveUpdate();
-  if(st.calcDone){ calc(true); }
-  return true;
-}
+function computeAll(){
+  var afterCnt = num(val('totalAfterCnt'));
+  var prevRate = parseFloat(val('prevRate')) || 0;
 
-function toggleBigText(){
-  var on=document.body.classList.toggle('big-text');
-  document.getElementById('bigtextBtn').classList.toggle('on',on);
-  document.getElementById('bigtextLabel').textContent=on?'작게':'크게';
-  try{ localStorage.setItem(KEY_BIG,on?'1':'0'); }catch(e){}
-}
+  var treeMap = {};
+  var totalTarget = 0;
+  document.querySelectorAll('.tree-card').forEach(c => {
+    var k = joinVar(c.querySelector('.tc-su').value, getPjVal(c.querySelector('.pj-wrap'))) || '미입력';
+    var t = num(c.querySelector('.tc-target').textContent);
+    if(!treeMap[k]) treeMap[k] = 0;
+    treeMap[k] += t;
+    totalTarget += t;
+  });
 
-function openReset(){ document.getElementById('resetOverlay').classList.add('show'); }
-function closeReset(){ document.getElementById('resetOverlay').classList.remove('show'); }
-function doReset(){
-  try{ localStorage.removeItem(KEY_STATE); }catch(e){}
-  FIELDS.forEach(function(id){ var el=document.getElementById(id); if(!el) return;
-    if(id==='sampleN') el.value='3'; else if(id==='treeRowN') el.value='1'; else if(id==='crop') el.value='사과'; else if(id==='method') el.value='표본조사'; else if(id==='product') el.value='normal'; else if(id==='prevAcc') el.value='n';
-    else if(id==='surveyDate') el.value=todayStr();
-    else el.value=''; });
-  /* 착과수·주수 칸 확실히 비우기 (콤마/포맷 잔여 방지) */
-  ['avgCnt','prevManual'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-  buildSampleRows({},{}); buildGradeGroups({}); buildTreeRows({},{},{}); syncDate();
-  document.getElementById('autoSetRate').value='-';
-  document.getElementById('autoPrevRate').value='0.00';
-  refreshPrevUI();
-  document.querySelectorAll('.inp').forEach(mark);
-  applyMethod();
-  document.getElementById('autoFallDmg').value='-';
-  document.getElementById('autoAdmitRate').value='-';
-  document.getElementById('autoAdmitCnt').value='-';
-  updateGrade();
-  edit(true);
-  document.getElementById('resultBox').className='result-box pending';
-  document.getElementById('rbHero').textContent='—';
-  document.getElementById('mRate').textContent='- -';
-  document.getElementById('saveBtn').disabled=true; LAST=null;
-  closeReset(); showToast('초기화 완료');
-}
+  var sampMap = {};
+  var totalSampN = 0, totalSampFall = 0;
+  document.querySelectorAll('.samp-row').forEach(r => {
+    var k = joinVar(r.querySelector('.sc-su').value, getPjVal(r.querySelector('.pj-wrap'))) || '미입력';
+    var f = num(r.querySelector('.sc-fall').value);
+    if(!sampMap[k]) sampMap[k] = {f:0, c:0};
+    sampMap[k].f += f; sampMap[k].c += 1;
+    totalSampFall += f; totalSampN += 1;
+  });
 
-function getHistory(){ try{ return JSON.parse(localStorage.getItem(KEY_HIST)||'[]'); }catch(e){ return []; } }
-function saveToHistory(res){
-  var recs=getHistory();
-  var farmNo=document.getElementById('farmNo').value||'';
-  var contractorName=document.getElementById('contractorName').value||'';
-  // 동일 농지번호 기존 기록은 같은 내용이므로 제거 후 최신으로 다시 추가 (덮어쓰기·맨 위로)
-  if(farmNo){ recs=recs.filter(function(r){ return r.farmNo!==farmNo; }); }
-  recs.unshift({ ts:Date.now(), farmNo:farmNo, contractorName:contractorName, date:document.getElementById('surveyDate').value||'',
-    crop:res.crop, fallDamage:res.fallDamage, fallRate:res.fallRate,
-    admitCnt:res.admitCnt, admitRate:res.admitRate, pctOfAfter:res.pctOfAfter, state:localStorage.getItem(KEY_STATE) });
-  if(recs.length>30) recs=recs.slice(0,30);
-  try{ localStorage.setItem(KEY_HIST, JSON.stringify(recs)); }catch(e){}
-}
-function openHistory(){
-  var recs=getHistory(), wrap=document.getElementById('historyList');
-  if(!recs.length){ wrap.innerHTML='<p style="text-align:center;color:#aaa;font-size:13px;padding:18px 0">저장된 기록이 없습니다</p>'; }
-  else{
-    wrap.innerHTML=recs.map(function(r,i){
-      var d=r.date?r.date.replace(/-/g,'.'):'날짜 미입력';
-      var savedAt=r.ts?new Date(r.ts).toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/ /g,''):'';
-      var crop=r.crop; if(!crop){ try{ crop=JSON.parse(r.state).crop; }catch(e){} } crop=crop||'-';
-      var ac=(r.admitCnt!=null&&r.admitCnt!=='')?fmt(r.admitCnt)+'개':'-';
-      var pa=(r.pctOfAfter!=null&&r.pctOfAfter!=='')?r.pctOfAfter+'%':'-';
-      return '<div class="hist-item" onclick="loadHistory('+i+')">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
-          '<span style="font-size:15px;font-weight:800;color:var(--blue)">'+(r.contractorName?r.contractorName+'('+(r.farmNo||'-')+')':(r.farmNo?'농지 '+r.farmNo:'농지번호 미입력'))+'</span>'+
-          '<span style="font-size:11px;color:#aaa">'+savedAt+'</span>'+
-        '</div>'+
-        '<div style="display:flex;gap:8px 10px;flex-wrap:wrap">'+
-          '<span style="font-size:12px;color:#555">🍎 '+crop+'</span>'+
-          '<span style="font-size:12px;color:#555">🗓 조사일 '+d+'</span>'+
-          '<span style="font-size:12px;color:#555">🎯 금차인정피해과실수 '+ac+'</span>'+
-          '<span style="font-size:12px;color:#555">📊 적착대비 피해율 '+pa+'</span>'+
-        '</div>'+
-        '<div style="margin-top:8px;display:flex;justify-content:flex-end;gap:6px">'+
-          '<button onclick="event.stopPropagation();delHistory('+i+')" style="height:26px;padding:0 10px;border:1px solid #ffb3b3;border-radius:6px;background:#fff;color:#e24b4a;font-size:11px;font-weight:700;cursor:pointer">삭제</button>'+
-          '<button onclick="event.stopPropagation();loadHistory('+i+')" style="height:26px;padding:0 10px;border:none;border-radius:6px;background:var(--blue);color:#fff;font-size:11px;font-weight:700;cursor:pointer">불러오기</button>'+
-        '</div>'+
-      '</div>';
-    }).join('');
+  var gradeMap = {};
+  document.querySelectorAll('.grade-card').forEach(c => {
+    gradeMap[c.dataset.key] = {
+      ratio: parseFloat(c.querySelector('.gc-ratio').textContent)||0,
+      g0: num(c.querySelector('.gc-0').value),
+      g50: num(c.querySelector('.gc-50').value),
+      g80: num(c.querySelector('.gc-80').value),
+      g100: num(c.querySelector('.gc-100').value)
+    };
+  });
+
+  if(afterCnt<=0 || totalTarget<=0 || totalSampN<=0) return {ready:false};
+
+  var groups = [];
+  var totalFallDamage = 0;
+
+  for(var k in sampMap){
+    var sm = sampMap[k];
+    var tg = treeMap[k] || 0;
+    var gm = gradeMap[k] || {ratio:0, g0:0, g50:0, g80:0, g100:0};
+    
+    var perTree = sm.c > 0 ? sm.f / sm.c : 0;
+    var fallDmg = Math.round(perTree * tg);
+    totalFallDamage += fallDmg;
+    var admitR = Math.max(0, gm.ratio - prevRate);
+
+    groups.push({
+      key: k, target: tg, sampN: sm.c, sampF: sm.f, perTree: perTree,
+      fallDmg: fallDmg, dmgRatio: gm.ratio, admitR: admitR,
+      g0: gm.g0, g50: gm.g50, g80: gm.g80, g100: gm.g100
+    });
   }
-  document.getElementById('historyOverlay').classList.add('show');
+
+  var covered = totalFallDamage > (afterCnt * 0.06);
+  var totalAdmitCnt = 0;
+  groups.forEach(g => {
+    g.admitCnt = covered ? Math.round(g.fallDmg * g.admitR / 100) : 0;
+    totalAdmitCnt += g.admitCnt;
+  });
+
+  var blendedPct = afterCnt > 0 ? (totalAdmitCnt / afterCnt * 100) : 0;
+
+  return {
+    ready: true,
+    afterCnt: afterCnt, prevRate: prevRate, totalTarget: totalTarget,
+    totalSampN: totalSampN, totalSampFall: totalSampFall,
+    totalFallDamage: totalFallDamage, covered: covered,
+    totalAdmitCnt: totalAdmitCnt, blendedPct: blendedPct, groups: groups
+  };
 }
-function closeHistory(){ document.getElementById('historyOverlay').classList.remove('show'); }
-function loadHistory(i){
-  var r=getHistory()[i]; if(!r||!r.state) return;
-  try{ localStorage.setItem(KEY_STATE, r.state); }catch(e){}
-  restoreState(); closeHistory(); edit(true);
-  document.getElementById('saveBtn').disabled=true; LAST=null;
-  showToast('불러왔습니다');
-}
-function delHistory(i){
-  var recs=getHistory(); recs.splice(i,1);
-  try{ localStorage.setItem(KEY_HIST, JSON.stringify(recs)); }catch(e){}
-  openHistory();
-}
 
-/* 계산 */
-function calc(silent){
-  updateTreeGroups(); updateGrade();
-  var afterCnt=num('afterCnt'), joinTree=num('joinTree');
-  var sampleN=num('sampleN');
-  var census=isCensus();
-  if(afterCnt<=0){ if(!silent) showToast('적과후착과수를 입력하세요'); return; }
+function calc(){
+  syncTreeData(); syncSampData();
+  var R = computeAll();
+  if(!R.ready){ showToast('입력값을 확인하세요 (적과후착과수, 실제결과주수 등)'); return; }
 
-  var R=computeAll();
-  if(R.realTree<=0){ if(!silent) showToast('실제결과주수를 입력하세요'); return; }
-  if(!census && sampleN<=0){ if(!silent) showToast('표본주수를 입력하세요'); return; }
-  if(R.target<=0){ if(!silent) showToast('조사대상주수가 0 이하입니다'); return; }
-  if(census && num('totalFall')<=0){ if(!silent) showToast('전체 낙과수를 입력하세요'); return; }
-  if(!R.ready){ if(!silent) showToast('입력값을 확인하세요'); return; }
-
-  var realTree=R.realTree, target=R.target;
-  var perTreeCnt=afterCnt/target;
-  LAST={ afterCnt:afterCnt, joinTree:joinTree, realTree:realTree, target:target, perTreeCnt:perTreeCnt,
-    census:census, sampleN:sampleN, fallSum:R.fallSum, fallDamage:R.fallDamage, dmgRatio:R.dmgRatio,
-    sixPct:afterCnt*0.06, covered:R.covered, prevRate:R.prevRate, admitRate:R.admitRate, admitCnt:R.admitCnt,
-    groups:R.groups, multi:R.multi };
-
-  var box=document.getElementById('resultBox');
-  box.classList.remove('pending');
-  var pctOfAfter=afterCnt>0?(R.admitCnt/afterCnt*100):0;
-  document.getElementById('rbHero').innerHTML = R.covered ? (fmt(R.admitCnt)+' <small>개</small>') : ('0 <small>개</small>');
-  document.getElementById('mRate').textContent=pctOfAfter.toFixed(2)+'%';
-
-  /* 나무조사 3행 자동칸 + 피해구성 합계/비율 */
-  document.getElementById('autoFallDmg').value=fmt(R.fallDamage);
-  document.getElementById('autoAdmitRate').value=R.admitRate.toFixed(2);
-  document.getElementById('autoAdmitCnt').value=fmt(R.admitCnt);
-  updateGrade();
-
-  document.getElementById('saveBtn').disabled=false;
-
+  LAST = R;
   document.getElementById('content').classList.add('locked');
   document.getElementById('btnCalc').classList.remove('active');
   document.getElementById('btnEdit').classList.add('active');
-  setLockUI(true);
-  if(!silent){
-    saveState(); saveToHistory({crop:document.getElementById('crop').value, fallDamage:R.fallDamage, fallRate:(afterCnt>0?(R.fallDamage/afterCnt*100):0).toFixed(2), admitCnt:R.admitCnt, admitRate:R.admitRate.toFixed(2), pctOfAfter:pctOfAfter.toFixed(2)});
-    vibrate([30, 40, 60]);
-    document.getElementById('resultBox').scrollIntoView({behavior:'smooth',block:'center'});
-  }
+  document.getElementById('hdrState').textContent='🔒 잠금';
+  document.getElementById('hdrState').className='hdr-state locked';
+  document.getElementById('saveBtn').disabled=false;
+  
+  vibrate([30,40,60]);
+  document.getElementById('resultBox').scrollIntoView({behavior:'smooth', block:'center'});
+  saveState();
 }
-function edit(silent){
+
+function edit(){
   document.getElementById('content').classList.remove('locked');
   document.getElementById('btnCalc').classList.add('active');
   document.getElementById('btnEdit').classList.remove('active');
-  setLockUI(false);
-  if(!silent) vibrate([12]);
-  saveState();
-}
-function setLockUI(locked){
-  var hs=document.getElementById('hdrState');
-  if(hs){ hs.textContent=locked?'🔒 잠금':'🔓 수정 중'; hs.className='hdr-state '+(locked?'locked':'unlocked'); }
+  document.getElementById('hdrState').textContent='🔓 수정 중 - sunburn';
+  document.getElementById('hdrState').className='hdr-state unlocked';
+  vibrate([12]);
 }
 
-/* 갤러리 저장 — 조사서 양식 이미지 */
+function saveState(){
+  syncTreeData(); syncSampData();
+  var gs = {};
+  document.querySelectorAll('.grade-card').forEach(c => {
+    gs[c.dataset.key] = { g0:c.querySelector('.gc-0').value, g50:c.querySelector('.gc-50').value, g80:c.querySelector('.gc-80').value, g100:c.querySelector('.gc-100').value };
+  });
+  STATE.grades = gs;
+  var st = {
+    crop:val('crop'), contractorName:val('contractorName'), farmNo:val('farmNo'),
+    surveyDate:val('surveyDate'), afterCnt:val('totalAfterCnt'), prevRate:val('prevRate'),
+    trees: STATE.trees, samples: STATE.samples, grades: STATE.grades,
+    locked: document.getElementById('content').classList.contains('locked')
+  };
+  try{ localStorage.setItem(KEY_STATE, JSON.stringify(st)); }catch(e){}
+}
+
+function restoreState(){
+  try{
+    var st = JSON.parse(localStorage.getItem(KEY_STATE));
+    if(!st) return false;
+    if(st.crop) document.getElementById('crop').value = st.crop;
+    if(st.contractorName) document.getElementById('contractorName').value = st.contractorName;
+    if(st.farmNo) document.getElementById('farmNo').value = st.farmNo;
+    if(st.surveyDate) document.getElementById('surveyDate').value = st.surveyDate;
+    if(st.afterCnt) document.getElementById('totalAfterCnt').value = st.afterCnt;
+    if(st.prevRate) document.getElementById('prevRate').value = st.prevRate;
+    if(st.trees && st.trees.length) STATE.trees = st.trees;
+    if(st.samples && st.samples.length) STATE.samples = st.samples;
+    if(st.grades) STATE.grades = st.grades;
+    
+    syncDate();
+    updateAll();
+    if(st.locked) calc();
+    return true;
+  }catch(e){ return false; }
+}
+
+function doReset(){
+  if(!confirm('모든 입력값을 초기화하시겠습니까?')) return;
+  localStorage.removeItem(KEY_STATE);
+  document.getElementById('crop').value = '사과';
+  document.getElementById('contractorName').value = '';
+  document.getElementById('farmNo').value = '';
+  document.getElementById('surveyDate').value = todayStr();
+  document.getElementById('totalAfterCnt').value = '';
+  document.getElementById('prevRate').value = '';
+  
+  STATE.trees = [ {su:'만생', pj:'부사(후지)', join:'', real:'', pd:'', pi:'', pud:'', pua:'', cdone:'', cdead:'', cimp:'', cud:'', cua:''} ];
+  STATE.samples = [ {su:'만생', pj:'부사(후지)', fall:''} ];
+  STATE.grades = {};
+  
+  syncDate();
+  updateAll();
+  edit();
+  document.getElementById('saveBtn').disabled=true;
+  LAST=null;
+  showToast('초기화 완료');
+}
+
+/* 캡처 빌더 (전산 폼과 동일하게) */
 function buildCapture(){
-  var L=LAST; if(!L) return '';
-  var crop=document.getElementById('crop').value||'사과';
-  var farmNo=document.getElementById('farmNo').value||'-';
-  var contractorName=document.getElementById('contractorName').value||'';
-  var date=document.getElementById('surveyDate').value; date=date?date.replace(/-/g,'.'):'-';
-  var samps=[]; document.querySelectorAll('#sampRows .samp-fall').forEach(function(i){ samps.push(parseFloat((i.value||'').replace(/,/g,''))||0); });
-  var varis=[]; var _vm=getVarieties(); document.querySelectorAll('#sampRows .samp-sukgi').forEach(function(s){ varis.push((_vm[s.dataset.idx]||'').trim()); });
+  var L = LAST; if(!L) return '';
+  var crop = val('crop')||'사과';
+  var farmNo = val('farmNo')||'-';
+  var cName = val('contractorName')||'';
+  var date = val('surveyDate')?val('surveyDate').replace(/-/g,'.'):'-';
 
-  // 표본 셀 스타일
-  var TH='padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #cfd6dd;border-bottom:1px solid #cfd6dd;font-size:11px;font-weight:700;text-align:center';
-  var THl='padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #cfd6dd;font-size:11px;font-weight:700;text-align:center';
-  var TD='padding:7px 4px;border-right:1px solid #e0e3e8;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:12px';
-  var TDl='padding:7px 4px;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:12px';
-  var TG='padding:7px 4px;border-right:1px solid #cdebdd;text-align:center;background:#e8faf3;font-weight:800;font-size:12px';
-  var TGl='padding:7px 4px;text-align:center;background:#e8faf3;font-weight:800;font-size:12px';
-  // 넓은 표(6·7열)용 좁은 셀
   var nTH='padding:6px 2px;background:#4a7aad;color:#fff;border-right:1px solid #cfd6dd;border-bottom:1px solid #cfd6dd;font-size:9.5px;font-weight:700;text-align:center;line-height:1.2;word-break:keep-all';
   var nTHl='padding:6px 2px;background:#4a7aad;color:#fff;border-bottom:1px solid #cfd6dd;font-size:9.5px;font-weight:700;text-align:center;line-height:1.2;word-break:keep-all';
   var nTD='padding:6px 2px;border-right:1px solid #e0e3e8;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:10.5px;word-break:keep-all';
@@ -1327,40 +627,17 @@ function buildCapture(){
   function card(title,inner){ return '<div style="background:#fff;border-radius:16px;padding:13px;box-shadow:0 6px 18px rgba(0,0,0,0.05)"><div style="font-size:14px;font-weight:900;color:#111;margin-bottom:9px">'+title+'</div>'+inner+'</div>'; }
   function tbl(inner){ return '<table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #cfd6dd;table-layout:fixed">'+inner+'</table>'; }
 
-  // 품종(숙기)별 계산결과 — calc() 시점에 산정된 LAST.groups 사용 (품종별 피해구성비율 반영)
-  var groups=L.groups||[];
-  var multi=!!L.multi;
-  var census=L.census;
-
-  // 헤더: 조사대상주수 / 표본주수(or 전수)
   function headBox(k,v){ return '<div style="flex:1;background:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#555">'+k+'</span><span style="font-size:15px;font-weight:900;color:#185FA5">'+v+'</span></div>'; }
-  var headLine = census
-    ? '<div style="display:flex;gap:10px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('전체 낙과수',fmt(L.fallDamage)+' 개')+'</div>'
-    : '<div style="display:flex;gap:10px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('표본주수',fmt(L.sampleN)+' 주')+'</div>';
+  var headLine = '<div style="display:flex;gap:10px;margin-bottom:10px">'+headBox('적과후착과수(총합)',fmt(L.afterCnt)+' 개')+headBox('전차인정피해율',L.prevRate.toFixed(2)+' %')+'</div>';
 
-  // 전수조사 카드 (census 전용)
-  var cCensus=card('전수조사',
-    tbl('<colgroup><col style="width:40%"><col style="width:30%"><col style="width:30%"></colgroup>'+
-      '<thead><tr><th style="'+TH+'">조사대상주수</th><th style="'+TH+'">전체 낙과수</th><th style="'+THl+'">낙과피해과실수</th></tr></thead>'+
-      '<tbody><tr><td style="'+TG+'">'+fmt(L.target)+' 주</td><td style="'+TG+'">'+fmt(L.fallDamage)+' 개</td><td style="'+TGl+'">'+fmt(L.fallDamage)+' 개</td></tr></tbody>'));
-
-  // 1) 표본조사
-  var t1='';
-  samps.forEach(function(v,i){ t1+='<tr><td style="'+TD+'">'+(i+1)+'</td><td style="'+TD+'">'+(varis[i]||'-')+'</td><td style="'+TDl+'">'+fmt(v)+'</td></tr>'; });
-  t1+='<tr><td style="'+TG+'">합계</td><td style="'+TG+'">-</td><td style="'+TGl+'">'+fmt(L.fallSum)+'</td></tr>';
-  var c1=card('표본조사',
-    tbl('<colgroup><col style="width:28%"><col style="width:44%"><col style="width:28%"></colgroup>'+
-      '<thead><tr><th style="'+TH+'">표본주번호</th><th style="'+TH+'">숙기/품종</th><th style="'+THl+'">낙과수</th></tr></thead><tbody>'+t1+'</tbody>'));
-
-  // 2) 전산내역 형태의 통합 집계표 (수기 조사서 작성 최적화)
   var t2='';
-  groups.forEach(function(gr){
+  L.groups.forEach(function(gr){
     var perTreeStr = (gr.perTree % 1 === 0) ? gr.perTree : gr.perTree.toFixed(2);
     t2+='<tr>' +
         '<td style="'+nTD+'">'+gr.key+'</td>' +
         '<td style="'+nTD+'">'+fmt(gr.target)+'</td>' +
-        '<td style="'+nTD+'">'+fmt(gr.count)+'</td>' +
-        '<td style="'+nTD+'">'+fmt(gr.fall)+'</td>' +
+        '<td style="'+nTD+'">'+fmt(gr.sampCount)+'</td>' +
+        '<td style="'+nTD+'">'+fmt(gr.sampFall)+'</td>' +
         '<td style="'+nTD+'">'+perTreeStr+'</td>' +
         '<td style="'+nTD+'">'+fmt(gr.fallDamage)+'</td>' +
         '<td style="'+nTD+'">'+gr.admitRate.toFixed(2)+'%</td>' +
@@ -1368,21 +645,20 @@ function buildCapture(){
         '</tr>';
   });
   
-  // 합계 행
-  var totalPerTree = L.sampleN > 0 ? L.fallSum / L.sampleN : 0;
+  var totalPerTree = L.totalSampCount > 0 ? L.totalSampFall / L.totalSampCount : 0;
   var totalPerTreeStr = (totalPerTree % 1 === 0) ? totalPerTree : totalPerTree.toFixed(2);
   t2+='<tr>' +
       '<td style="'+nTG+'">합계</td>' +
-      '<td style="'+nTG+'">'+fmt(L.target)+'</td>' +
-      '<td style="'+nTG+'">'+fmt(L.sampleN)+'</td>' +
-      '<td style="'+nTG+'">'+fmt(L.fallSum)+'</td>' +
+      '<td style="'+nTG+'">'+fmt(L.totalTarget)+'</td>' +
+      '<td style="'+nTG+'">'+fmt(L.totalSampCount)+'</td>' +
+      '<td style="'+nTG+'">'+fmt(L.totalSampFall)+'</td>' +
       '<td style="'+nTG+'">-</td>' +
-      '<td style="'+nTG+'">'+fmt(L.fallDamage)+'</td>' +
+      '<td style="'+nTG+'">'+fmt(L.totalFallDamage)+'</td>' +
       '<td style="'+nTG+'">-</td>' +
-      '<td style="'+nTGl+'">'+fmt(L.admitCnt)+'</td>' +
+      '<td style="'+nTGl+'">'+fmt(L.totalAdmitCnt)+'</td>' +
       '</tr>';
 
-  var c2=card('낙과피해조사 및 산정 (전산 내역)',
+  var c2=card('낙과피해조사 및 산정 (전산 양식)',
     tbl('<colgroup><col style="width:16%"><col style="width:12%"><col style="width:11%"><col style="width:11%"><col style="width:12%"><col style="width:14%"><col style="width:12%"><col style="width:12%"></colgroup>'+
       '<thead><tr>' +
       '<th style="'+nTH+'">숙기/품종</th>' +
@@ -1395,40 +671,34 @@ function buildCapture(){
       '<th style="'+nTHl+'">낙과인정<br>피해과실수</th>' +
       '</tr></thead><tbody>'+t2+'</tbody>'));
 
-  // 3) 과실피해구성비율 — 숙기/품종별 각각 산정
   var t3='', sg0=0,sg50=0,sg80=0,sg100=0;
-  groups.forEach(function(gr){
+  L.groups.forEach(function(gr){
     sg0+=gr.g0; sg50+=gr.g50; sg80+=gr.g80; sg100+=gr.g100;
     var gsum=gr.g0+gr.g50+gr.g80+gr.g100;
     t3+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.g0)+'</td><td style="'+nTD+'">'+fmt(gr.g50)+'</td><td style="'+nTD+'">'+fmt(gr.g80)+'</td><td style="'+nTD+'">'+fmt(gr.g100)+'</td><td style="'+nTD+'">'+fmt(gsum)+'</td><td style="'+nTDl+'">'+gr.dmgRatio.toFixed(2)+'</td></tr>';
   });
   var totalGSum=sg0+sg50+sg80+sg100;
   var totalGRatio=totalGSum>0?(sg50*0.5+sg80*0.8+sg100*1)/totalGSum*100:0;
-  if(multi) t3+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(sg0)+'</td><td style="'+nTG+'">'+fmt(sg50)+'</td><td style="'+nTG+'">'+fmt(sg80)+'</td><td style="'+nTG+'">'+fmt(sg100)+'</td><td style="'+nTG+'">'+fmt(totalGSum)+'</td><td style="'+nTGl+'">'+totalGRatio.toFixed(2)+'</td></tr>';
+  if(L.groups.length>1) t3+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(sg0)+'</td><td style="'+nTG+'">'+fmt(sg50)+'</td><td style="'+nTG+'">'+fmt(sg80)+'</td><td style="'+nTG+'">'+fmt(sg100)+'</td><td style="'+nTG+'">'+fmt(totalGSum)+'</td><td style="'+nTGl+'">'+totalGRatio.toFixed(2)+'</td></tr>';
   var c3=card('과실피해구성비율',
     tbl('<colgroup><col style="width:22%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:13%"><col style="width:13%"><col style="width:16%"></colgroup>'+
       '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">정상</th><th style="'+nTH+'">50%</th><th style="'+nTH+'">80%</th><th style="'+nTH+'">100%</th><th style="'+nTH+'">합계</th><th style="'+nTHl+'">피해구성비율(%)</th></tr></thead><tbody>'+t3+'</tbody>'));
 
-  var c3b='';
-
-  // 4) 결과
-  var c4=card('결과',
+  var c4=card('최종 결과',
     tbl('<colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>'+
-      '<thead><tr><th style="'+nTH+'">면·부책</th><th style="'+nTH+'">전차인정피해율</th><th style="'+nTH+'">인정피해율</th><th style="'+nTHl+'">낙과인정피해과실수</th></tr></thead>'+
-      '<tbody><tr><td style="'+nTD+'">'+(L.covered?'부책(인정)':'면책')+'</td><td style="'+nTD+'">'+(L.prevRate||0).toFixed(2)+' %</td><td style="'+nTG+'">'+L.admitRate.toFixed(2)+' %</td><td style="'+nTGl+'">'+fmt(L.admitCnt)+' 개</td></tr></tbody>')+
+      '<thead><tr><th style="'+nTH+'">면·부책</th><th style="'+nTH+'">전차인정피해율</th><th style="'+nTH+'">인정피해율(평균)</th><th style="'+nTHl+'">낙과인정피해과실수</th></tr></thead>'+
+      '<tbody><tr><td style="'+nTD+'">'+(L.covered?'부책(인정)':'면책')+'</td><td style="'+nTD+'">'+(L.prevRate||0).toFixed(2)+' %</td><td style="'+nTG+'">'+(L.totalFallDamage>0?(L.totalAdmitCnt/L.totalFallDamage*100):0).toFixed(2)+' %</td><td style="'+nTGl+'">'+fmt(L.totalAdmitCnt)+' 개</td></tr></tbody>')+
     '<div style="margin-top:11px;background:#185FA5;border-radius:12px;padding:12px 14px;display:flex;align-items:center">'+
       '<div style="flex:1;text-align:center">'+
         '<div style="font-size:12px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:4px">적착대비 피해율</div>'+
-        '<div style="font-size:23px;color:#FFD0D0;font-weight:900">'+(L.afterCnt>0?(L.admitCnt/L.afterCnt*100):0).toFixed(2)+' %</div>'+
+        '<div style="font-size:23px;color:#FFD0D0;font-weight:900">'+L.blendedPct.toFixed(2)+' %</div>'+
       '</div>'+
       '<div style="width:1px;align-self:stretch;background:rgba(255,255,255,0.3);margin:0 8px"></div>'+
       '<div style="flex:1;text-align:center">'+
         '<div style="font-size:12px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:4px">낙과 인정피해과실수</div>'+
-        '<div style="font-size:23px;color:#fff;font-weight:900">'+fmt(L.admitCnt)+' 개</div>'+
+        '<div style="font-size:23px;color:#fff;font-weight:900">'+fmt(L.totalAdmitCnt)+' 개</div>'+
       '</div>'+
     '</div>');
-
-  var foot=multi?'<div style="font-size:9.5px;color:#888;margin-top:2px;line-height:1.45">※ 품종 2종 이상: 조사대상주수·낙과수·피해구성비율·인정피해율 모두 숙기/품종별 실제 입력값으로 각각 산정한 값입니다.</div>':'';
 
   return '<div style="width:430px;background:#f3f4f6;font-family:-apple-system,Noto Sans KR,sans-serif">'+
     '<div style="background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 12%,#f3f4f6 12%,#f3f4f6 100%);padding:0 16px 22px;box-sizing:border-box">'+
@@ -1437,82 +707,60 @@ function buildCapture(){
         '<div style="font-size:16px;font-weight:800">☀️ '+crop+' 일소피해 계산결과</div>'+
         '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">'+
           '<span style="font-size:14px;font-weight:800;color:#fff">조사일자 '+date+'</span>'+
-          '<span style="font-size:14px;font-weight:800;color:#fff">'+(contractorName?contractorName+'('+farmNo+')':'농지번호 '+farmNo)+'</span></div></div>'+
-      '<div style="display:flex;flex-direction:column;gap:12px">'+headLine+(census?cCensus:(c1+c2))+c3+c3b+c4+foot+'</div>'+
+          '<span style="font-size:14px;font-weight:800;color:#fff">'+(cName?cName+'('+farmNo+')':'농지번호 '+farmNo)+'</span></div></div>'+
+      headLine+c2+c3+c4+
     '</div></div>';
 }
+
 function saveImage(){
   if(!LAST){ showToast('먼저 계산하세요'); return; }
-  if(typeof html2canvas==='undefined'){ showToast('이미지 모듈을 불러오지 못했습니다<br>(최초 1회는 온라인 필요)'); return; }
-  var box=document.getElementById('captureBox');
-  box.innerHTML=buildCapture();
+  var box = document.getElementById('captureBox');
+  box.innerHTML = buildCapture();
   showToast('이미지 만드는 중…');
-  html2canvas(box,{scale:2,backgroundColor:'#f3f4f6',useCORS:true,windowWidth:430}).then(function(canvas){
+  html2canvas(box, {scale:2, backgroundColor:'#f3f4f6', useCORS:true, windowWidth:430}).then(function(canvas){
     box.innerHTML='';
-    var farmNo=(document.getElementById('farmNo').value||'농지').replace(/[^0-9]/g,'')||'농지';
-    var crop=document.getElementById('crop').value||'사과';
     var d=new Date(), stamp=d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2)+'_'+('0'+d.getHours()).slice(-2)+('0'+d.getMinutes()).slice(-2);
-    var dataUrl=canvas.toDataURL('image/png');
-    var link=document.createElement('a');
-    link.download=crop+'_일소피해_'+farmNo+'_'+stamp+'.png';
-    link.href=dataUrl;
+    var dataUrl = canvas.toDataURL('image/png');
+    var link = document.createElement('a');
+    link.download = val('crop')+'_일소피해_'+(val('farmNo')||'농지')+'_'+stamp+'.png';
+    link.href = dataUrl;
     link.click();
-    saveToSharedHistory(dataUrl);   /* 메인(index) 통합 저장목록에도 기록 */
+    saveToSharedHistory(dataUrl);
     document.getElementById('saveDoneOverlay').classList.add('show');
   }).catch(function(){ box.innerHTML=''; showToast('저장에 실패했습니다'); });
 }
 
-/* 메인 index.html 저장목록(save_history / save_img_cache) 연동 */
 function saveToSharedHistory(imgDataUrl){
   if(!LAST) return;
-  var farmFull=document.getElementById('farmNo').value||'';
-  var contractorName=document.getElementById('contractorName').value||'';
-  var farm4=(farmFull.replace(/[^0-9]/g,'').slice(-4))||farmFull;   /* 농지번호 뒤 4자리 */
-  var pct=(LAST.afterCnt>0?(LAST.admitCnt/LAST.afterCnt*100):0).toFixed(2)+'%';
+  var farmFull=val('farmNo')||'';
+  var farm4=farmFull.replace(/[^0-9]/g,'').slice(-4)||farmFull;
+  var pct = LAST.blendedPct.toFixed(2)+'%';
   var n=new Date(), p=function(x){return ('0'+x).slice(-2);};
   var savedAt=n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+'T'+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
   var id=Date.now();
   try{
     var hist=JSON.parse(localStorage.getItem('save_history')||'[]');
-    var removed=[];
-    /* 동일 농지번호의 기존 '일소' 기록만 덮어쓰기 (다른 작물 기록은 보존) */
-    if(farmFull){ hist=hist.filter(function(r){ var dup=(r.src==='sunburn' && (r.fullFarmNo||r.farmNo)===farmFull); if(dup) removed.push(String(r.id)); return !dup; }); }
-    hist.unshift({ id:id, src:'sunburn', savedAt:savedAt, crop:'일소', cropDetail:'일소', farmNo:farm4, fullFarmNo:farmFull, contractorName:contractorName, pct:pct, category:'과수' });
+    if(farmFull){ hist=hist.filter(r=>!(r.src==='sunburn' && (r.fullFarmNo||r.farmNo)===farmFull)); }
+    hist.unshift({ id:id, src:'sunburn', savedAt:savedAt, crop:'일소', cropDetail:'일소', farmNo:farm4, fullFarmNo:farmFull, contractorName:val('contractorName'), pct:pct, category:'과수' });
     if(hist.length>200) hist=hist.slice(0,200);
     localStorage.setItem('save_history', JSON.stringify(hist));
-    var cache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
-    if(removed.length) cache=cache.filter(function(c){ return removed.indexOf(String(c.id))<0; });
-    if(imgDataUrl) cache.unshift({ id:id, img:imgDataUrl });
-    if(cache.length>60) cache=cache.slice(0,60);
-    localStorage.setItem('save_img_cache', JSON.stringify(cache));
+    
+    if(imgDataUrl){
+      var cache=JSON.parse(localStorage.getItem('save_img_cache')||'[]');
+      cache.unshift({ id:id, img:imgDataUrl });
+      if(cache.length>60) cache=cache.slice(0,60);
+      localStorage.setItem('save_img_cache', JSON.stringify(cache));
+    }
   }catch(e){}
 }
 
-/* 초기 구동 */
 (function init(){
-  try{ if(localStorage.getItem(KEY_BIG)==='1'){ document.body.classList.add('big-text'); document.getElementById('bigtextBtn').classList.add('on'); document.getElementById('bigtextLabel').textContent='작게'; } }catch(e){}
   if(!restoreState()){
-    buildSampleRows({1:'5',2:'5',3:'10'}, null);
-    buildTreeRows();
-    treeField(1,'tJoinTree').value='260'; treeField(1,'tAfterCnt').value='19,360'; treeField(1,'tRealTree').value='260'; treeField(1,'tDeadNC').value='4'; treeField(1,'tAliveNC').value='2';
-    toggleTreeDetail(1);
-    updateTreeGroups();
-    var _g100=document.querySelector('#gradeGroups .grade-block .g100'); if(_g100) _g100.value='20';
-    document.querySelectorAll('.inp').forEach(mark);
+    document.getElementById('surveyDate').value = todayStr();
+    syncDate();
+    mark(document.getElementById('crop'));
+    updateAll();
   }
-  applyMethod();
-  /* 조사일자는 항상 오늘 날짜로 (마늘 참고) */
-  document.getElementById('surveyDate').value=todayStr();
-  syncDate();
-  /* 품목 기본값(사과) 완료색 보장 */
-  mark(document.getElementById('crop'));
-  updatePumjongList();
-  updateGrade();
-  refreshPrevUI();
-  liveUpdate();
-  document.getElementById('content').addEventListener('input',function(){
-    if(!document.getElementById('content').classList.contains('locked')) liveUpdate();
-  },{passive:true});
 })();
 </script>
 </body>
