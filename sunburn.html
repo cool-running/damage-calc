@@ -1119,7 +1119,10 @@ function doReset(){
       else el.value=''; });
     /* 착과수·주수 칸 확실히 비우기 (콤마/포맷 잔여 방지) */
     ['avgCnt','prevManual'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-    buildSampleRows({},{}); buildGradeGroups({}); buildTreeRows({},{},{}); syncDate();
+    buildSampleRows({},{}); buildGradeGroups({}); buildTreeRows({},{},{});
+    var sd = document.getElementById('surveyDate');
+    if(sd) { sd.value = todayStr(); }
+    syncDate();
     if(document.getElementById('autoSetRate')) document.getElementById('autoSetRate').value='-';
     if(document.getElementById('autoPrevRate')) document.getElementById('autoPrevRate').value='0.00';
     refreshPrevUI();
