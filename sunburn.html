@@ -1095,10 +1095,13 @@ function computeAll(){
   var order=g.order.length?g.order:['미입력'];
   var multi=order.length>1;
   var groups=[], fallSumAll=0, totalFallDamage=0;
+  var unmatched=[];
   order.forEach(function(key,gi){
     var gc=(g.grp[key]&&g.grp[key].count)||0, gf=(g.grp[key]&&g.grp[key].fall)||0;
     fallSumAll+=gf;
-    var tg = treeMap[key] || {target:0, afterCnt:0};
+    var tg = treeMap[key];
+    if(!tg || tg.realTree<=0){ unmatched.push(key); }
+    tg = tg || {target:0, afterCnt:0, realTree:0};
     var gT = tg.target;
     var gAfter = tg.afterCnt;
     var gFD = gc>0 ? Math.round((gf/gc)*gT) : 0;
@@ -1106,8 +1109,17 @@ function computeAll(){
     var v=readBlock(blocks[gi]);
     var dmgRatio=ratioOf(v);
     var admitRate=Math.max(0,dmgRatio-prevRate);
-    groups.push({key:key,count:gc,fall:gf,target:gT,afterCnt:gAfter,fallDamage:gFD,dmgRatio:dmgRatio,admitRate:admitRate,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100});
+    groups.push({key:key,count:gc,fall:gf,target:gT,realTree:tg.realTree,afterCnt:gAfter,fallDamage:gFD,dmgRatio:dmgRatio,admitRate:admitRate,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100});
   });
+  /* 표본조사 품종과 나무조사 품종이 텍스트로 정확히 일치하는 것만 매칭되므로,
+     매칭된 그룹의 합으로 조사대상주수·실제결과주수를 다시 계산해 헤더 표시와 실제 계산을 일치시킴 */
+  R.target = groups.reduce(function(s,gr){return s+gr.target;},0);
+  R.realTree = groups.reduce(function(s,gr){return s+gr.realTree;},0);
+  /* 나무조사에는 있지만 표본조사 품종 어디에도 매칭되지 않는 항목(오타·다른 품종 선택 등) */
+  var treeKeys=Object.keys(treeMap);
+  var orphaned=treeKeys.filter(function(k){ return order.indexOf(k)<0 && treeMap[k].realTree>0; });
+  R.unmatched=unmatched; R.orphaned=orphaned;
+  if(unmatched.length>0){ R.ready=false; return R; }
   var covered=totalFallDamage>afterCnt*0.06;
   var totalAdmitCnt=0;
   groups.forEach(function(gr){ gr.admitCnt=covered?Math.round(gr.fallDamage*gr.admitRate/100):0; totalAdmitCnt+=gr.admitCnt; });
@@ -1297,6 +1309,10 @@ function calc(silent){
   if(afterCnt<=0){ if(!silent) showToast('적과후착과수를 입력하세요'); return; }
 
   var R=computeAll();
+  if(!census && R.unmatched && R.unmatched.length>0){
+    if(!silent) showToast('나무조사에 <b>'+R.unmatched.join(', ')+'</b> 품종 정보가 없습니다<br>표본조사와 같은 숙기·품종을 나무조사에서도 선택하세요');
+    return;
+  }
   if(R.realTree<=0){ if(!silent) showToast('실제결과주수를 입력하세요'); return; }
   if(!census && sampleN<=0){ if(!silent) showToast('표본주수를 입력하세요'); return; }
   if(R.target<=0){ if(!silent) showToast('조사대상주수가 0 이하입니다'); return; }
