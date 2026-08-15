@@ -1328,23 +1328,23 @@ function buildCapture(){
   var samps=[]; document.querySelectorAll('#sampRows .samp-fall').forEach(function(i){ samps.push(parseFloat((i.value||'').replace(/,/g,''))||0); });
   var varis=[]; var _vm=getVarieties(); document.querySelectorAll('#sampRows .samp-sukgi').forEach(function(s){ varis.push((_vm[s.dataset.idx]||'').trim()); });
 
-  // 표본 셀 스타일
-  var TH='padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #cfd6dd;border-bottom:1px solid #cfd6dd;font-size:11px;font-weight:700;text-align:center';
-  var THl='padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #cfd6dd;font-size:11px;font-weight:700;text-align:center';
-  var TD='padding:7px 4px;border-right:1px solid #e0e3e8;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:12px';
-  var TDl='padding:7px 4px;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:12px';
-  var TG='padding:7px 4px;border-right:1px solid #cdebdd;text-align:center;background:#e8faf3;font-weight:800;font-size:12px';
-  var TGl='padding:7px 4px;text-align:center;background:#e8faf3;font-weight:800;font-size:12px';
-  // 넓은 표(6·7열)용 좁은 셀
-  var nTH='padding:6px 2px;background:#4a7aad;color:#fff;border-right:1px solid #cfd6dd;border-bottom:1px solid #cfd6dd;font-size:9.5px;font-weight:700;text-align:center;line-height:1.2;word-break:keep-all';
-  var nTHl='padding:6px 2px;background:#4a7aad;color:#fff;border-bottom:1px solid #cfd6dd;font-size:9.5px;font-weight:700;text-align:center;line-height:1.2;word-break:keep-all';
-  var nTD='padding:6px 2px;border-right:1px solid #e0e3e8;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:10.5px;word-break:keep-all';
-  var nTDl='padding:6px 2px;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:10.5px';
-  var nTG='padding:6px 2px;border-right:1px solid #cdebdd;text-align:center;background:#e8faf3;font-weight:800;font-size:10.5px';
-  var nTGl='padding:6px 2px;text-align:center;background:#e8faf3;font-weight:800;font-size:10.5px';
+  // 표본 셀 스타일 (A4 폭 기준으로 여유있게)
+  var TH='padding:9px 6px;background:#4a7aad;color:#fff;border-right:1px solid #cfd6dd;border-bottom:1px solid #cfd6dd;font-size:13px;font-weight:700;text-align:center';
+  var THl='padding:9px 6px;background:#4a7aad;color:#fff;border-bottom:1px solid #cfd6dd;font-size:13px;font-weight:700;text-align:center';
+  var TD='padding:9px 6px;border-right:1px solid #e0e3e8;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:14px';
+  var TDl='padding:9px 6px;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:14px';
+  var TG='padding:9px 6px;border-right:1px solid #cdebdd;text-align:center;background:#e8faf3;font-weight:800;font-size:14px';
+  var TGl='padding:9px 6px;text-align:center;background:#e8faf3;font-weight:800;font-size:14px';
+  // 넓은 표(6·7열)용 셀
+  var nTH='padding:8px 4px;background:#4a7aad;color:#fff;border-right:1px solid #cfd6dd;border-bottom:1px solid #cfd6dd;font-size:12px;font-weight:700;text-align:center;line-height:1.25;word-break:keep-all';
+  var nTHl='padding:8px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #cfd6dd;font-size:12px;font-weight:700;text-align:center;line-height:1.25;word-break:keep-all';
+  var nTD='padding:8px 4px;border-right:1px solid #e0e3e8;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:13px;word-break:keep-all';
+  var nTDl='padding:8px 4px;border-bottom:1px solid #e0e3e8;text-align:center;background:#fff;font-weight:700;font-size:13px';
+  var nTG='padding:8px 4px;border-right:1px solid #cdebdd;text-align:center;background:#e8faf3;font-weight:800;font-size:13px';
+  var nTGl='padding:8px 4px;text-align:center;background:#e8faf3;font-weight:800;font-size:13px';
 
-  function card(title,inner){ return '<div style="background:#fff;border-radius:16px;padding:13px;box-shadow:0 6px 18px rgba(0,0,0,0.05)"><div style="font-size:14px;font-weight:900;color:#111;margin-bottom:9px">'+title+'</div>'+inner+'</div>'; }
-  function tbl(inner){ return '<table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #cfd6dd;table-layout:fixed">'+inner+'</table>'; }
+  function card(title,inner){ return '<div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.05)"><div style="font-size:17px;font-weight:900;color:#111;margin-bottom:12px">'+title+'</div>'+inner+'</div>'; }
+  function tbl(inner){ return '<table style="width:100%;border-collapse:collapse;font-size:14px;border:1px solid #cfd6dd;table-layout:fixed">'+inner+'</table>'; }
 
   // 품종(숙기)별 계산결과 — calc() 시점에 산정된 LAST.groups 사용 (품종별 피해구성비율 반영)
   var groups=L.groups||[];
@@ -1352,10 +1352,10 @@ function buildCapture(){
   var census=L.census;
 
   // 헤더: 조사대상주수 / 표본주수(or 전수)
-  function headBox(k,v){ return '<div style="flex:1;background:#fff;border-radius:12px;padding:9px 12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#555">'+k+'</span><span style="font-size:15px;font-weight:900;color:#185FA5">'+v+'</span></div>'; }
+  function headBox(k,v){ return '<div style="flex:1;background:#fff;border-radius:12px;padding:13px 18px;box-shadow:0 4px 12px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:space-between"><span style="font-size:15px;font-weight:700;color:#555">'+k+'</span><span style="font-size:20px;font-weight:900;color:#185FA5">'+v+'</span></div>'; }
   var headLine = census
-    ? '<div style="display:flex;gap:10px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('전체 낙과수',fmt(L.fallDamage)+' 개')+'</div>'
-    : '<div style="display:flex;gap:10px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('표본주수',fmt(L.sampleN)+' 주')+'</div>';
+    ? '<div style="display:flex;gap:14px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('전체 낙과수',fmt(L.fallDamage)+' 개')+'</div>'
+    : '<div style="display:flex;gap:14px">'+headBox('조사대상주수',fmt(L.target)+' 주')+headBox('표본주수',fmt(L.sampleN)+' 주')+'</div>';
 
   // 전수조사 카드 (census 전용)
   var cCensus=card('전수조사',
@@ -1371,16 +1371,16 @@ function buildCapture(){
     tbl('<colgroup><col style="width:28%"><col style="width:44%"><col style="width:28%"></colgroup>'+
       '<thead><tr><th style="'+TH+'">표본주번호</th><th style="'+TH+'">숙기/품종</th><th style="'+THl+'">낙과수</th></tr></thead><tbody>'+t1+'</tbody>'));
 
-  // 2) 품종별 집계 — 전산 조사서 양식(금차품종별착과수/표본낙과수계/조사표본주수/조사대상주수/품종별낙과수)과 동일 구성
-  // (피해구성비율 칸은 전산 서식에서도 공란으로 남기고 바로 아래 '과실피해구성비율' 표에서 산정하므로 생략)
+  // 2) 품종별 집계 — 전산 조사서 양식과 동일 구성 (숙기/품종·금차품종별착과수·표본낙과수계(A)·조사표본주수(B)·조사대상주수(C)·품종별낙과수(D=A/B×C)·피해구성비율(E))
   var t2='';
   groups.forEach(function(gr){
-    t2+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.afterCnt)+'</td><td style="'+nTD+'">'+fmt(gr.fall)+'</td><td style="'+nTD+'">'+fmt(gr.count)+'</td><td style="'+nTD+'">'+fmt(gr.target)+'</td><td style="'+nTDl+'">'+fmt(gr.fallDamage)+'</td></tr>';
+    t2+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.afterCnt)+'</td><td style="'+nTD+'">'+fmt(gr.fall)+'</td><td style="'+nTD+'">'+fmt(gr.count)+'</td><td style="'+nTD+'">'+fmt(gr.target)+'</td><td style="'+nTD+'">'+fmt(gr.fallDamage)+'</td><td style="'+nTDl+'">'+gr.dmgRatio.toFixed(0)+'</td></tr>';
   });
-  t2+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(L.afterCnt)+'</td><td style="'+nTG+'">'+fmt(L.fallSum)+'</td><td style="'+nTG+'">'+fmt(L.sampleN)+'</td><td style="'+nTG+'">'+fmt(L.target)+'</td><td style="'+nTGl+'">'+fmt(L.fallDamage)+'</td></tr>';
+  var totalDmgRatio = L.fallDamage>0 ? (groups.reduce(function(s,gr){return s+gr.dmgRatio*gr.fallDamage;},0)/L.fallDamage) : 0;
+  t2+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(L.afterCnt)+'</td><td style="'+nTG+'">'+fmt(L.fallSum)+'</td><td style="'+nTG+'">'+fmt(L.sampleN)+'</td><td style="'+nTG+'">'+fmt(L.target)+'</td><td style="'+nTG+'">'+fmt(L.fallDamage)+'</td><td style="'+nTGl+'">'+totalDmgRatio.toFixed(0)+'</td></tr>';
   var c2=card('품종별 집계',
-    tbl('<colgroup><col style="width:20%"><col style="width:20%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup>'+
-      '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">금차<br>품종별착과수</th><th style="'+nTH+'">표본<br>낙과수계</th><th style="'+nTH+'">조사<br>표본주수</th><th style="'+nTH+'">조사<br>대상주수</th><th style="'+nTHl+'">품종별<br>낙과수</th></tr></thead><tbody>'+t2+'</tbody>'));
+    tbl('<colgroup><col style="width:21%"><col style="width:16%"><col style="width:11%"><col style="width:11%"><col style="width:13%"><col style="width:13%"><col style="width:15%"></colgroup>'+
+      '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">금차<br>품종별착과수</th><th style="'+nTH+'">표본<br>낙과수계</th><th style="'+nTH+'">조사<br>표본주수</th><th style="'+nTH+'">조사<br>대상주수</th><th style="'+nTH+'">품종별<br>낙과수</th><th style="'+nTHl+'">피해<br>구성비율</th></tr></thead><tbody>'+t2+'</tbody>'));
 
   // 3) 과실피해구성비율 — 숙기/품종별 각각 산정
   var t3='', sg0=0,sg50=0,sg80=0,sg100=0;
@@ -1414,29 +1414,30 @@ function buildCapture(){
     tbl('<colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>'+
       '<thead><tr><th style="'+nTH+'">면·부책</th><th style="'+nTH+'">전차인정피해율</th><th style="'+nTH+'">인정피해율</th><th style="'+nTHl+'">낙과인정피해과실수</th></tr></thead>'+
       '<tbody><tr><td style="'+nTD+'">'+(L.covered?'부책(인정)':'면책')+'</td><td style="'+nTD+'">'+(L.prevRate||0).toFixed(2)+' %</td><td style="'+nTG+'">'+L.admitRate.toFixed(2)+' %</td><td style="'+nTGl+'">'+fmt(L.admitCnt)+' 개</td></tr></tbody>')+
-    '<div style="margin-top:11px;background:#185FA5;border-radius:12px;padding:12px 14px;display:flex;align-items:center">'+
+    '<div style="margin-top:14px;background:#185FA5;border-radius:12px;padding:16px 18px;display:flex;align-items:center">'+
       '<div style="flex:1;text-align:center">'+
-        '<div style="font-size:12px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:4px">적착대비 피해율</div>'+
-        '<div style="font-size:23px;color:#FFD0D0;font-weight:900">'+(L.afterCnt>0?(L.admitCnt/L.afterCnt*100):0).toFixed(2)+' %</div>'+
+        '<div style="font-size:14px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:5px">적착대비 피해율</div>'+
+        '<div style="font-size:30px;color:#FFD0D0;font-weight:900">'+(L.afterCnt>0?(L.admitCnt/L.afterCnt*100):0).toFixed(2)+' %</div>'+
       '</div>'+
-      '<div style="width:1px;align-self:stretch;background:rgba(255,255,255,0.3);margin:0 8px"></div>'+
+      '<div style="width:1px;align-self:stretch;background:rgba(255,255,255,0.3);margin:0 10px"></div>'+
       '<div style="flex:1;text-align:center">'+
-        '<div style="font-size:12px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:4px">낙과 인정피해과실수</div>'+
-        '<div style="font-size:23px;color:#fff;font-weight:900">'+fmt(L.admitCnt)+' 개</div>'+
+        '<div style="font-size:14px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:5px">낙과 인정피해과실수</div>'+
+        '<div style="font-size:30px;color:#fff;font-weight:900">'+fmt(L.admitCnt)+' 개</div>'+
       '</div>'+
     '</div>');
 
-  var foot=multi?'<div style="font-size:9.5px;color:#888;margin-top:2px;line-height:1.45">※ 품종 2종 이상: 조사대상주수·낙과수·피해구성비율·인정피해율 모두 숙기/품종별 실제 입력값으로 각각 산정한 값입니다.</div>':'';
+  var foot=multi?'<div style="font-size:12px;color:#888;margin-top:2px;line-height:1.5">※ 품종 2종 이상: 조사대상주수·낙과수·피해구성비율·인정피해율 모두 숙기/품종별 실제 입력값으로 각각 산정한 값입니다.</div>':'';
 
-  return '<div style="width:430px;background:#f3f4f6;font-family:-apple-system,Noto Sans KR,sans-serif">'+
-    '<div style="background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 12%,#f3f4f6 12%,#f3f4f6 100%);padding:0 16px 22px;box-sizing:border-box">'+
-      '<div style="height:24px"></div>'+
-      '<div style="display:flex;align-items:baseline;gap:6px;color:#fff;margin-bottom:14px;font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
+  // A4 용지(210×297mm, 96dpi 기준 794×1123px) 폭에 맞춘 레이아웃
+  return '<div style="width:794px;background:#f3f4f6;font-family:-apple-system,Noto Sans KR,sans-serif">'+
+    '<div style="background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 12%,#f3f4f6 12%,#f3f4f6 100%);padding:0 32px 34px;box-sizing:border-box">'+
+      '<div style="height:34px"></div>'+
+      '<div style="display:flex;align-items:baseline;gap:9px;color:#fff;margin-bottom:20px;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
         '<span>'+date+'</span><span style="opacity:0.6">·</span>'+
         '<span>'+(contractorName?contractorName+'('+farmNo+')':'농지 '+farmNo)+'</span><span style="opacity:0.6">·</span>'+
-        '<span style="font-size:15px">☀️ '+crop+' 일소피해 계산결과</span>'+
+        '<span style="font-size:19px">☀️ '+crop+' 일소피해 계산결과</span>'+
       '</div>'+
-      '<div style="display:flex;flex-direction:column;gap:12px">'+headLine+(census?cCensus:(c1+c2))+c3+c3b+c4+foot+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:16px">'+headLine+(census?cCensus:(c1+c2))+c3+c3b+c4+foot+'</div>'+
     '</div></div>';
 }
 function saveImage(){
@@ -1445,7 +1446,7 @@ function saveImage(){
   var box=document.getElementById('captureBox');
   box.innerHTML=buildCapture();
   showToast('이미지 만드는 중…');
-  html2canvas(box,{scale:2,backgroundColor:'#f3f4f6',useCORS:true,windowWidth:430}).then(function(canvas){
+  html2canvas(box,{scale:2,backgroundColor:'#f3f4f6',useCORS:true,windowWidth:794}).then(function(canvas){
     box.innerHTML='';
     var farmNo=(document.getElementById('farmNo').value||'농지').replace(/[^0-9]/g,'')||'농지';
     var crop=document.getElementById('crop').value||'사과';
