@@ -1129,7 +1129,9 @@ function computeAll(){
   var covered=totalFallDamage>afterCnt*0.06;
   var totalAdmitCnt=0;
   groups.forEach(function(gr){ gr.admitCnt=covered?Math.round(gr.fallDamage*gr.admitRate/100):0; totalAdmitCnt+=gr.admitCnt; });
-  var blendedRate = totalFallDamage>0 ? (totalAdmitCnt/totalFallDamage*100) : 0;
+  /* 품종이 1개면 반올림된 개수로 역산하지 않고 그 품종의 정확한(반올림 전) 인정피해율을 그대로 표시
+     (반올림된 개수로 역산하면 소수점 둘째자리에서 전산 표시값과 미세하게 어긋날 수 있음) */
+  var blendedRate = !covered ? 0 : (groups.length===1 ? groups[0].admitRate : (totalFallDamage>0 ? (totalAdmitCnt/totalFallDamage*100) : 0));
 
   R.ready=true; R.fallSum=fallSumAll; R.fallDamage=totalFallDamage; R.groups=groups; R.multi=multi;
   R.covered=covered; R.admitRate=blendedRate; R.admitCnt=totalAdmitCnt;
