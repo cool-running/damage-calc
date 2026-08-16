@@ -378,7 +378,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="g3" style="margin-top:9px">
       <div class="field">
         <label>적과후착과수 <span class="unit">(개, 합계)</span></label>
-        <input class="auto" id="afterCnt" type="text" readonly value="0">
+        <input class="inp" id="afterCnt" type="text" inputmode="numeric" oninput="onComma(this);updatePrev();saveState()">
       </div>
       <div class="field">
         <label>착과율 <span class="unit">(%)</span></label>
@@ -407,7 +407,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;line-height:1.6">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력해도 되고, <b style="color:var(--blue)">품종 추가</b>로 나눠 입력해도 같은 품종끼리 자동으로 합산되어 계산됩니다 (상세입력: <b>나무조사</b> 버튼)</div>
     <input type="hidden" id="treeRowN" value="1">
     <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:36px">숙기</th><th style="width:64px">품종</th><th style="width:44px">가입주수</th><th style="width:90px">착과수</th><th style="width:36px">나무조사</th></tr></thead>
+      <thead><tr><th style="width:42px">숙기</th><th style="width:100px">품종</th><th style="width:64px">가입주수</th><th style="width:42px">나무조사</th></tr></thead>
       <tbody id="treeRows"></tbody>
     </table>
     <div class="g2" style="margin-top:9px">
@@ -585,7 +585,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 
 <script>
 var KEY_STATE='sunburn_state', KEY_HIST='sunburn_history', KEY_BIG='sunburn_bigtext';
-var FIELDS=['crop','contractorName','farmNo','surveyDate','method','avgCnt','product','prevAcc','disaster','prevManual','sampleN','treeRowN','totalFall'];
+var FIELDS=['crop','contractorName','farmNo','surveyDate','method','avgCnt','afterCnt','product','prevAcc','disaster','prevManual','sampleN','treeRowN','totalFall'];
 var LAST=null;
 
 function num(id){ var v=(document.getElementById(id).value||'').toString().replace(/,/g,''); var n=parseFloat(v); return isNaN(n)?0:n; }
@@ -644,7 +644,7 @@ function treeIndices(){
 function currentTreeValues(){
   var o={};
   treeIndices().forEach(function(idx){
-    o[idx]={ joinTree:treeField(idx,'tJoinTree').value, afterCnt:treeField(idx,'tAfterCnt').value, realTree:treeField(idx,'tRealTree').value,
+    o[idx]={ joinTree:treeField(idx,'tJoinTree').value, realTree:treeField(idx,'tRealTree').value,
       harvestDone:treeField(idx,'tHarvestDone').value, harvestImposs:treeField(idx,'tHarvestImposs').value, deadTree:treeField(idx,'tDeadTree').value,
       deadNC:treeField(idx,'tDeadNC').value, aliveNC:treeField(idx,'tAliveNC').value };
   });
@@ -672,7 +672,7 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
   var wrap=document.getElementById('treeRows'); if(!wrap) return;
   var prevVal={}, prevVar={}, prevOpen={};
   treeIndices().forEach(function(idx){
-    prevVal[idx]={ joinTree:treeField(idx,'tJoinTree').value, afterCnt:treeField(idx,'tAfterCnt').value, realTree:treeField(idx,'tRealTree').value,
+    prevVal[idx]={ joinTree:treeField(idx,'tJoinTree').value, realTree:treeField(idx,'tRealTree').value,
       harvestDone:treeField(idx,'tHarvestDone').value, harvestImposs:treeField(idx,'tHarvestImposs').value, deadTree:treeField(idx,'tDeadTree').value,
       deadNC:treeField(idx,'tDeadNC').value, aliveNC:treeField(idx,'tAliveNC').value };
     var detRow=document.querySelector('#treeRows .tvar-detail-row[data-idx="'+idx+'"]');
@@ -697,11 +697,10 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
       '</select></td>'+
       '<td>'+treePumjongCell(i, pj)+'</td>'+
       '<td>'+treeCellFlat('tJoinTree',v.joinTree)+'</td>'+
-      '<td>'+treeCellFlatComma('tAfterCnt',v.afterCnt)+'</td>'+
       '<td><button type="button" class="tvar-detail-btn'+(open?' on':'')+'" onclick="toggleTreeDetail('+i+')">🌳</button></td>'+
     '</tr>'+
     '<tr class="tvar-detail-row" data-idx="'+i+'" style="display:'+(open?'table-row':'none')+'">'+
-      '<td colspan="5" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
+      '<td colspan="4" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
         '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">'+
           treeCell('고사','tDeadTree',v.deadTree)+
           treeCell('수불','tHarvestImposs',v.harvestImposs)+
@@ -710,8 +709,8 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
         '</div>'+
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px">'+
           treeCell('실제결과','tRealTree',v.realTree)+
-          treeCell('기수확','tHarvestDone',v.harvestDone)+
           '<div class="tree-cell"><label style="color:var(--blue)">조사대상</label><input class="auto tTargetBox" type="text" readonly value="0" style="height:40px;font-size:13.5px;padding:0;text-align:center;border-radius:8px;font-weight:800;color:var(--blue);background:#eaf2fb;border-color:var(--blue)"></div>'+
+          treeCell('기수확','tHarvestDone',v.harvestDone)+
         '</div>'+
       '</td>'+
     '</tr>';
@@ -754,19 +753,17 @@ function doMinusTreeRow(){
   buildTreeRows(); liveUpdate(); saveState();
 }
 function updateTreeGroups(){
-  var sumJoin=0, sumAfter=0, sumTarget=0;
+  var sumJoin=0, sumTarget=0;
   treeIndices().forEach(function(idx){
     var jt=parseFloat((treeField(idx,'tJoinTree').value||'').replace(/,/g,''))||0;
-    var ac=parseFloat((treeField(idx,'tAfterCnt').value||'').replace(/,/g,''))||0;
     var rt=parseFloat(treeField(idx,'tRealTree').value)||0, hd=parseFloat(treeField(idx,'tHarvestDone').value)||0,
         hi=parseFloat(treeField(idx,'tHarvestImposs').value)||0, dt=parseFloat(treeField(idx,'tDeadTree').value)||0,
         dnc=parseFloat(treeField(idx,'tDeadNC').value)||0, anc=parseFloat(treeField(idx,'tAliveNC').value)||0;
     var target=Math.max(0, rt-hd-hi-dt-dnc-anc);
     var tb=treeField(idx,'tTargetBox'); if(tb) tb.value=fmt(target);
-    sumJoin+=jt; sumAfter+=ac; sumTarget+=target;
+    sumJoin+=jt; sumTarget+=target;
   });
   var jEl=document.getElementById('joinTree'); if(jEl) jEl.value=fmt(sumJoin);
-  var aEl=document.getElementById('afterCnt'); if(aEl) aEl.value=fmt(sumAfter);
   var tEl=document.getElementById('targetSum'); if(tEl) tEl.value=fmt(sumTarget);
   if(typeof updatePrev==='function') updatePrev();
 }
@@ -781,10 +778,9 @@ function getTreeGroupsData(){
     var rt=parseFloat(treeField(idx,'tRealTree').value)||0, hd=parseFloat(treeField(idx,'tHarvestDone').value)||0,
         hi=parseFloat(treeField(idx,'tHarvestImposs').value)||0, dt=parseFloat(treeField(idx,'tDeadTree').value)||0,
         dnc=parseFloat(treeField(idx,'tDeadNC').value)||0, anc=parseFloat(treeField(idx,'tAliveNC').value)||0;
-    var afterCntG=parseFloat((treeField(idx,'tAfterCnt').value||'').replace(/,/g,''))||0;
     var target=Math.max(0, rt-hd-hi-dt-dnc-anc);
-    if(!map[key]) map[key]={realTree:0, afterCnt:0, target:0};
-    map[key].realTree+=rt; map[key].afterCnt+=afterCntG; map[key].target+=target;
+    if(!map[key]) map[key]={realTree:0, target:0};
+    map[key].realTree+=rt; map[key].target+=target;
   });
   return map;
 }
@@ -1110,15 +1106,14 @@ function computeAll(){
     fallSumAll+=gf;
     var tg = treeMap[key];
     if(!tg || tg.realTree<=0){ unmatched.push(key); }
-    tg = tg || {target:0, afterCnt:0, realTree:0};
+    tg = tg || {target:0, realTree:0};
     var gT = tg.target;
-    var gAfter = tg.afterCnt;
     var gFD = gc>0 ? Math.round((gf/gc)*gT) : 0;
     totalFallDamage+=gFD;
     var v=readBlock(blocks[gi]);
     var dmgRatio=ratioOf(v);
     var admitRate=Math.max(0,dmgRatio-prevRate);
-    groups.push({key:key,count:gc,fall:gf,target:gT,realTree:tg.realTree,afterCnt:gAfter,fallDamage:gFD,dmgRatio:dmgRatio,admitRate:admitRate,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100});
+    groups.push({key:key,count:gc,fall:gf,target:gT,realTree:tg.realTree,fallDamage:gFD,dmgRatio:dmgRatio,admitRate:admitRate,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100});
   });
   /* 표본조사 품종과 나무조사 품종이 텍스트로 정확히 일치하는 것만 매칭되므로,
      매칭된 그룹의 합으로 조사대상주수·실제결과주수를 다시 계산해 헤더 표시와 실제 계산을 일치시킴 */
@@ -1436,9 +1431,10 @@ function buildCapture(){
       '<thead><tr><th style="'+TH+'">표본주번호</th><th style="'+TH+'">숙기/품종</th><th style="'+THl+'">낙과수</th></tr></thead><tbody>'+t1+'</tbody>'));
 
   // 2) 품종별 집계 — 전산 조사서 양식과 동일 구성 (숙기/품종·금차품종별착과수·표본낙과수계(A)·조사표본주수(B)·조사대상주수(C)·품종별낙과수(D=A/B×C)·피해구성비율(E))
+  // (금차품종별착과수는 품종별로 별도 입력받지 않아 공란으로 둠 — 합계는 기본정보의 적과후착과수를 그대로 표시)
   var t2='';
   groups.forEach(function(gr){
-    t2+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.afterCnt)+'</td><td style="'+nTD+'">'+fmt(gr.fall)+'</td><td style="'+nTD+'">'+fmt(gr.count)+'</td><td style="'+nTD+'">'+fmt(gr.target)+'</td><td style="'+nTD+'">'+fmt(gr.fallDamage)+'</td><td style="'+nTDl+'">'+gr.dmgRatio.toFixed(0)+'</td></tr>';
+    t2+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">-</td><td style="'+nTD+'">'+fmt(gr.fall)+'</td><td style="'+nTD+'">'+fmt(gr.count)+'</td><td style="'+nTD+'">'+fmt(gr.target)+'</td><td style="'+nTD+'">'+fmt(gr.fallDamage)+'</td><td style="'+nTDl+'">'+gr.dmgRatio.toFixed(0)+'</td></tr>';
   });
   var totalDmgRatio = L.fallDamage>0 ? (groups.reduce(function(s,gr){return s+gr.dmgRatio*gr.fallDamage;},0)/L.fallDamage) : 0;
   t2+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(L.afterCnt)+'</td><td style="'+nTG+'">'+fmt(L.fallSum)+'</td><td style="'+nTG+'">'+fmt(L.sampleN)+'</td><td style="'+nTG+'">'+fmt(L.target)+'</td><td style="'+nTG+'">'+fmt(L.fallDamage)+'</td><td style="'+nTGl+'">'+totalDmgRatio.toFixed(0)+'</td></tr>';
@@ -1555,9 +1551,10 @@ function saveToSharedHistory(imgDataUrl){
 (function init(){
   try{ if(localStorage.getItem(KEY_BIG)==='1'){ document.body.classList.add('big-text'); document.getElementById('bigtextBtn').classList.add('on'); document.getElementById('bigtextLabel').textContent='작게'; } }catch(e){}
   if(!restoreState()){
+    document.getElementById('afterCnt').value='19,360';
     buildSampleRows({1:'5',2:'5',3:'10'}, null);
     buildTreeRows();
-    treeField(1,'tJoinTree').value='260'; treeField(1,'tAfterCnt').value='19,360'; treeField(1,'tRealTree').value='260'; treeField(1,'tDeadNC').value='4'; treeField(1,'tAliveNC').value='2';
+    treeField(1,'tJoinTree').value='260'; treeField(1,'tRealTree').value='260'; treeField(1,'tDeadNC').value='4'; treeField(1,'tAliveNC').value='2';
     toggleTreeDetail(1);
     updateTreeGroups();
     var _g100=document.querySelector('#gradeGroups .grade-block .g100'); if(_g100) _g100.value='20';
