@@ -719,19 +719,16 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
     '</tr>'+
     '<tr class="tvar-detail-row" data-idx="'+i+'" style="display:'+(open?'table-row':'none')+'">'+
       '<td colspan="4" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">'+
-          '<div class="tree-cell"><label>실제결과</label><input class="inp tRealTree" type="number" inputmode="numeric" value="'+realTreeVal+'" data-auto="'+esc(String(realTreeAuto))+'" oninput="mark(this);updateTreeGroups();saveState()"></div>'+
-          '<div class="tree-cell"><label>고사</label><input class="inp tDeadTree" type="number" inputmode="numeric" value="'+((v.deadTree!==undefined&&v.deadTree!=='')?v.deadTree:'0')+'" oninput="mark(this);updateTreeGroups();saveState()"></div>'+
-          '<div class="tree-cell"><label>수불</label><input class="inp tHarvestImposs" type="number" inputmode="numeric" value="'+((v.harvestImposs!==undefined&&v.harvestImposs!=='')?v.harvestImposs:'0')+'" oninput="mark(this);updateTreeGroups();saveState()"></div>'+
-        '</div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px">'+
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">'+
+          treeCell('고사','tDeadTree',v.deadTree)+
+          treeCell('수불','tHarvestImposs',v.harvestImposs)+
           treeCell('미보고','tDeadNC',v.deadNC)+
           treeCell('미보미','tAliveNC',v.aliveNC)+
-          treeCell('기수확','tHarvestDone',v.harvestDone)+
         '</div>'+
-        '<div class="field" style="margin-top:6px">'+
-          '<label style="color:var(--blue)">조사대상 <span class="unit">(주)</span></label>'+
-          '<input class="auto tTargetBox" type="text" readonly value="0" style="height:40px;font-size:14px;font-weight:800;color:var(--blue);background:#eaf2fb;border-color:var(--blue)">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px">'+
+          '<div class="tree-cell"><label>실제결과</label><input class="inp tRealTree" type="number" inputmode="numeric" value="'+realTreeVal+'" data-auto="'+esc(String(realTreeAuto))+'" oninput="mark(this);updateTreeGroups();saveState()"></div>'+
+          '<div class="tree-cell"><label style="color:var(--blue)">조사대상</label><input class="auto tTargetBox" type="text" readonly value="0" style="height:40px;font-size:13.5px;padding:0;text-align:center;border-radius:8px;font-weight:800;color:var(--blue);background:#eaf2fb;border-color:var(--blue)"></div>'+
+          treeCell('기수확','tHarvestDone',v.harvestDone)+
         '</div>'+
       '</td>'+
     '</tr>';
