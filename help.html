@@ -544,8 +544,9 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">🌳 나무조사 — 품종별로 입력</div>
         <div style="font-size:12px;color:var(--sub);line-height:1.9">
           <b style="color:var(--text)">+ 품종 추가</b> 버튼으로 품종 카드를 늘리고, <b style="color:var(--text)">− 삭제</b>로 줄입니다.<br>
-          각 카드에서 <b style="color:var(--text)">숙기 · 품종 · 가입주수 · 실제결과주수 · 적과후착과수</b>를 입력합니다.<br><br>
-          <b style="color:var(--text)">🌳 나무조사</b> 버튼을 누르면 고사 · 수확불능 · 미보상고사 · 미보상미고사 · 기수확 등 자주 안 쓰는 항목이 펼쳐집니다. 평소엔 접혀 있어도 계산에는 그대로 반영됩니다.
+          각 카드에서 <b style="color:var(--text)">숙기 · 품종 · 가입주수</b>를 입력합니다.<br><br>
+          <b style="color:var(--text)">🌳 나무조사</b> 버튼을 누르면 <b style="color:var(--text)">실제결과주수 · 조사대상(자동) · 기수확</b>, 그리고 고사 · 수확불능 · 미보상고사 · 미보상미고사가 펼쳐집니다. 평소엔 접혀 있어도 계산에는 그대로 반영됩니다.<br><br>
+          <b style="color:var(--text)">적과후착과수</b>는 품종별로 따로 입력하지 않고, 위쪽 <b style="color:var(--text)">기본정보</b>에서 전체 합계로 한 번만 입력합니다.
         </div>
         <div class="warning-box" style="margin-top:8px">
           💡 같은 품종을 수령 · 재배방식별로 나눠서 여러 장으로 입력해도 됩니다. <b>숙기 · 품종이 같으면 자동으로 합산</b>되어 계산되므로, 한 장에 합계로 넣든 여러 장으로 나눠 넣든 결과는 같습니다.
@@ -567,37 +568,11 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       </div>
     </div>
 
-    <div class="warning-box" style="margin-top:0;margin-bottom:14px">
+    <div class="warning-box" style="margin-top:0;margin-bottom:0">
       ⚠️ <b>가장 중요합니다 — 목록에서 선택하면 안전하지만, 직접입력할 땐 글자를 똑같이 맞춰야 매칭됩니다.</b><br><br>
       숙기 · 품종을 <b>목록에서 선택</b>하면 나무조사와 표본조사가 같은 항목을 쓰므로 문제없습니다. 하지만 목록에 없는 품종이라 <b>직접입력</b>으로 타이핑할 때는, 나무조사와 표본조사에 <b>정확히 같은 글자</b>로 입력해야 같은 품종으로 인식됩니다.<br><br>
       예를 들어 표본조사에서 직접입력으로 <b>"부사(후지)"</b>라고 쓰고 나무조사에서는 목록의 <b>"후지"</b>를 선택했다면, 글자가 달라 서로 다른 품종으로 인식되어 그 품종의 나무조사 데이터(조사대상주수)가 계산에서 빠집니다.<br><br>
       이렇게 매칭이 안 되면 <b>계산하기 버튼이 눌리지 않고</b>, 어떤 품종이 빠졌는지 알려주는 안내와 함께 나무조사 섹션으로 자동 스크롤 · 빨간 테두리 깜빡임이 나타납니다. 이때는 두 화면의 품종 표기를 똑같이 맞춰주면 됩니다.
-    </div>
-
-    <!-- STEP 3 -->
-    <div style="display:flex;gap:10px;margin-bottom:14px">
-      <div style="flex-shrink:0;width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">3</div>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">📊 낙과 피해구성조사 — 자동 생성</div>
-        <div style="font-size:12px;color:var(--sub);line-height:1.9">
-          표본조사에서 입력한 숙기 · 품종을 기준으로 카드가 <b style="color:var(--text)">자동으로 나뉘어 생성</b>됩니다. 따로 품종을 선택할 필요 없이, 각 카드에 정상 · 50%형 · 80%형 · 100%형 개수만 입력합니다.<br>
-          품종이 1개뿐이면 카드도 1개만 나타납니다.
-        </div>
-      </div>
-    </div>
-
-    <div style="height:1px;background:#f0f0f0;margin-bottom:14px"></div>
-
-    <!-- STEP 4 -->
-    <div style="display:flex;gap:10px;margin-bottom:0">
-      <div style="flex-shrink:0;width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">4</div>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">🧮 계산하기</div>
-        <div style="font-size:12px;color:var(--sub);line-height:1.9">
-          모든 입력을 마친 뒤 <b style="color:var(--text)">계산하기</b>를 누르면 품종별 조사대상주수 · 낙과피해과실수 · 피해구성비율 · 인정피해율이 각각 산정되어 합산됩니다.<br><br>
-          <b style="color:var(--text)">📷 갤러리 저장</b> 이미지는 전산 조사서와 같은 순서(표본조사 → 품종별 집계 → 과실피해구성비율 → 결과)로 구성되어, 조사서를 그대로 옮겨 적을 수 있습니다.
-        </div>
-      </div>
     </div>
 
   </div>
