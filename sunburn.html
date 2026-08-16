@@ -407,7 +407,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
     <div class="hint" style="color:#666;margin-top:0;margin-bottom:8px;font-size:11.5px;letter-spacing:-0.03em;line-height:1.6">※ <b>품종별 주수</b>는 수령·재배방식 구분 없이 합계하여 입력해도 되고, <b style="color:var(--blue)">품종 추가</b>로 나눠 입력해도 같은 품종끼리 자동으로 합산되어 계산됩니다 (상세입력: <b>나무조사</b> 버튼)</div>
     <input type="hidden" id="treeRowN" value="1">
     <table class="tree-table" style="margin-top:14px">
-      <thead><tr><th style="width:36px">숙기</th><th style="width:64px">품종</th><th style="width:44px">가입주수</th><th style="width:44px">실제결과</th><th style="width:36px">나무조사</th></tr></thead>
+      <thead><tr><th style="width:42px">숙기</th><th style="width:100px">품종</th><th style="width:64px">가입주수</th><th style="width:42px">나무조사</th></tr></thead>
       <tbody id="treeRows"></tbody>
     </table>
     <div class="g2" style="margin-top:9px">
@@ -644,7 +644,8 @@ function treeIndices(){
 function currentTreeValues(){
   var o={};
   treeIndices().forEach(function(idx){
-    o[idx]={ joinTree:treeField(idx,'tJoinTree').value, realTree:treeField(idx,'tRealTree').value,
+    var rt=treeField(idx,'tRealTree');
+    o[idx]={ joinTree:treeField(idx,'tJoinTree').value, realTree:rt.value, realTreeAuto:(rt.dataset.auto!==undefined?rt.dataset.auto:''),
       harvestDone:treeField(idx,'tHarvestDone').value, harvestImposs:treeField(idx,'tHarvestImposs').value, deadTree:treeField(idx,'tDeadTree').value,
       deadNC:treeField(idx,'tDeadNC').value, aliveNC:treeField(idx,'tAliveNC').value };
   });
@@ -655,6 +656,18 @@ function treeCell(label,cls,val,comma){
   var oi = comma ? "onTreeComma(this);updateTreeGroups();saveState()" : "mark(this);updateTreeGroups();saveState()";
   var type = comma ? 'text' : 'number';
   return '<div class="tree-cell"><label>'+label+'</label><input class="inp '+cls+'" type="'+type+'" inputmode="numeric" value="'+val+'" oninput="'+oi+'"></div>';
+}
+/* 가입주수 입력 시 실제결과주수에 자동으로 같은 값을 채움 (단, 사용자가 실제결과주수를 직접 고친 적 있으면 덮어쓰지 않음) */
+function onTreeJoinInput(el, idx){
+  mark(el); saveState();
+  var rt=treeField(idx,'tRealTree');
+  if(rt){
+    var cur=(rt.value||'').trim();
+    var lastAuto=rt.dataset.auto!==undefined?rt.dataset.auto:'';
+    if(cur===''||cur===lastAuto){ rt.value=el.value; mark(rt); }
+    rt.dataset.auto=el.value;
+  }
+  updateTreeGroups(); saveState();
 }
 /* 라벨 없는 표 셀용 (표 헤더가 라벨 역할) */
 function treeCellFlat(cls,val){
@@ -672,7 +685,8 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
   var wrap=document.getElementById('treeRows'); if(!wrap) return;
   var prevVal={}, prevVar={}, prevOpen={};
   treeIndices().forEach(function(idx){
-    prevVal[idx]={ joinTree:treeField(idx,'tJoinTree').value, realTree:treeField(idx,'tRealTree').value,
+    var rtEl=treeField(idx,'tRealTree');
+    prevVal[idx]={ joinTree:treeField(idx,'tJoinTree').value, realTree:rtEl.value, realTreeAuto:(rtEl.dataset.auto!==undefined?rtEl.dataset.auto:''),
       harvestDone:treeField(idx,'tHarvestDone').value, harvestImposs:treeField(idx,'tHarvestImposs').value, deadTree:treeField(idx,'tDeadTree').value,
       deadNC:treeField(idx,'tDeadNC').value, aliveNC:treeField(idx,'tAliveNC').value };
     var detRow=document.querySelector('#treeRows .tvar-detail-row[data-idx="'+idx+'"]');
@@ -690,6 +704,8 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
     var open=!!prevOpen[i];
     var hasNote=(parseFloat(v.deadTree)||0)>0 || (parseFloat(v.harvestImposs)||0)>0 || (parseFloat(v.deadNC)||0)>0 || (parseFloat(v.aliveNC)||0)>0 || (parseFloat(v.harvestDone)||0)>0;
     var btnOn=open||hasNote;
+    var realTreeVal=(v.realTree!==undefined&&v.realTree!=='')?v.realTree:(v.joinTree||'0');
+    var realTreeAuto=(v.realTreeAuto!==undefined)?v.realTreeAuto:realTreeVal;
     html+='<tr class="tree-row-block" data-idx="'+i+'">'+
       '<td><select class="inp tree-sukgi'+(su!==''?' filled':'')+'" data-idx="'+i+'" onchange="mark(this);liveUpdate();saveState()">'+
         '<option value=""'+(su===''?' selected':'')+'>숙기</option>'+
@@ -698,21 +714,24 @@ function buildTreeRows(savedVals, savedVars, savedOpen){
         '<option'+(su==='만생'?' selected':'')+'>만생</option>'+
       '</select></td>'+
       '<td>'+treePumjongCell(i, pj)+'</td>'+
-      '<td>'+treeCellFlat('tJoinTree',v.joinTree)+'</td>'+
-      '<td>'+treeCellFlat('tRealTree',v.realTree)+'</td>'+
+      '<td><input class="inp tJoinTree" type="number" inputmode="numeric" value="'+((v.joinTree!==undefined&&v.joinTree!=='')?v.joinTree:'0')+'" oninput="onTreeJoinInput(this,'+i+')"></td>'+
       '<td><button type="button" class="tvar-detail-btn'+(btnOn?' on':'')+'" onclick="toggleTreeDetail('+i+')">🌳</button></td>'+
     '</tr>'+
     '<tr class="tvar-detail-row" data-idx="'+i+'" style="display:'+(open?'table-row':'none')+'">'+
-      '<td colspan="5" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
-        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">'+
-          treeCell('고사','tDeadTree',v.deadTree)+
-          treeCell('수불','tHarvestImposs',v.harvestImposs)+
+      '<td colspan="4" style="padding:8px 4px 12px; background:#f9f9f8; border-bottom:1px solid #ddd; border-radius:0 0 8px 8px;">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">'+
+          '<div class="tree-cell"><label>실제결과</label><input class="inp tRealTree" type="number" inputmode="numeric" value="'+realTreeVal+'" data-auto="'+esc(String(realTreeAuto))+'" oninput="mark(this);updateTreeGroups();saveState()"></div>'+
+          '<div class="tree-cell"><label>고사</label><input class="inp tDeadTree" type="number" inputmode="numeric" value="'+((v.deadTree!==undefined&&v.deadTree!=='')?v.deadTree:'0')+'" oninput="mark(this);updateTreeGroups();saveState()"></div>'+
+          '<div class="tree-cell"><label>수불</label><input class="inp tHarvestImposs" type="number" inputmode="numeric" value="'+((v.harvestImposs!==undefined&&v.harvestImposs!=='')?v.harvestImposs:'0')+'" oninput="mark(this);updateTreeGroups();saveState()"></div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px">'+
           treeCell('미보고','tDeadNC',v.deadNC)+
           treeCell('미보미','tAliveNC',v.aliveNC)+
-        '</div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">'+
           treeCell('기수확','tHarvestDone',v.harvestDone)+
-          '<div class="tree-cell"><label style="color:var(--blue)">조사대상</label><input class="auto tTargetBox" type="text" readonly value="0" style="height:40px;font-size:13.5px;padding:0;text-align:center;border-radius:8px;font-weight:800;color:var(--blue);background:#eaf2fb;border-color:var(--blue)"></div>'+
+        '</div>'+
+        '<div class="field" style="margin-top:6px">'+
+          '<label style="color:var(--blue)">조사대상 <span class="unit">(주)</span></label>'+
+          '<input class="auto tTargetBox" type="text" readonly value="0" style="height:40px;font-size:14px;font-weight:800;color:var(--blue);background:#eaf2fb;border-color:var(--blue)">'+
         '</div>'+
       '</td>'+
     '</tr>';
