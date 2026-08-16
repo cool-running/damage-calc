@@ -113,6 +113,10 @@ body.big-text .field label{font-size:13px !important}
 .scell:focus-within{background:#dceeff;border:2px solid var(--blue)}
 .scell:focus-within .ci{color:var(--blue)}
 .tree-head{display:flex;align-items:center;justify-content:space-between;margin:10px 0 0}
+.tree-head-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.half-sw-group{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.half-sw-lbl{font-size:11px;font-weight:800;color:var(--sub);white-space:nowrap;transition:color .15s}
+.half-sw-lbl.on{color:#E8860A}
 .tree-btns{display:flex;align-items:center;gap:6px}
 .tree-mini-btn{width:30px;height:30px;border-radius:7px;background:transparent;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;border:1.5px solid var(--border)}
 .tree-mini-btn.plus{border-color:var(--accent);color:var(--main-d)}
@@ -512,7 +516,7 @@ const $=id=>document.getElementById(id);
 
 function newVariety(){
   return {group:'',cat:'',age:'',reg:'',actual:'',unins:'',dead:'',
-    trees:['','',''],normal:'',p50:'',p80:'',p100:'',fcount:'',fweight:'',
+    trees:['','',''],half:false,normal:'',p50:'',p80:'',p100:'',fcount:'',fweight:'',
     dn:'',dp50:'',dp80:'',dp100:'',dmgOpen:false};
 }
 
@@ -591,9 +595,18 @@ function renderVarieties(){
       fruitHtml=`
       <div class="tree-head">
         <div class="subtitle" style="margin:0;font-weight:800">표본주별 <span style="color:var(--red)">${treeLabelKey}</span></div>
-        <div class="tree-btns">
-          <button class="tree-mini-btn minus" onclick="delTree(${i})">－</button>
-          <button class="tree-mini-btn plus" onclick="addTree(${i})">＋</button>
+        <div class="tree-head-right">
+          ${ap?'':`<div class="half-sw-group">
+            <label class="sw" onclick="event.stopPropagation()">
+              <input type="checkbox" ${dis} ${v.half?'checked':''} onchange="onHalf(${i},this.checked)">
+              <span class="sw-slider"></span>
+            </label>
+            <span class="half-sw-lbl ${v.half?'on':''}">${v.half?'일부(×2)':'전부'}</span>
+          </div>`}
+          <div class="tree-btns">
+            <button class="tree-mini-btn minus" onclick="delTree(${i})">－</button>
+            <button class="tree-mini-btn plus" onclick="addTree(${i})">＋</button>
+          </div>
         </div>
       </div>
       <div class="tree-grid" id="tree-grid-${i}">${treeHtml}</div>
@@ -801,6 +814,11 @@ function addVariety(){if(_locked||(_phase!=='tree'&&!_expandAll))return;if(varie
 function delVariety(i){if(_locked||(_phase!=='tree'&&!_expandAll))return;if(varieties.length<=1){showToast('최소 1개 품종이 필요합니다');return;}varieties.splice(i,1);renderVarieties();calc();saveState();}
 let _treeI=-1;
 function properOf(i){ const R=computeAll(); return R.rows[i]?R.rows[i].calc.proper:0; }
+function onHalf(i,checked){
+  if(_locked)return;
+  varieties[i].half=checked;
+  renderVarieties();calc();saveState();
+}
 function addTree(i){
   if(_locked)return;
   if(varieties[i].trees.length>=16){showToast('표본주는 최대 16개');return;}
@@ -878,7 +896,8 @@ function computeAll(){
     const F=contractChange?O:N;                            // 적용 품종평년
     const Zper=r.reg>0?r4(N/r.reg):(r.actual>0?r4(F/r.actual):0);  // 주당평년(미보상주 환산); 신규품종은 재산정 주당
 
-    const tv=v.trees.map(t=>parseFloat(String(t).replace(/,/g,''))).filter(x=>!isNaN(x));
+    let tv=v.trees.map(t=>parseFloat(String(t).replace(/,/g,''))).filter(x=>!isNaN(x));
+    if(!r.ap && v.half) tv = tv.map(x=>x*2);   // 일부(절반) 수확 조사 시 ×2
     const per=tv.length?r4(tv.reduce((a,b)=>a+b,0)/tv.length):0;
     const nm=pf(v.normal),d5=pf(v.p50),d8=pf(v.p80),d10=pf(v.p100);
     const denom=nm+d5+d8+d10, dmg=denom>0?(d5*0.5+d8*0.8+d10)/denom:0;
@@ -1094,7 +1113,7 @@ function setCalcMode(silent){
   if(!varieties.some(v=>v.cat))miss.push('품종');
   if(!varieties.some(v=>v.trees.some(t=>t!=='')))miss.push('표본 착과조사');
   if(miss.length){showToast('미입력: '+miss.join(', '));return;}
-  _locked=true;lockInputs(true);
+  _locked=true;_expandAll=false;lockInputs(true);
   $('btn-edit').classList.remove('active');$('btn-calc').classList.add('active');
   $('hdrState').className='hdr-state locked';$('hdrState').textContent='🔒 잠금';
   calc(); saveToHistory();
@@ -1103,7 +1122,7 @@ function setCalcMode(silent){
 function setEditMode(silent){
   if(!silent)vibrate(30);
   _locked=false;
-  // _phase 유지 — 수정하기는 현재 단계 그대로, 나무조사 완료 재진행 불필요
+  _expandAll=true;   // 수정모드: 나무조사+표본착과 항상 전체 편집(품종추가 포함)
   $('btn-edit').classList.add('active');$('btn-calc').classList.remove('active');
   $('hdrState').className='hdr-state unlocked';$('hdrState').textContent='🔓 수정 중';
   if(!silent){ renderVarieties(); setPhaseUI(); }
@@ -1166,7 +1185,7 @@ function loadState(){
       varieties=s.varieties.map(v=>Object.assign(newVariety(),v));
       _phase=s.phase==='fruit'?'fruit':'tree';
       _locked=!!s.locked;
-      _expandAll=false;   // 전체보기 제거 — 항상 단계별
+      _expandAll=!_locked;   // 수정 중이었다면 전체편집 유지, 잠금 상태였다면 단계별 표시
       return true;
     }
   }catch(e){}
@@ -1550,6 +1569,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(!$('survey_date').value){$('survey_date').value=new Date().toLocaleDateString('en-CA');syncDate($('survey_date'));}
   refreshExpandBtn();
   renderVarieties();setPhaseUI();calc();
+  lockInputs(_locked);   // 새로고침 시 잠금/수정 상태를 모든 입력칸에 확실히 반영
   // 새로고침 후 잠금/수정 상태 헤더 복원
   if(_locked){
     $('btn-edit').classList.remove('active');$('btn-calc').classList.add('active');
