@@ -1500,8 +1500,8 @@ function buildCapture(){
   // 4) 결과
   var c4=card('결과',
     tbl('<colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>'+
-      '<thead><tr><th style="'+nTH+'">면·부책</th><th style="'+nTH+'">전차인정피해율</th><th style="'+nTH+'">인정피해율</th><th style="'+nTHl+'">낙과인정피해과실수</th></tr></thead>'+
-      '<tbody><tr><td style="'+nTD+'">'+(L.covered?'부책(인정)':'면책')+'</td><td style="'+nTD+'">'+(L.prevRate||0).toFixed(2)+' %</td><td style="'+nTG+'">'+L.admitRate.toFixed(2)+' %</td><td style="'+nTGl+'">'+fmt(L.admitCnt)+' 개</td></tr></tbody>')+
+      '<thead><tr><th style="'+nTH+'">적과후착과수6%</th><th style="'+nTH+'">금차낙과피해과실수</th><th style="'+nTH+'">전차인정피해율</th><th style="'+nTHl+'">금차인정피해과실수</th></tr></thead>'+
+      '<tbody><tr><td style="'+nTD+'">'+fmt(L.sixPct)+' 개</td><td style="'+nTD+'">'+fmt(L.fallDamage)+' 개</td><td style="'+nTD+'">'+(L.prevRate||0).toFixed(2)+' %</td><td style="'+nTGl+'">'+fmt(L.admitCnt)+' 개</td></tr></tbody>')+
     '<div style="margin-top:14px;background:#185FA5;border-radius:12px;padding:16px 18px;display:flex;align-items:center">'+
       '<div style="flex:1;text-align:center">'+
         '<div style="font-size:14px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:5px">적착대비 피해율</div>'+
