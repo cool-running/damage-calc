@@ -1395,6 +1395,7 @@ function edit(silent){
   document.getElementById('content').classList.remove('locked');
   document.getElementById('btnCalc').classList.add('active');
   document.getElementById('btnEdit').classList.remove('active');
+  document.getElementById('saveBtn').disabled=true;
   setLockUI(false);
   if(!silent) vibrate([12]);
   saveState();
