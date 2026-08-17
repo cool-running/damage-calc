@@ -601,7 +601,7 @@ function renderVarieties(){
               <input type="checkbox" ${dis} ${v.half?'checked':''} onchange="onHalf(${i},this.checked)">
               <span class="sw-slider"></span>
             </label>
-            <span class="half-sw-lbl ${v.half?'on':''}">${v.half?'일부(×2)':'전부'}</span>
+            <span class="half-sw-lbl ${v.half?'on':''}">${v.half?'절반':'전부'}</span>
           </div>`}
           <div class="tree-btns">
             <button class="tree-mini-btn minus" onclick="delTree(${i})">－</button>
@@ -897,7 +897,7 @@ function computeAll(){
     const Zper=r.reg>0?r4(N/r.reg):(r.actual>0?r4(F/r.actual):0);  // 주당평년(미보상주 환산); 신규품종은 재산정 주당
 
     let tv=v.trees.map(t=>parseFloat(String(t).replace(/,/g,''))).filter(x=>!isNaN(x));
-    if(!r.ap && v.half) tv = tv.map(x=>x*2);   // 일부(절반) 수확 조사 시 ×2
+    if(!r.ap && v.half) tv = tv.map(x=>x*2);   // 절반 수확 조사 시 ×2
     const per=tv.length?r4(tv.reduce((a,b)=>a+b,0)/tv.length):0;
     const nm=pf(v.normal),d5=pf(v.p50),d8=pf(v.p80),d10=pf(v.p100);
     const denom=nm+d5+d8+d10, dmg=denom>0?(d5*0.5+d8*0.8+d10)/denom:0;
