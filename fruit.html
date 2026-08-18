@@ -2488,9 +2488,9 @@ function showCalcInfoPopup(){
   const afterTotalEl = document.getElementById('calc-info-after-total');
   const avgPerEl = document.getElementById('calc-info-avg-per');
   const afterPerEl = document.getElementById('calc-info-after-per');
-  if(avgTotalEl) avgTotalEl.textContent = avgFruit>0 ? avgFruit.toLocaleString()+'개' : '-';
+  if(avgTotalEl) avgTotalEl.textContent = '-';
   if(afterTotalEl) afterTotalEl.textContent = totalAfterFruit>0 ? Math.round(totalAfterFruit).toLocaleString()+'개' : '-';
-  if(avgPerEl) avgPerEl.textContent = (avgFruit>0 && totalReg>0) ? (avgFruit/totalReg).toFixed(1)+'개' : '-';
+  if(avgPerEl) avgPerEl.textContent = '-';
   if(afterPerEl) afterPerEl.textContent = (totalAfterFruit>0 && totalActual>0) ? (totalAfterFruit/totalActual).toFixed(1)+'개' : '-';
   document.getElementById('calc-info-overlay').style.display = 'flex';
 }
@@ -2572,10 +2572,10 @@ async function saveImage() {
       : (_farmNo ? `농지번호 ${_farmNo}` : '');
     const _headerLine = [_dateShort, _namePart, `${cropName} 적과후착과수 조사결과`].filter(Boolean).join(' ');
     document.getElementById('cap-title').textContent = _headerLine;
-    document.getElementById('cap-avg').textContent    = avgFruit>0 ? avgFruit.toLocaleString()+'개' : '-';
+    document.getElementById('cap-avg').textContent    = '-';
     document.getElementById('cap-reg').textContent    = totalReg>0 ? totalReg.toLocaleString()+'주' : '-';
     document.getElementById('cap-survey').textContent = totalSurvey>0 ? totalSurvey.toLocaleString()+'주' : '-';
-    document.getElementById('cap-rate').textContent   = avgFruit>0 ? (rate*100).toFixed(2)+'%' : '-';
+    document.getElementById('cap-rate').textContent   = '-';
     document.getElementById('cap-total').textContent  = totalAfterFruit>0 ? Math.round(totalAfterFruit).toLocaleString()+'개' : '-';
     const contractEl = document.getElementById('cap-contract');
     contractEl.textContent = needReview ? '계약변경' : '이상무';
