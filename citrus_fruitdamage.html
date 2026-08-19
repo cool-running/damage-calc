@@ -387,10 +387,10 @@ body.big-text .hist-btn{height:50px !important}
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:600px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="min-height:600px;background:linear-gradient(180deg,#2f4a1f 0%,#5B7E3F 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
     <div style="height:26px"></div>
-    <div style="display:flex;align-items:center;gap:10px;color:#fff;margin-bottom:14px;white-space:nowrap">
-      <span id="cap-date-disp" style="font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:0.3px"></span>
-      <span id="cap-contractor-farmno-disp" style="font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:0.3px"></span>
-      <span style="font-size:13px;font-weight:800;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis">감귤 과실손해조사 결과</span>
+    <div style="display:flex;align-items:baseline;gap:10px;color:#fff;margin-bottom:14px;white-space:nowrap">
+      <span id="cap-date-disp" style="font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:0.3px;line-height:1"></span>
+      <span id="cap-contractor-farmno-disp" style="font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:0.3px;line-height:1"></span>
+      <span style="font-size:13px;font-weight:700;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;line-height:1">🍊 감귤 과실손해조사 결과</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
 
@@ -1067,10 +1067,10 @@ function fillCaptureTemplate(){
   document.getElementById('cap-variety-table').innerHTML = varieties.map((v,vi)=>{
     const name = v.name || `품종${vi+1}`;
     return `<tr>
-      <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${name}</td>
-      <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.age?v.age+'년':'-'}</td>
-      <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.trees||'-'}</td>
-      <td style="padding:6px 2px;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.proper||'-'}</td>
+      <td style="padding:7px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${name}</td>
+      <td style="padding:7px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.age?v.age+'년':'-'}</td>
+      <td style="padding:7px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.trees||'-'}</td>
+      <td style="padding:7px 2px;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.proper||'-'}</td>
     </tr>`;
   }).join('');
 
@@ -1086,12 +1086,12 @@ function fillCaptureTemplate(){
       const total = sampleTotal(s);
       sumIG+=ig; sumOG+=og; sumNormal+=numSafe(s.normal); sumTotal+=total; sumP+=sampleP(s);
       rowsHtml+=`<tr>
-        <td style="padding:5px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${no++}</td>
-        <td style="padding:5px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:9.5px;color:#5B7E3F">${label}</td>
-        <td style="padding:5px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${ig.toLocaleString()}</td>
-        <td style="padding:5px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${og.toLocaleString()}</td>
-        <td style="padding:5px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${numSafe(s.normal).toLocaleString()}</td>
-        <td style="padding:5px 1px;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${total.toLocaleString()}</td>
+        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${no++}</td>
+        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:9.5px;color:#5B7E3F">${label}</td>
+        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${ig.toLocaleString()}</td>
+        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${og.toLocaleString()}</td>
+        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${numSafe(s.normal).toLocaleString()}</td>
+        <td style="padding:6px 1px;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${total.toLocaleString()}</td>
       </tr>`;
     });
   });
