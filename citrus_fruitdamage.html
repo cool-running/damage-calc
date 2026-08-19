@@ -549,6 +549,10 @@ body.big-text .hist-btn{height:50px !important}
 <script>
 // ── 공통 유틸 ──────────────────────────────────────
 function numSafe(v){ return parseFloat(String(v==null?'':v).replace(/,/g,''))||0; }
+function roundUpPct(fraction){
+  // 전산 규칙: 피해율은 소수점 셋째 자리에서 올림 (반올림 아님)
+  return (Math.ceil(fraction*10000)/100).toFixed(2);
+}
 function onCommaInput(el){
   const raw = el.value.replace(/,/g,'').replace(/[^0-9.]/g,'');
   const parts = raw.split('.');
@@ -979,8 +983,8 @@ function calcTotals(){
     if(finalRate<0) finalRate=0;
     if(!isFinite(finalRate)) finalRate=curRate;
 
-    pctEl.textContent = (finalRate*100).toFixed(2)+'%';
-    if(curRateEl) curRateEl.textContent = '금차 과실손해피해율 '+(curRate*100).toFixed(2)+'%';
+    pctEl.textContent = roundUpPct(finalRate)+'%';
+    if(curRateEl) curRateEl.textContent = '금차 과실손해피해율 '+roundUpPct(curRate)+'%';
     resultBox.classList.remove('pending');
   } else {
     pctEl.textContent = '- -';
@@ -1110,8 +1114,8 @@ function fillCaptureTemplate(){
     let finalRate = (a + (1-a)*(curRate/(1-uninsRate))) * (1-Math.max(uninsRate,priorUnins));
     if(finalRate<0) finalRate=0;
     if(!isFinite(finalRate)) finalRate=curRate;
-    finalDisp = (finalRate*100).toFixed(2)+'%';
-    curDisp = (curRate*100).toFixed(2)+'%';
+    finalDisp = roundUpPct(finalRate)+'%';
+    curDisp = roundUpPct(curRate)+'%';
   }
   document.getElementById('cap-pct').textContent = finalDisp;
   document.getElementById('cap-cur-pct').textContent = curDisp;

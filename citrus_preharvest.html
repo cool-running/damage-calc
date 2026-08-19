@@ -482,6 +482,10 @@ body.big-text .hist-btn{height:50px !important}
 <script>
 // ── 공통 유틸 ──────────────────────────────────────
 function numSafe(v){ return parseFloat(String(v==null?'':v).replace(/,/g,''))||0; }
+function roundUpPct(fraction){
+  // 전산 규칙: 피해율은 소수점 셋째 자리에서 올림 (반올림 아님)
+  return (Math.ceil(fraction*10000)/100).toFixed(2);
+}
 function onCommaInput(el){
   const raw = el.value.replace(/,/g,'').replace(/[^0-9.]/g,'');
   const parts = raw.split('.');
@@ -844,7 +848,7 @@ function calcTotals(){
   if(totalSum>0){
     let pct = (damagedSum/totalSum)*(1-uninsRate);
     if(pct<0) pct=0;
-    pctEl.textContent = (pct*100).toFixed(2)+'%';
+    pctEl.textContent = roundUpPct(pct)+'%';
     resultBox.classList.remove('pending');
   } else {
     pctEl.textContent = '- -';
@@ -961,7 +965,7 @@ function fillCaptureTemplate(){
   if(totalSum>0){
     let pct = (damagedSum/totalSum)*(1-uninsRate/100);
     if(pct<0) pct=0;
-    pctDisp = (pct*100).toFixed(2)+'%';
+    pctDisp = roundUpPct(pct)+'%';
   }
   document.getElementById('cap-pct').textContent = pctDisp;
   document.getElementById('cap-unins').textContent = uninsRate?uninsRate+'%':'0%';
