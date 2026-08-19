@@ -974,6 +974,23 @@ function fillCaptureTemplate(){
   document.getElementById('cap-normal').textContent = totalSum>0?normalSum.toLocaleString():'-';
 }
 
+// ── 이미지 캐시 저장 (당일 미리보기용, index.html 저장목록 연동) ──
+function _saveImgCache(id, dataUrl) {
+  try {
+    const _ld=new Date();const today=_ld.getFullYear()+'-'+String(_ld.getMonth()+1).padStart(2,'0')+'-'+String(_ld.getDate()).padStart(2,'0');
+    let cache = [];
+    try { cache = JSON.parse(localStorage.getItem('save_img_cache')||'[]'); } catch(_){}
+    cache = cache.filter(c => String(c.id) !== String(id));
+    if(dataUrl) {
+      cache.unshift({ id: id, date: today, img: dataUrl });
+      const todayItems = cache.filter(c => c.date === today).slice(0,15);
+      const otherItems = cache.filter(c => c.date !== today);
+      localStorage.setItem('save_img_cache', JSON.stringify([...todayItems, ...otherItems]));
+    } else {
+      localStorage.setItem('save_img_cache', JSON.stringify(cache));
+    }
+  } catch(_) {}
+}
 async function saveImage(){
   try{
     const isPending = document.getElementById('result-section').classList.contains('pending');
@@ -987,6 +1004,32 @@ async function saveImage(){
     link.href=canvas.toDataURL('image/png');
     link.click();
     saveToHistory();
+    // ── index.html 저장목록 기록 ──────────────────────
+    try{
+      const _farmNo = (document.getElementById('farm_no')?.value||'').trim();
+      const _survDate = document.getElementById('survey_date')?.value||'';
+      const _pct = document.getElementById('result-pct')?.textContent||'-';
+      const _rec = {
+        id: Date.now(),
+        crop: '감귤(수확전)',
+        cropDetail: '감귤 수확전손해조사',
+        category: '과수',
+        farmNo: _farmNo,
+        contractorName: document.getElementById('contractor_name')?.value||'',
+        surveyDate: _survDate,
+        pct: _pct,
+        filename: `감귤수확전손해_${stamp}.png`,
+        savedAt: (()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()
+      };
+      const _dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+      const _hist = JSON.parse(localStorage.getItem('save_history')||'[]');
+      const _ei = _rec.farmNo ? _hist.findIndex(r=>r.crop===_rec.crop&&r.farmNo===_rec.farmNo) : -1;
+      if(_ei > -1){ _saveImgCache(_hist[_ei].id, ''); _hist.splice(_ei,1); }
+      _hist.unshift(_rec);
+      if(_hist.length > 200) _hist.splice(200);
+      localStorage.setItem('save_history', JSON.stringify(_hist));
+      _saveImgCache(_rec.id, _dataUrl);
+    }catch(_){}
     document.getElementById('save-done-overlay').classList.add('show');
   }catch(e){ alert('저장 중 오류가 발생했어요.'); }
 }
