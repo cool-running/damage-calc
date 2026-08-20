@@ -501,24 +501,25 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 
 <!-- 캡처 템플릿: 현지조사서 양식 참고 -->
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;background:#f3f4f6;padding:0;z-index:-1">
-  <div style="background:linear-gradient(180deg,#3f5a2b 0%,#5B7E3F 9%,#f3f4f6 9%,#f3f4f6 100%);padding:0 16px 22px;box-sizing:border-box">
-    <div style="height:18px"></div>
-    <div style="display:flex;align-items:baseline;gap:6px;color:#fff;margin-bottom:13px;flex-wrap:wrap">
-      <span id="cap-date" style="font-size:13px;font-weight:700;color:#fff"></span>
-      <span id="cap-farmno" style="font-size:13px;font-weight:700;color:#fff"></span>
-      <span style="font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px">
+  <div style="background:linear-gradient(180deg,#2d5016 0%,#5B7E3F 100%);padding:0;box-sizing:border-box">
+    <div style="padding:18px 20px 30px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;flex-wrap:nowrap">
+      <div style="display:flex;align-items:baseline;gap:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <span id="cap-date" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9)"></span>
+        <span id="cap-farmno" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:0.3px;padding-right:2px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0">
         <svg viewBox="0 0 24 24" width="15" height="15" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 9 C10 5 7 3 5 2 C6 5 8 7 11 9 Z" fill="#9BC97F"/>
           <path d="M12 9 C14 5 17 3 19 2 C18 5 16 7 13 9 Z" fill="#DCEFE0"/>
           <path d="M12 8 C16.5 8 18 11.5 17 15.5 C16 19.5 14 21.5 12 21.5 C10 21.5 8 19.5 7 15.5 C6 11.5 7.5 8 12 8 Z" fill="#FFFFFF"/>
         </svg>
-        고랭지무 수확량조사
-      </span>
+        <span style="font-size:13px;font-weight:700;line-height:1;color:rgba(255,255,255,0.9)">고랭지무 수확량조사 결과</span>
+      </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="background:#f3f4f6;padding:0 16px 22px;display:flex;flex-direction:column;gap:10px">
 
       <!-- 1. 계약사항 -->
-      <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
+      <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06);margin-top:-16px">
         <div style="font-size:12px;font-weight:900;color:#5B7E3F;margin-bottom:8px">1. 계약사항</div>
         <table style="width:75%;border-collapse:collapse;font-size:11px;border:1px solid #e0e0e0">
           <colgroup><col style="width:34%"><col style="width:33%"><col style="width:33%"></colgroup>
@@ -1074,7 +1075,7 @@ function fillCaptureTemplate(){
   document.getElementById('cap-date').textContent   = document.getElementById('survey_date').value||'';
   const fn = document.getElementById('farm_no').value||'';
   const cn = (document.getElementById('contractor_name')?.value||'').trim();
-  document.getElementById('cap-farmno').textContent = cn ? cn+(fn?`(${fn})`:'') : (fn?`농지번호: ${fn}`:'');
+  document.getElementById('cap-farmno').textContent = cn ? cn+(fn?` (${fn})`:'') : (fn?`농지번호: ${fn}`:'');
 
   document.getElementById('cap-avg-yield').textContent = avgYield.toLocaleString()+' kg';
   document.getElementById('cap-ins-area').textContent  = insArea.toLocaleString()+' ㎡';
