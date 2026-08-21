@@ -510,6 +510,7 @@ const pf=x=>parseFloat(String(x==null?'':x).replace(/,/g,''))||0;   // 콤마 �
 
 /* ───────── 상태 ───────── */
 let varieties=[];
+const JUJUBE_CAP_ICON=`<img src="data:image/png;base64,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" alt="대추" style="height:16px;width:auto;vertical-align:middle">`;
 let _locked=false;
 let _phase='tree';   // 'tree' = 나무조사 입력, 'fruit' = 표본 착과조사 입력
 let _expandAll=false; // 전체보기: 나무조사+표본착과를 한 화면에 펼침
@@ -1367,21 +1368,9 @@ function buildCapture(){
   <div style="background:#fff;padding:20px;font-family:-apple-system,'Noto Sans KR',sans-serif;width:100%">
     <div style="background:#5B7E3F;color:#fff;border-radius:12px;padding:11px 14px;display:flex;align-items:baseline;gap:10px;white-space:nowrap">
       <span style="font-size:12.5px;font-weight:700;flex-shrink:0">${date}</span>
-      <span style="font-size:12.5px;font-weight:700;flex-shrink:0">${cname?cname+'('+farm+')':'농지 '+farm}</span>
-      <span style="font-size:13.5px;font-weight:800;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis">🫐 대추 수확개시전 수확량조사</span>
+      <span style="font-size:12.5px;font-weight:700;flex-shrink:0">${cname?cname+' ('+farm+')':'농지 '+farm}</span>
+      <span style="font-size:13.5px;font-weight:800;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis">${JUJUBE_CAP_ICON} 대추 수확개시전 수확량조사</span>
     </div>
-
-    ${secTitle('기본정보')}
-    <table style="width:100%;border-collapse:collapse">
-      <tbody>
-        <tr>
-          <td class="cap-td" style="background:#EEF2F0;font-weight:700">평년수확량</td><td class="cap-td">${R.avgYield?fmt(R.avgYield)+' kg':'-'}</td>
-          <td class="cap-td" style="background:#EEF2F0;font-weight:700">미보상비율</td><td class="cap-td">${(R.uninsRate*100).toFixed(0)} %</td>
-          <td class="cap-td" style="background:#EEF2F0;font-weight:700">가입주수</td><td class="cap-td">${R.totalReg?R.totalReg.toLocaleString()+' 주':'-'}</td>
-          <td class="cap-td" style="background:#EEF2F0;font-weight:700">실제결과주수</td><td class="cap-td">${R.totalActual?R.totalActual.toLocaleString()+' 주':'-'}</td>
-        </tr>
-      </tbody>
-    </table>
 
     ${secTitle('1. 나무조사')}
     <table style="width:100%;border-collapse:collapse">
@@ -1394,9 +1383,6 @@ function buildCapture(){
         <th class="cap-th" style="white-space:nowrap;font-size:10.5px">표본주수</th>
       </tr></thead><tbody>${treeRows}</tbody>
     </table>
-    <div style="margin:5px 0 0;font-size:10.5px;font-weight:700;color:${R.contractChange?'#c0392b':'#5B7E3F'}">
-      ${R.contractChange ? '⚠ 계약변경 유 · 가입주수-실제결과주수 5% 이상 상이 (평년수확량 환산 적용)' : '계약변경 무'}
-    </div>
 
     ${secTitle('2. 재래종 표본조사')}
     <table style="width:100%;border-collapse:collapse">
@@ -1430,7 +1416,7 @@ function buildCapture(){
       </tr></thead><tbody>${wRows}</tbody>
     </table>
 
-    ${secTitle('5. 조사결과')}
+    ${secTitle(`5. 조사결과 <span style="font-size:11px;font-weight:700;color:${R.contractChange?'#c0392b':'#5B7E3F'}">(계약변경 : ${R.contractChange?'유':'무'})</span>`)}
     <table style="width:100%;border-collapse:collapse;table-layout:fixed">
       <tbody>
         <tr style="font-size:11px">
