@@ -59,7 +59,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 
 input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background .15s,border-color .15s;text-align:center}
-select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:13px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background .15s,border-color .15s;text-align:center;text-align-last:center}
+select.inp{height:40px;line-height:38px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:13px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background .15s,border-color .15s;text-align:center;text-align-last:center}
 input.inp:focus,select.inp:focus{outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(55,138,221,0.18)!important;background:#dceeff!important;color:#185FA5!important}
 input.inp::placeholder{color:var(--hint);text-align:center}
 input.inp.filled{background:var(--done-bg);border-color:var(--done-bd);color:#000;font-weight:700}
@@ -80,7 +80,7 @@ input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);
 .bigtext-btn.on{background:var(--main);color:#fff;border-color:var(--main);box-shadow:0 2px 8px rgba(91,126,63,0.30)}
 .hist-btn{height:46px;width:100%;border:1.5px solid var(--border);border-radius:var(--rs);background:white;color:var(--main);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
-body.big-text input.inp,body.big-text select.inp{height:52px !important;font-size:19px !important;font-weight:700 !important;border-width:2px !important}
+body.big-text input.inp,body.big-text select.inp{height:52px !important;line-height:48px !important;font-size:19px !important;font-weight:700 !important;border-width:2px !important}
 body.big-text input.auto{height:50px !important;font-size:17px !important;font-weight:600 !important}
 body.big-text .field label{font-size:13px !important}
 body.big-text .tinp{height:46px !important;font-size:17px !important;font-weight:700 !important}
@@ -1122,7 +1122,7 @@ function setCalcMode(silent){
   if(!varieties.some(v=>v.cat))miss.push('품종');
   if(!varieties.some(v=>v.trees.some(t=>t!=='')))miss.push('표본 착과조사');
   if(miss.length){showToast('미입력: '+miss.join(', '));return;}
-  _locked=true;lockInputs(true);
+  _locked=true;_expandAll=false;lockInputs(true);
   $('btn-edit').classList.remove('active');$('btn-calc').classList.add('active');
   $('hdrState').className='hdr-state locked';$('hdrState').textContent='🔒 계산 완료';
   calc();saveToHistory();
@@ -1131,12 +1131,12 @@ function setCalcMode(silent){
 function setEditMode(silent){
   if(!silent)vibrate(30);
   _locked=false;
-  if(!silent)_phase='tree';   // 수정하기 → 나무조사 편집 단계로 복귀 ('나무조사 수정' 통합)
+  _expandAll=true;   // 수정모드: 나무조사+표본착과 항상 전체 편집(품종추가 포함)
   $('btn-edit').classList.add('active');$('btn-calc').classList.remove('active');
   $('hdrState').className='hdr-state unlocked';$('hdrState').textContent='🔓 수정 중';
   if(!silent){renderVarieties();setPhaseUI();}
   lockInputs(false);
-  if(!silent){calc();saveState();showToast('수정 모드 — 나무조사부터 다시 편집할 수 있습니다');}
+  if(!silent){calc();saveState();showToast('수정 모드 — 모든 항목을 수정할 수 있습니다');}
 }
 function lockInputs(lock){
   document.querySelectorAll('.content input,.content select').forEach(el=>{
@@ -1171,9 +1171,11 @@ function confirmReset(){
   ['farm_no','contractor_name','avg_yield','unins_rate'].forEach(id=>{$(id).value='';$(id).classList.remove('filled');});
   $('survey_date').value=new Date().toLocaleDateString('en-CA');syncDate($('survey_date'));
   varieties=[newVariety()];
-  _locked=false;_phase='tree';
-  renderVarieties();setPhaseUI();setEditMode(true);calc();
-  showToast('초기화되었습니다');
+  _locked=false;_phase='tree';_expandAll=false;
+  $('btn-edit').classList.add('active');$('btn-calc').classList.remove('active');
+  $('hdrState').className='hdr-state unlocked';$('hdrState').textContent='🔓 수정 중';
+  renderVarieties();setPhaseUI();lockInputs(false);
+  calc();saveState();showToast('초기화되었습니다');
 }
 
 /* ───────── 상태 저장 ───────── */
@@ -1196,7 +1198,8 @@ function loadState(){
       $('survey_date').value=s.date||'';syncDate($('survey_date'));
       varieties=s.varieties.map(v=>Object.assign(newVariety(),v));
       _phase=s.phase==='fruit'?'fruit':'tree';
-      _expandAll=false;   // 전체보기 제거 — 항상 단계별
+      _locked=!!s.locked;
+      _expandAll=!!s.expand;   // 저장된 값 그대로 복원(추론하지 않음)
       return true;
     }
   }catch(e){}
@@ -1490,6 +1493,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(!$('survey_date').value){$('survey_date').value=new Date().toLocaleDateString('en-CA');syncDate($('survey_date'));}
   refreshExpandBtn();
   renderVarieties();setPhaseUI();calc();
+  lockInputs(_locked);   // 새로고침 시 잠금/수정 상태를 모든 입력칸에 확실히 반영
+  if(_locked){
+    $('btn-edit').classList.remove('active');$('btn-calc').classList.add('active');
+    $('hdrState').className='hdr-state locked';$('hdrState').textContent='🔒 계산 완료';
+  }
   window.addEventListener('resize',()=>{try{calc();}catch(e){}});
   // ── 입력칸 포커스 ──
   // 모바일: 실제 선택영역을 만들면 안드로이드 잘라내기/복사 툴바가 뜨므로,
@@ -1502,7 +1510,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
   function bindFocusEl(el){
     if(!el||el.tagName!=='INPUT'||el.dataset.mfBound)return;
-    if(el.readOnly||el.disabled||['date','checkbox','radio','button'].includes(el.type))return;
+    if(el.readOnly||['date','checkbox','radio','button'].includes(el.type))return;
     el.dataset.mfBound='1';
     let sx=0,sy=0,scr=false;
     el.addEventListener('touchstart',ev=>{const t=ev.touches[0];sx=t.clientX;sy=t.clientY;scr=false;},{passive:true});
