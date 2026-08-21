@@ -267,10 +267,6 @@ body.big-text .scell .ci{font-size:19px!important}
         <button onclick="openHistoryModal()" title="이전 기록 불러오기" style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:var(--rs);background:white;color:var(--main);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
     </div>
-    <div class="field" style="margin-top:8px;max-width:200px">
-      <label>조사자명</label>
-      <input type="text" id="inspector_name" class="inp" placeholder="조사자" oninput="markFilled(this);saveState()" autocomplete="off">
-    </div>
   </div>
 
   <div class="section">
@@ -1169,7 +1165,7 @@ function openResetModal(){$('resetModal').style.display='flex';}
 function closeResetModal(){$('resetModal').style.display='none';}
 function confirmReset(){
   closeResetModal();
-  ['farm_no','contractor_name','inspector_name','avg_yield','unins_rate'].forEach(id=>{$(id).value='';$(id).classList.remove('filled');});
+  ['farm_no','contractor_name','avg_yield','unins_rate'].forEach(id=>{$(id).value='';$(id).classList.remove('filled');});
   $('survey_date').value=new Date().toLocaleDateString('en-CA');syncDate($('survey_date'));
   varieties=[newVariety()];
   _locked=false;_phase='tree';_expandAll=false;
@@ -1183,7 +1179,7 @@ function confirmReset(){
 function saveState(){
   try{
     localStorage.setItem('walnut_state_v2',JSON.stringify({
-      farm:$('farm_no').value,contractor_name:$('contractor_name')?.value||'',inspector_name:$('inspector_name')?.value||'',date:$('survey_date').value,
+      farm:$('farm_no').value,contractor_name:$('contractor_name')?.value||'',date:$('survey_date').value,
       avg:$('avg_yield').value,unins:$('unins_rate').value,
       varieties,locked:_locked,phase:_phase,expand:_expandAll}));
   }catch(e){}
@@ -1194,7 +1190,6 @@ function loadState(){
     if(s&&s.varieties&&s.varieties.length){
       $('farm_no').value=s.farm||'';markFilled($('farm_no'));
       if($('contractor_name')){ $('contractor_name').value=s.contractor_name||''; markFilled($('contractor_name')); }
-      if($('inspector_name')){ $('inspector_name').value=s.inspector_name||''; markFilled($('inspector_name')); }
       $('avg_yield').value=s.avg||'';markFilled($('avg_yield'));
       $('unins_rate').value=s.unins||'';markFilled($('unins_rate'));
       $('survey_date').value=s.date||'';syncDate($('survey_date'));
@@ -1224,7 +1219,7 @@ function saveToHistory(){
   const date=$('survey_date').value||'';
   const pctEl=$('result-pct');
   const pct=pctEl&&pctEl.textContent!=='- -'?pctEl.textContent.replace('%',''):null;
-  const rec={farm,contractor_name:($('contractor_name')?.value||'').trim(),inspector_name:($('inspector_name')?.value||'').trim(),date,avg:$('avg_yield').value,unins:$('unins_rate').value,
+  const rec={farm,contractor_name:($('contractor_name')?.value||'').trim(),date,avg:$('avg_yield').value,unins:$('unins_rate').value,
     varieties:JSON.parse(JSON.stringify(varieties)),pct,
     saved_at:new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\s/g,'')};
   let recs=[];try{recs=JSON.parse(localStorage.getItem('walnut_history_v2')||'[]');}catch(e){}
@@ -1268,7 +1263,6 @@ function loadHistory(idx){
   const r=recs[idx];if(!r)return;
   $('farm_no').value=r.farm||'';markFilled($('farm_no'));
   if($('contractor_name')){ $('contractor_name').value=r.contractor_name||''; markFilled($('contractor_name')); }
-  if($('inspector_name')){ $('inspector_name').value=r.inspector_name||''; markFilled($('inspector_name')); }
   $('avg_yield').value=r.avg||'';markFilled($('avg_yield'));
   $('unins_rate').value=r.unins||'';markFilled($('unins_rate'));
   $('survey_date').value=r.date||'';syncDate($('survey_date'));
@@ -1290,7 +1284,6 @@ function buildCapture(){
   const fmtN=x=>Math.round(x).toLocaleString();
   const farm=$('farm_no').value||'-',date=$('survey_date').value||'-';
   const cname=($('contractor_name')?.value||'').trim();
-  const iname=($('inspector_name')?.value||'').trim();
   const vName=v=>v.varName==='__direct__'?(v.varCustom||'직접입력'):(v.varName||'-');
 
   // ── 1. 나무조사 ──
@@ -1375,7 +1368,7 @@ function buildCapture(){
       <td class="cap-td" style="background:#EEF2F0">${wN?wN.toLocaleString():'-'}</td>
       <td class="cap-td" style="background:#EEF2F0">${c.weight?c.weight.toFixed(2):'-'}</td>
       <td class="cap-td">${date}</td>
-      <td class="cap-td">${iname||'-'}</td></tr>`;
+      <td class="cap-td">-</td></tr>`;
   });
   if(!wRows)wRows=`<tr><td class="cap-td" colspan="6" style="color:#999">해당 없음</td></tr>`;
 
