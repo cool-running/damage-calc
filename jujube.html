@@ -113,6 +113,9 @@ body.big-text .field label{font-size:13px !important}
 .scell:focus-within{background:#dceeff;border:2px solid var(--blue)}
 .scell:focus-within .ci{color:var(--blue)}
 .tree-head{display:flex;align-items:center;justify-content:space-between;margin:10px 0 0}
+.fruit-block{position:relative}
+.fruit-guard-overlay{position:absolute;inset:-4px;z-index:6;background:rgba(245,244,240,0.88);backdrop-filter:blur(1px);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center;padding:10px}
+.fruit-guard-overlay .fg-msg{background:#fff;border:1.5px solid var(--main);color:var(--main-d);font-size:12px;font-weight:800;padding:10px 14px;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.14);line-height:1.5}
 .tree-head-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .half-sw-group{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .half-sw-lbl{font-size:11px;font-weight:800;color:var(--sub);white-space:nowrap;transition:color .15s}
@@ -308,6 +311,10 @@ body.big-text .scell .ci{font-size:19px!important}
     <div id="tree-add-row" style="display:flex;gap:8px">
       <button class="add-v-btn" onclick="addVariety()" style="flex:1">＋ 품종 추가</button>
       <button class="del-v-btn" onclick="delVariety(varieties.length-1)" style="flex:1">－ 품종 삭제</button>
+    </div>
+    <div id="fruit-reopen-block" style="display:none;margin-top:10px">
+      <button class="btn-finish-tree" onclick="finishTreeSurvey()">✅ 나무조사 확인 &nbsp;›&nbsp; 표본 착과조사 다시 시작</button>
+      <div class="phase-hint">품종을 추가·수정했다면 이 버튼을 눌러 표본을 다시 확정해야 착과량을 입력할 수 있습니다.</div>
     </div>
   </div>
 
@@ -512,6 +519,7 @@ let varieties=[];
 let _locked=false;
 let _phase='tree';   // 'tree' = 나무조사 입력, 'fruit' = 표본 착과조사 입력
 let _expandAll=false; // 전체보기: 나무조사+표본착과를 한 화면에 펼침
+let _fruitReady=true; // 표본 착과량 입력 가능 여부: 나무조사 완료(재확인) 시에만 true
 const $=id=>document.getElementById(id);
 
 function newVariety(){
@@ -541,6 +549,10 @@ function syncDate(el){
   if(has){disp.textContent=el.value;disp.classList.remove('ph');}
   else{disp.textContent='조사일자';disp.classList.add('ph');}
 }
+function guardFruitClick(){
+  vibrate(20);
+  showToast('나무조사완료 → 표본 착과조사 시작을 먼저 눌러주세요');
+}
 function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000);}
 
 /* ───────── 품종 카드 렌더 ───────── */
@@ -549,6 +561,7 @@ function renderVarieties(){
   const fruit=(_phase==='fruit');        // 표본 착과조사 단계 여부
   const showFruit=fruit||_expandAll;      // 전체보기면 표본칸도 항상 표시
   const treeLocked=fruit&&!_expandAll;    // 표본단계에서만 나무조사칸 잠금 (전체보기는 편집 허용)
+  const fruitGuarded=_expandAll&&!_locked&&!_fruitReady;  // 수정중 나무조사 재확인 전에는 표본 입력 잠금
   varieties.forEach((v,i)=>{
     let group=v.group||''; if(group==='jc')group='bj';          // 레거시 호환
     if(v.cat) group = isApple(v.cat)?'ap':(group==='jr'?'jr':'bj');
@@ -593,6 +606,8 @@ function renderVarieties(){
         treeHtml+=`<div class="scell-outer"><div class="snum">${offset+ti+1}</div><div class="scell ${t!==''?'has':''}"><input class="ci" inputmode="decimal" enterkeyhint="next" value="${t}" oninput="onTreeC(${i},${ti},this)" onkeydown="navKey(event,this)"></div></div>`;
       });
       fruitHtml=`
+      <div class="fruit-block">
+      ${fruitGuarded?'<div class="fruit-guard-overlay" onclick="guardFruitClick()"><span class="fg-msg">🔒 나무조사완료 → 표본 착과조사 시작을<br>먼저 눌러주세요</span></div>':''}
       <div class="tree-head">
         <div class="subtitle" style="margin:0;font-weight:800">표본주별 <span style="color:var(--red)">${treeLabelKey}</span></div>
         <div class="tree-head-right">
@@ -657,7 +672,7 @@ function renderVarieties(){
           <div class="field"><label>100%형</label><input class="tinp ${(v.dp100||'')!==''?'filled':''}" inputmode="decimal" value="${v.dp100||''}" oninput="onF(${i},'dp100',this)"></div>
         </div>
       </div>
-      </div>`;
+      </div></div>`;
     }
 
     card.innerHTML=`
@@ -748,6 +763,8 @@ function setPhaseUI(){
   $('tree-add-row').style.display   = (tree||expand)?'flex':'none';
   $('phase-tree-actions').style.display = (tree&&!expand)?'block':'none';
   $('phase-fruit-block').style.display  = (!tree||expand)?'block':'none';
+  const guard = expand && !_locked && !_fruitReady;
+  const reopen=$('fruit-reopen-block'); if(reopen) reopen.style.display = guard?'block':'none';
   const tag=$('phase-tag'); if(tag)tag.textContent=expand?'전체보기':(tree?'1단계 · 나무조사':'2단계 · 표본 착과');
 }
 
@@ -762,6 +779,7 @@ function finishTreeSurvey(){
   if(miss.length){ showToast('나무조사 미입력: '+[...new Set(miss)].join(', ')); return; }
   allocateSamples();           // 적정표본수만큼 표본칸 확정
   _phase='fruit';
+  _fruitReady=true;            // 표본 착과조사 입력 잠금 해제
   renderVarieties(); setPhaseUI(); calc(); saveState();
   showToast('나무조사 완료 — 표본 착과조사를 입력하세요');
   setTimeout(()=>{ const fc=document.querySelector('#tree-grid-0 .ci'); if(fc){fc.scrollIntoView({behavior:'smooth',block:'center'});fc.focus();} },80);
@@ -1107,6 +1125,10 @@ function calc(){
 
 /* ───────── 모드 ───────── */
 function setCalcMode(silent){
+  if(_expandAll&&!_locked&&!_fruitReady){
+    showToast('나무조사완료 → 표본 착과조사 시작을 먼저 눌러주세요');
+    return;
+  }
   if(!silent)vibrate([30,40,60]);
   const miss=[];
   if(!toNum($('avg_yield')))miss.push('평년수확량');
@@ -1123,11 +1145,12 @@ function setEditMode(silent){
   if(!silent)vibrate(30);
   _locked=false;
   _expandAll=true;   // 수정모드: 나무조사+표본착과 항상 전체 편집(품종추가 포함)
+  if(!silent) _fruitReady=false;   // 실제 수정하기 클릭 시: 표본 착과 재확인 전까지 입력 잠금
   $('btn-edit').classList.add('active');$('btn-calc').classList.remove('active');
   $('hdrState').className='hdr-state unlocked';$('hdrState').textContent='🔓 수정 중';
   if(!silent){ renderVarieties(); setPhaseUI(); }
   lockInputs(false);
-  if(!silent){ calc(); saveState(); showToast('수정 모드 — 모든 항목을 수정할 수 있습니다'); }
+  if(!silent){ calc(); saveState(); showToast('수정 모드 — 나무조사·품종을 먼저 확인해주세요'); }
 }
 function lockInputs(lock){
   document.querySelectorAll('.content input, .content select').forEach(el=>{
@@ -1170,7 +1193,7 @@ function saveState(){
   try{
     localStorage.setItem('jujube_state',JSON.stringify({
       farm:$('farm_no').value,contractor_name:$('contractor_name')?.value||'',date:$('survey_date').value,
-      avg:$('avg_yield').value,unins:$('unins_rate').value,varieties,locked:_locked,phase:_phase,expand:_expandAll}));
+      avg:$('avg_yield').value,unins:$('unins_rate').value,varieties,locked:_locked,phase:_phase,expand:_expandAll,fruitReady:_fruitReady}));
   }catch(e){}
 }
 function loadState(){
@@ -1186,6 +1209,7 @@ function loadState(){
       _phase=s.phase==='fruit'?'fruit':'tree';
       _locked=!!s.locked;
       _expandAll=!_locked;   // 수정 중이었다면 전체편집 유지, 잠금 상태였다면 단계별 표시
+      _fruitReady=s.fruitReady!==undefined?!!s.fruitReady:true;
       return true;
     }
   }catch(e){}
