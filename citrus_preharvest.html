@@ -295,7 +295,11 @@ body.big-text .hist-btn{height:50px !important}
   </div>
 
   <div class="section">
-    <div class="sec-title">2. 표본조사</div>
+    <div class="sec-head">
+      <div class="sec-title" style="margin-bottom:0">2. 표본조사</div>
+      <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+        style="height:28px;width:80px;padding:0;border:1.5px solid #7FAD52;border-radius:20px;background:white;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+    </div>
     <div id="sample-guide" class="guide">품종을 추가하고 표본을 추가하면 표본조사표가 생성됩니다</div>
     <div id="sample-section-wrap" style="display:none"></div>
   </div>
@@ -526,6 +530,54 @@ const VARIETY_PRESETS = ['궁천','흥진','유라','일남1호'];
 // ── 상태 ──────────────────────────────────────────
 let varieties = [];
 let _isLocked = false;
+let sampleInputOrder = 'row'; // 'row'(구간별) | 'col'(항목별)
+
+function toggleInputOrder(){
+  sampleInputOrder = sampleInputOrder==='row' ? 'col' : 'row';
+  vibrate([15]);
+  updateInputOrderBtn();
+  try{ localStorage.setItem('citrus_pre_input_order', sampleInputOrder); }catch(e){}
+}
+function updateInputOrderBtn(){
+  const btn = document.getElementById('order-toggle-btn');
+  if(!btn) return;
+  const rightArrow = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg>';
+  const downArrow = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="12" y1="4" x2="12" y2="18"/><polyline points="6,12 12,18 18,12"/></svg>';
+  if(sampleInputOrder==='row'){
+    btn.innerHTML = rightArrow+'<span>구간별</span>';
+    btn.title = '표본(행)별로 입력 — 엔터하면 같은 표본의 다음 칸으로 이동';
+  } else {
+    btn.innerHTML = downArrow+'<span>항목별</span>';
+    btn.title = '항목(열)별로 입력 — 엔터하면 같은 항목의 다음 표본으로 이동';
+  }
+}
+function getNextSampleInput(el){
+  const rows = Array.from(document.querySelectorAll('.samp-tbl tbody tr'));
+  if(sampleInputOrder==='row'){
+    const cur = Array.from(document.querySelectorAll('.samp-tbl input:not(.auto-cell)')).filter(x=>x.offsetParent!==null&&!x.disabled);
+    const i = cur.indexOf(el);
+    return cur[i+1]||null;
+  }
+  // 열 우선: 같은 열의 다음 행 → 없으면 다음 열의 첫 행
+  const td = el.closest('td');
+  const tr = el.closest('tr');
+  const rowIdx = rows.indexOf(tr);
+  const colIdx = tr ? Array.from(tr.children).indexOf(td) : -1;
+  const totalCols = rows[0] ? rows[0].children.length : 0;
+  for(let r=rowIdx+1;r<rows.length;r++){
+    const cell = rows[r].children[colIdx];
+    const inp = cell ? cell.querySelector('input:not(.auto-cell)') : null;
+    if(inp && inp.offsetParent!==null && !inp.disabled) return inp;
+  }
+  for(let c=colIdx+1;c<totalCols;c++){
+    for(let r=0;r<rows.length;r++){
+      const cell = rows[r].children[c];
+      const inp = cell ? cell.querySelector('input:not(.auto-cell)') : null;
+      if(inp && inp.offsetParent!==null && !inp.disabled) return inp;
+    }
+  }
+  return null;
+}
 
 function newVariety(){
   return { name:'', mode:'select', age:'', trees:'', proper:0, samplesManual:false, samples:[] };
@@ -1175,6 +1227,20 @@ function getNavList(){
 document.addEventListener('keydown', function(e){
   if(e.key !== 'Enter') return;
   const el = e.target;
+
+  // 표본조사 입력칸: 구간별/항목별 토글에 따른 이동
+  if(el.closest('.samp-tbl')){
+    const next = getNextSampleInput(el);
+    e.preventDefault();
+    if(next){
+      next.focus();
+      try{ next.select(); }catch(_){}
+    } else {
+      el.blur();
+    }
+    return;
+  }
+
   const list = getNavList();
   const idx = list.indexOf(el);
   if(idx === -1) return;
@@ -1207,6 +1273,11 @@ function init(){
     document.getElementById('survey_date').value = fmt(new Date());
     markFilled(document.getElementById('survey_date'));
   }
+  try{
+    const savedOrder = localStorage.getItem('citrus_pre_input_order');
+    if(savedOrder==='row' || savedOrder==='col') sampleInputOrder = savedOrder;
+  }catch(e){}
+  updateInputOrderBtn();
   renderVarietySetup();
   recalcSampleCounts();
   renderVarietySetup();
