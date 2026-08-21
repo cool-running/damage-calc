@@ -1182,10 +1182,11 @@ function confirmReset(){
   ['farm_no','contractor_name','avg_yield','unins_rate'].forEach(id=>{$(id).value='';$(id).classList.remove('filled');});
   $('survey_date').value=new Date().toLocaleDateString('en-CA');syncDate($('survey_date'));
   varieties=[newVariety()];
-  _locked=false;_phase='tree';
-  renderVarieties();setPhaseUI();
-  setEditMode(true);
-  calc();showToast('초기화되었습니다');
+  _locked=false;_phase='tree';_expandAll=false;_fruitReady=true;
+  $('btn-edit').classList.add('active');$('btn-calc').classList.remove('active');
+  $('hdrState').className='hdr-state unlocked';$('hdrState').textContent='🔓 수정 중';
+  renderVarieties();setPhaseUI();lockInputs(false);
+  calc();saveState();showToast('초기화되었습니다');
 }
 
 /* ───────── 상태 저장 ───────── */
@@ -1208,7 +1209,7 @@ function loadState(){
       varieties=s.varieties.map(v=>Object.assign(newVariety(),v));
       _phase=s.phase==='fruit'?'fruit':'tree';
       _locked=!!s.locked;
-      _expandAll=!_locked;   // 수정 중이었다면 전체편집 유지, 잠금 상태였다면 단계별 표시
+      _expandAll=!!s.expand;   // 저장된 값 그대로 복원(추론하지 않음)
       _fruitReady=s.fruitReady!==undefined?!!s.fruitReady:true;
       return true;
     }
