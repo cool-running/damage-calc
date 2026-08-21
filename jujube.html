@@ -405,7 +405,7 @@ body.big-text .scell .ci{font-size:19px!important}
   </div>
 </div>
 
-<div id="capture-template" style="position:fixed;left:-99999px;top:0;width:640px;background:#fff;padding:0;z-index:-1"></div>
+<div id="capture-template" style="position:fixed;left:-99999px;top:0;width:680px;background:#fff;padding:0;z-index:-1"></div>
 
 <div class="modal-bg" id="treeDelModal">
   <div class="modal">
@@ -1307,6 +1307,8 @@ function buildCapture(){
   R.rows.forEach(r=>{
     if(!r.v.cat||r.ap)return;
     const v=r.v,c=r.calc;
+    const halfLbl=v.half?'절반':'전부';
+    const halfColor=v.half?'#c0392b':'#333';
     v.trees.forEach(t=>{
       const g=parseFloat(String(t).replace(/,/g,''));
       if(isNaN(g))return;
@@ -1315,11 +1317,12 @@ function buildCapture(){
         <td class="cap-td">${jn}</td>
         <td class="cap-td">${vType(v)}</td>
         <td class="cap-td">${v.age||'-'}</td>
+        <td class="cap-td" style="font-weight:700;color:${halfColor}">${halfLbl}</td>
         <td class="cap-td" style="background:#EEF2F0">${g.toLocaleString()}</td>
         <td class="cap-td" style="background:#EEF2F0">${Math.round(g*(1-c.dmg)).toLocaleString()}</td></tr>`;
     });
   });
-  if(!jjRows)jjRows=`<tr><td class="cap-td" colspan="5" style="color:#999">해당 없음</td></tr>`;
+  if(!jjRows)jjRows=`<tr><td class="cap-td" colspan="6" style="color:#999">해당 없음</td></tr>`;
 
   // ── 3. 사과대추 표본조사 ──
   let apRows='';let an=0;
@@ -1362,19 +1365,11 @@ function buildCapture(){
 
   $('capture-template').innerHTML=`
   <div style="background:#fff;padding:20px;font-family:-apple-system,'Noto Sans KR',sans-serif;width:100%">
-    <div style="background:#5B7E3F;color:#fff;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-start">
-      <div>
-        <div style="font-size:17px;font-weight:800"><svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px"><path d="M12 3.4 V6.6" stroke="#5C3A1E" stroke-width="1.4" stroke-linecap="round"/><path d="M12 5 C13.6 3.8 15.2 4 16 4.4 C15 5.6 13.4 6 12 5.8 Z" fill="#5AA046"/><ellipse cx="12" cy="14.2" rx="6" ry="8" fill="#B0271B" stroke="#7C160E" stroke-width="1"/><ellipse cx="9.8" cy="11.4" rx="1.5" ry="3" fill="#ffffff" opacity="0.32"/></svg> 대추 수확개시전 수확량조사</div>
-      </div>
-      <div style="text-align:right;font-size:12px;line-height:1.6;flex-shrink:0">
-        <div>${cname ? cname+'('+farm+')' : '농지번호 <b>'+farm+'</b>'}</div>
-        <div>조사일자 <b>${date}</b></div>
-      </div>
+    <div style="background:#5B7E3F;color:#fff;border-radius:12px;padding:11px 14px;display:flex;align-items:baseline;gap:10px;white-space:nowrap">
+      <span style="font-size:12.5px;font-weight:700;flex-shrink:0">${date}</span>
+      <span style="font-size:12.5px;font-weight:700;flex-shrink:0">${cname?cname+'('+farm+')':'농지 '+farm}</span>
+      <span style="font-size:13.5px;font-weight:800;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis">🫐 대추 수확개시전 수확량조사</span>
     </div>
-
-    ${R.contractChange
-      ? `<div style="margin:10px 0 0;display:inline-block;background:#fdecea;color:#c0392b;border:1.5px solid #e24b4a;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:800">⚠ 계약변경 유 · 가입주수와 실제결과주수 5% 이상 상이 (평년수확량 환산 적용)</div>`
-      : `<div style="margin:10px 0 0;display:inline-block;background:#eef2f0;color:#5B7E3F;border:1.5px solid #cdd8c8;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">계약변경 무</div>`}
 
     ${secTitle('기본정보')}
     <table style="width:100%;border-collapse:collapse">
@@ -1391,70 +1386,51 @@ function buildCapture(){
     ${secTitle('1. 나무조사')}
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th class="cap-th">품종</th><th class="cap-th">수령</th><th class="cap-th">가입<br>주수</th>
-        <th class="cap-th">실제결과<br>주수</th>
-        <th class="cap-th">고사<br>주수</th>
-        <th class="cap-th">미보상<br>주수</th>
-        <th class="cap-th">적정<br>표본수</th>
-        <th class="cap-th">표본<br>주수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">품종</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">수령</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">가입주수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">실제결과주수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">고사주수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">미보상주수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">적정표본수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">표본주수</th>
       </tr></thead><tbody>${treeRows}</tbody>
     </table>
+    <div style="margin:5px 0 0;font-size:10.5px;font-weight:700;color:${R.contractChange?'#c0392b':'#5B7E3F'}">
+      ${R.contractChange ? '⚠ 계약변경 유 · 가입주수-실제결과주수 5% 이상 상이 (평년수확량 환산 적용)' : '계약변경 무'}
+    </div>
 
     ${secTitle('2. 재래종 표본조사')}
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th class="cap-th">표본주<br>번호</th><th class="cap-th">품종</th><th class="cap-th">수령</th>
-        <th class="cap-th">착과량<br>(g)</th>
-        <th class="cap-th">인정착과량<br>(g)</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">표본주번호</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">품종</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">수령</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">조사방법</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">착과량(g)</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">인정착과량(g)</th>
       </tr></thead><tbody>${jjRows}</tbody>
     </table>
 
     ${secTitle('3. 사과대추 표본조사')}
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th class="cap-th">표본주<br>번호</th><th class="cap-th">품종</th><th class="cap-th">수령</th>
-        <th class="cap-th">착과수</th>
-        <th class="cap-th">낙과수</th>
-        <th class="cap-th">인정<br>착과수</th>
-        <th class="cap-th">개당<br>과중(g)</th>
-        <th class="cap-th">인정착과량<br>(g)</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">표본주번호</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">품종</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">수령</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">착과수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">낙과수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">인정착과수</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">개당과중(g)</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">인정착과량(g)</th>
       </tr></thead><tbody>${apRows}</tbody>
     </table>
 
     ${secTitle('4. 사과대추 과중조사')}
     <table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        <th class="cap-th">품종</th>
-        <th class="cap-th">표본 과실수<br>(개)</th>
-        <th class="cap-th">표본과실 무게<br>(g)</th>
-        <th class="cap-th">개당과중<br>(g)</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">품종</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">표본과실수(개)</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">표본과실무게(g)</th>
+        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">개당과중(g)</th>
       </tr></thead><tbody>${wRows}</tbody>
     </table>
 
-    ${secTitle('5. 표본주별 착과수 및 착과량 요약')}
-    ${(()=>{
-      let allTrees=[];
-      R.rows.forEach(r=>{
-        const ap=r.ap;
-        (r.v.trees||[]).forEach(t=>{allTrees.push({num:allTrees.length+1,val:(t===''||t===null)?null:(parseFloat(String(t).replace(/,/g,''))??null),ap});});
-      });
-      if(!allTrees.some(t=>t.val!==null))return '<div style="color:#999;font-size:12px">해당 없음</div>';
-      const hasAp=allTrees.some(t=>t.val!==null&&t.ap);
-      const hasJ=allTrees.some(t=>t.val!==null&&!t.ap);
-      const ul=hasAp&&hasJ?'개/g':hasAp?'개':'g';
-      const nc=item=>`<td class="cap-td" style="background:#EEF2F0;font-weight:800;font-size:11px;width:22px">${item.num}</td>`;
-      const vc=item=>item.val===null?`<td class="cap-td" style="color:#bbb">-</td>`:`<td class="cap-td" style="font-weight:700">${item.val.toLocaleString('ko-KR')} <span style="font-size:9px;color:#666">${item.ap?'개':'g'}</span></td>`;
-      const cn=allTrees.length;
-      const crows=Math.ceil(cn/3);
-      const base=allTrees.slice(0,crows*3);
-      while(base.length<crows*3)base.push({num:base.length+1,val:null,ap:false});
-      let th=`<tr><th class="cap-th" style="background:#2d5016;width:22px;font-size:10px">번호</th><th class="cap-th" style="font-size:11px">착과수/량(${ul})</th><th class="cap-th" style="background:#2d5016;width:22px;font-size:10px">번호</th><th class="cap-th" style="font-size:11px">착과수/량(${ul})</th><th class="cap-th" style="background:#2d5016;width:22px;font-size:10px">번호</th><th class="cap-th" style="font-size:11px">착과수/량(${ul})</th></tr>`;
-      let tb='';
-      for(let r=0;r<crows;r++){const a=base[r],b=base[r+crows],c=base[r+crows*2];tb+=`<tr>${nc(a)}${vc(a)}${nc(b)}${vc(b)}${nc(c)}${vc(c)}</tr>`;}
-      return `<table style="width:100%;border-collapse:collapse"><thead>${th}</thead><tbody>${tb}</tbody></table>`;
-    })()}
-
-    ${secTitle('6. 조사결과')}
+    ${secTitle('5. 조사결과')}
     <table style="width:100%;border-collapse:collapse;table-layout:fixed">
       <tbody>
         <tr style="font-size:11px">
