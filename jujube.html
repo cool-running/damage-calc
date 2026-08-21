@@ -1549,7 +1549,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
   function bindFocusEl(el){
     if(!el||el.tagName!=='INPUT'||el.dataset.mfBound)return;
-    if(el.readOnly||el.disabled||['date','checkbox','radio','button'].includes(el.type))return;
+    if(el.readOnly||['date','checkbox','radio','button'].includes(el.type))return;
     el.dataset.mfBound='1';
     let sx=0,sy=0,scr=false;
     el.addEventListener('touchstart',ev=>{const t=ev.touches[0];sx=t.clientX;sy=t.clientY;scr=false;},{passive:true});
