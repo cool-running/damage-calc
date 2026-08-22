@@ -245,12 +245,12 @@ body.big-text .hist-btn{height:50px !important}
     <div style="display:flex;gap:6px;align-items:flex-end">
       <div class="field" style="flex:0 0 28%">
         <label>계약자명</label>
-        <input type="text" id="contractor_name" class="inp" placeholder="이름"
+        <input type="text" id="contractor_name" class="inp" placeholder="이름" enterkeyhint="next"
           oninput="markFilled(this)" onblur="saveState()" autocomplete="off">
       </div>
       <div class="field" style="flex:0 0 22%">
         <label>농지번호</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리"
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" enterkeyhint="next"
           maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);markFilled(this)"
           onblur="saveState()" autocomplete="off">
       </div>
@@ -271,13 +271,13 @@ body.big-text .hist-btn{height:50px !important}
       <div class="field">
         <label>가입면적</label>
         <span class="unit-badge">㎡</span>
-        <input type="text" id="ins_area" class="inp" inputmode="decimal"
+        <input type="text" id="ins_area" class="inp" inputmode="decimal" enterkeyhint="next"
           oninput="onCommaInput(this)" onchange="onAreaChange()" onblur="onAreaChange()" autocomplete="off">
       </div>
       <div class="field">
         <label>미보상비율</label>
         <span class="unit-badge">%</span>
-        <input type="text" id="unins_rate" class="inp" inputmode="decimal"
+        <input type="text" id="unins_rate" class="inp" inputmode="decimal" enterkeyhint="next"
           oninput="onCommaInput(this)" onblur="calcTotals();saveState()" autocomplete="off">
       </div>
       <div class="field">
@@ -600,7 +600,7 @@ function renderVarietySetup(){
   const wrap = document.getElementById('variety-list');
   wrap.innerHTML = varieties.map((v,vi)=>{
     const nameCell = v.mode==='custom'
-      ? `<div class="vr-name-wrap"><input type="text" class="inp ${v.name?'filled':''}" placeholder="품종명" value="${escAttr(v.name)}"
+      ? `<div class="vr-name-wrap"><input type="text" class="inp ${v.name?'filled':''}" placeholder="품종명" value="${escAttr(v.name)}" enterkeyhint="next"
            oninput="onVarietyNameInput(${vi},this)" onblur="saveState()" autocomplete="off">
            <button class="vr-name-toggle" onclick="setVarietyMode(${vi},'select')" title="목록에서 선택">▾</button></div>`
       : `<select class="inp ${v.name?'filled':''}" onchange="onVarietySelectChange(${vi},this)">
@@ -611,9 +611,9 @@ function renderVarietySetup(){
     return `<div class="variety-row">
       <div class="vr-num">${vi+1}</div>
       ${nameCell}
-      <input type="text" class="inp ${v.age?'filled':''}" inputmode="numeric" placeholder="수령" value="${v.age||''}"
+      <input type="text" class="inp ${v.age?'filled':''}" inputmode="numeric" placeholder="수령" value="${v.age||''}" enterkeyhint="next"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')" onblur="onVarietyAgeInput(${vi},this)" autocomplete="off">
-      <input type="text" class="inp ${v.trees?'filled':''}" inputmode="numeric" placeholder="주수" value="${v.trees}"
+      <input type="text" class="inp ${v.trees?'filled':''}" inputmode="numeric" placeholder="주수" value="${v.trees}" enterkeyhint="next"
         oninput="onCommaInput(this)" onblur="onVarietyTreesInput(${vi},this)" autocomplete="off">
       <div class="vr-stepper">
         <button class="vr-samp-btn minus" onclick="confirmSampleDel(${vi})" title="표본 삭제">−</button>
@@ -760,11 +760,11 @@ function renderSampleSection(){
         <td class="no">${globalNo}</td>
         <td class="vname-cell"><span>${label}</span></td>`;
       bodyHtml += `
-        <td><input type="text" inputmode="numeric" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
+        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
           class="${s.damaged!==''?'filled':''}" id="samp-dmg-${vi}-${si}"
           oninput="onCommaInput(this)"
           onblur="onSampleInput(${vi},${si},'damaged',this.value.replace(/,/g,''))" autocomplete="off"></td>
-        <td><input type="text" inputmode="numeric" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
+        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
           class="${s.normal!==''?'filled':''}" id="samp-nrm-${vi}-${si}"
           oninput="onCommaInput(this)"
           onblur="onSampleInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off"></td>
@@ -1235,7 +1235,6 @@ function handleEnterAdvance(el){
   if(el.closest('.samp-tbl')){
     let next = null;
     try{ next = getNextSampleInput(el); }catch(err){}
-    showToast(`[진단] mode=${sampleInputOrder} el=${el.id} next=${next?next.id:'없음'}`);
     if(next){
       next.focus();
       try{ next.select(); }catch(_){}
@@ -1244,7 +1243,6 @@ function handleEnterAdvance(el){
     }
     return;
   }
-  showToast(`[진단] samp-tbl 아님: el.id=${el.id||'(없음)'} class=${el.className}`);
 
   const list = getNavList();
   const idx = list.indexOf(el);
