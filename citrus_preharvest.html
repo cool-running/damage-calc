@@ -1235,6 +1235,7 @@ function handleEnterAdvance(el){
   if(el.closest('.samp-tbl')){
     let next = null;
     try{ next = getNextSampleInput(el); }catch(err){}
+    showToast(`[진단] mode=${sampleInputOrder} el=${el.id} next=${next?next.id:'없음'}`);
     if(next){
       next.focus();
       try{ next.select(); }catch(_){}
@@ -1243,6 +1244,7 @@ function handleEnterAdvance(el){
     }
     return;
   }
+  showToast(`[진단] samp-tbl 아님: el.id=${el.id||'(없음)'} class=${el.className}`);
 
   const list = getNavList();
   const idx = list.indexOf(el);
