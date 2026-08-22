@@ -1224,14 +1224,17 @@ function getNavList(){
     '#contractor_name, #farm_no, #ins_area, #unins_rate, .variety-row input.inp, .variety-row select.inp, .samp-tbl input:not(.auto-cell)'
   ));
 }
-document.addEventListener('keydown', function(e){
-  if(e.key !== 'Enter') return;
-  const el = e.target;
+// ── 엔터 이동 처리 (keydown + 안드로이드 숫자키패드 insertLineBreak 대응) ──
+let _lastEnterNavTime = 0;
+function handleEnterAdvance(el){
+  const now = Date.now();
+  if(now - _lastEnterNavTime < 150) return; // 중복 트리거 방지(디바운스)
+  _lastEnterNavTime = now;
 
   // 표본조사 입력칸: 구간별/항목별 토글에 따른 이동
   if(el.closest('.samp-tbl')){
-    const next = getNextSampleInput(el);
-    e.preventDefault();
+    let next = null;
+    try{ next = getNextSampleInput(el); }catch(err){}
     if(next){
       next.focus();
       try{ next.select(); }catch(_){}
@@ -1244,7 +1247,6 @@ document.addEventListener('keydown', function(e){
   const list = getNavList();
   const idx = list.indexOf(el);
   if(idx === -1) return;
-  e.preventDefault();
   const varietyRow = el.closest('.variety-row');
   const varietyRowIdx = varietyRow ? Array.from(document.querySelectorAll('.variety-row')).indexOf(varietyRow) : -1;
   el.blur();
@@ -1264,6 +1266,21 @@ document.addEventListener('keydown', function(e){
       setTimeout(()=>plusBtn.classList.remove('nudge'), 1200);
     }
   }
+}
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  const el = e.target;
+  if(getNavList().indexOf(el) === -1 && !el.closest('.samp-tbl')) return;
+  e.preventDefault();
+  handleEnterAdvance(el);
+});
+document.addEventListener('input', function(e){
+  // 일부 안드로이드 숫자 키패드는 keydown 대신 insertLineBreak으로만 엔터를 알림
+  if(e.inputType !== 'insertLineBreak') return;
+  const el = e.target;
+  if(!el || !el.matches) return;
+  if(getNavList().indexOf(el) === -1 && !el.closest('.samp-tbl')) return;
+  handleEnterAdvance(el);
 });
 
 function init(){
