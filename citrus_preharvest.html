@@ -171,13 +171,13 @@ body.big-text .hist-btn{height:50px !important}
 .samp-tbl tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .samp-tbl tbody td input.auto-cell{border:0.5px solid var(--border);background:var(--auto);color:var(--sub);font-weight:600}
 .samp-tbl tfoot td{padding:7px 2px;background:#eef3e7;font-weight:800;font-size:11px;text-align:center;border-top:1.5px solid var(--blue2);color:var(--blue)}
-.samp-tbl.multi{min-width:470px}
-.samp-tbl.multi thead th{font-size:8.5px;line-height:1.25}
+.samp-tbl.multi thead th{font-size:8px;line-height:1.2;padding:5px 1px}
 .samp-tbl.multi tbody td{padding:2px 1px}
-.samp-tbl.multi tbody td input{height:30px;font-size:11px;padding:0 1px}
+.samp-tbl.multi tbody td.vname-cell span{font-size:8.5px;min-height:28px}
+.samp-tbl.multi tbody td input{height:28px;font-size:10px;padding:0 1px}
 .samp-tbl.multi tbody td input.prev{background:#f5f2ea;border-color:#D9C79E;color:#8a6d2f}
 .samp-tbl.multi tbody td input.prev.filled{background:#FBF2DC;border-color:#C9A227;color:#7a5c00;font-weight:700}
-.samp-tbl.multi tfoot td{padding:6px 1px;font-size:9.5px}
+.samp-tbl.multi tfoot td{padding:6px 1px;font-size:9px}
 
 .guide{text-align:center;padding:16px 0;font-size:13px;color:var(--hint)}
 
@@ -334,14 +334,14 @@ body.big-text .hist-btn{height:50px !important}
 
   <!-- 결과 -->
   <div class="result-box pending" id="result-section">
-    <div style="display:flex;align-items:center;padding:12px 8px">
-      <div style="flex:1;display:flex;align-items:center;justify-content:flex-start;gap:5px;min-width:0;padding-left:14px">
-        <div style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:600;line-height:1.2;text-align:center;flex-shrink:0;white-space:nowrap">금차<br>피해율</div>
-        <div id="result-pct" style="font-size:18px;font-weight:800;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap;flex-shrink:0">- -</div>
+    <div style="display:flex;align-items:center;padding:13px 6px">
+      <div style="flex:1;text-align:center;min-width:0">
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:3px;white-space:nowrap">금차피해율</div>
+        <div id="result-pct" style="font-size:19px;font-weight:800;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</div>
       </div>
       <div style="width:1px;height:32px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
       <div style="flex:1;text-align:center;min-width:0">
-        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:2px;white-space:nowrap">최종피해율</div>
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:3px;white-space:nowrap">최종피해율</div>
         <div id="result-final-pct" style="font-size:19px;font-weight:800;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</div>
       </div>
       <div style="width:1px;height:32px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
@@ -612,6 +612,16 @@ function getNextSampleInput(el){
 function newVariety(){
   return { name:'', mode:'select', age:'', trees:'', proper:0, samplesManual:false, samples:[] };
 }
+function migrateVarieties(varr){
+  // 구버전 저장 데이터에는 prevDamaged/prevNormal이 아예 없어서(undefined) NaN 표기가 나므로 보정
+  (varr||[]).forEach(v=>{
+    (v.samples||[]).forEach(s=>{
+      if(s.prevDamaged===undefined) s.prevDamaged='';
+      if(s.prevNormal===undefined) s.prevNormal='';
+    });
+  });
+  return varr;
+}
 
 // ── 품종 추가 ───────────────────────────────────
 function addVariety(){
@@ -823,9 +833,9 @@ function renderSampleSection(){
   });
 
   if(multiSurveyMode){
-    wrap.innerHTML = `<div style="overflow-x:auto"><table class="samp-tbl multi">
-      <colgroup><col style="width:30px"><col style="width:68px"><col style="width:64px"><col style="width:60px"><col style="width:64px"><col style="width:60px"><col style="width:60px"></colgroup>
-      <thead><tr><th>No</th><th>품종/수령</th><th>(누적)이전<br>피해과</th><th>금차<br>피해과</th><th>(누적)이전<br>정상과</th><th>정상과</th><th>합계</th></tr></thead>
+    wrap.innerHTML = `<table class="samp-tbl multi">
+      <colgroup><col style="width:6%"><col style="width:16%"><col style="width:15.6%"><col style="width:15.6%"><col style="width:15.6%"><col style="width:15.6%"><col style="width:15.6%"></colgroup>
+      <thead><tr><th>No</th><th>품종<br>수령</th><th>(누적)이전<br>피해과</th><th>금차<br>피해과</th><th>(누적)이전<br>정상과</th><th>정상과</th><th>합계</th></tr></thead>
       <tbody>${bodyHtml}</tbody>
       <tfoot><tr>
         <td colspan="2">합계</td>
@@ -835,7 +845,7 @@ function renderSampleSection(){
         <td id="samp-foot-nrm">${totalSum>0?normalSum.toLocaleString():'-'}</td>
         <td id="samp-foot-tot">${totalSum>0?totalSum.toLocaleString():'-'}</td>
       </tr></tfoot>
-    </table></div>`;
+    </table>`;
   } else {
     wrap.innerHTML = `<table class="samp-tbl">
       <colgroup><col style="width:7%"><col style="width:24%"><col style="width:23%"><col style="width:23%"><col style="width:23%"></colgroup>
@@ -1276,7 +1286,7 @@ function loadHistoryRecord(idx){
   ['contractor_name','farm_no','ins_area','unins_rate'].forEach(id=>markFilled(document.getElementById(id)));
   markFilled(document.getElementById('survey_date'));
 
-  varieties = (r.varieties && r.varieties.length) ? JSON.parse(JSON.stringify(r.varieties)) : [newVariety()];
+  varieties = migrateVarieties((r.varieties && r.varieties.length) ? JSON.parse(JSON.stringify(r.varieties)) : [newVariety()]);
   multiSurveyMode = !!r.multiSurveyMode;
   document.getElementById('multi-survey-cb').checked = multiSurveyMode;
   document.getElementById('multi-chip').classList.toggle('active', multiSurveyMode);
@@ -1350,7 +1360,7 @@ function loadState(){
     ['contractor_name','farm_no','ins_area','unins_rate'].forEach(id=>markFilled(document.getElementById(id)));
     markFilled(document.getElementById('survey_date'));
 
-    varieties = (state.varieties && state.varieties.length) ? state.varieties : [newVariety()];
+    varieties = migrateVarieties((state.varieties && state.varieties.length) ? state.varieties : [newVariety()]);
     multiSurveyMode = !!state.multiSurveyMode;
     document.getElementById('multi-survey-cb').checked = multiSurveyMode;
   document.getElementById('multi-chip').classList.toggle('active', multiSurveyMode);
