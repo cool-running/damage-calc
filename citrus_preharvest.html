@@ -171,13 +171,13 @@ body.big-text .hist-btn{height:50px !important}
 .samp-tbl tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .samp-tbl tbody td input.auto-cell{border:0.5px solid var(--border);background:var(--auto);color:var(--sub);font-weight:600}
 .samp-tbl tfoot td{padding:7px 2px;background:#eef3e7;font-weight:800;font-size:11px;text-align:center;border-top:1.5px solid var(--blue2);color:var(--blue)}
-.samp-tbl.multi thead th{font-size:8px;line-height:1.2;padding:5px 1px}
+.samp-tbl.multi thead th{font-size:9px;line-height:1.25;padding:6px 1px}
 .samp-tbl.multi tbody td{padding:2px 1px}
-.samp-tbl.multi tbody td.vname-cell span{font-size:8.5px;min-height:28px}
-.samp-tbl.multi tbody td input{height:28px;font-size:10px;padding:0 1px}
+.samp-tbl.multi tbody td.vname-cell span{font-size:9.5px;min-height:34px}
+.samp-tbl.multi tbody td input{height:34px;font-size:12.5px;font-weight:800;padding:0 1px}
 .samp-tbl.multi tbody td input.prev{background:#f5f2ea;border-color:#D9C79E;color:#8a6d2f}
-.samp-tbl.multi tbody td input.prev.filled{background:#FBF2DC;border-color:#C9A227;color:#7a5c00;font-weight:700}
-.samp-tbl.multi tfoot td{padding:6px 1px;font-size:9px}
+.samp-tbl.multi tbody td input.prev.filled{background:#FBF2DC;border-color:#C9A227;color:#7a5c00;font-weight:800}
+.samp-tbl.multi tfoot td{padding:7px 1px;font-size:10px}
 
 .guide{text-align:center;padding:16px 0;font-size:13px;color:var(--hint)}
 
@@ -581,14 +581,23 @@ function updateInputOrderBtn(){
     btn.title = '항목(열)별로 입력 — 엔터하면 같은 항목의 다음 표본으로 이동';
   }
 }
+const MULTI_FIELD_ORDER = ['pdmg','dmg','pnrm','nrm'];
+function getAllSampleFlatList(){
+  const list = [];
+  varieties.forEach((v,vi)=>{
+    (v.samples||[]).forEach((s,si)=>{ list.push({vi,si}); });
+  });
+  return list;
+}
 function getNextSampleInput(el){
-  const rows = Array.from(document.querySelectorAll('.samp-tbl tbody tr'));
   if(sampleInputOrder==='row'){
     const cur = Array.from(document.querySelectorAll('.samp-tbl input:not(.auto-cell)')).filter(x=>x.offsetParent!==null&&!x.disabled);
     const i = cur.indexOf(el);
     return cur[i+1]||null;
   }
+
   // 열 우선: 같은 열의 다음 행 → 없으면 다음 열의 첫 행
+  const rows = Array.from(document.querySelectorAll('.samp-tbl tbody tr'));
   const td = el.closest('td');
   const tr = el.closest('tr');
   const rowIdx = rows.indexOf(tr);
@@ -784,6 +793,7 @@ function renderSampleSection(){
 
   let globalNo = 0;
   let bodyHtml = '';
+  let cardsHtml = '';
   let totalSum=0, damagedSum=0, normalSum=0, prevDamagedSum=0, prevNormalSum=0;
 
   varieties.forEach((v,vi)=>{
@@ -800,35 +810,43 @@ function renderSampleSection(){
         totalSum+=totalNum; damagedSum+=dmgNum; normalSum+=numSafe(s.normal);
         prevDamagedSum += numSafe(s.prevDamaged); prevNormalSum += numSafe(s.prevNormal);
       }
-      bodyHtml += `<tr>
-        <td class="no">${globalNo}</td>
-        <td class="vname-cell"><span>${label}</span></td>`;
       if(multiSurveyMode){
-        bodyHtml += `
-        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.prevDamaged!==''?Number(s.prevDamaged).toLocaleString():''}"
-          class="prev ${s.prevDamaged!==''?'filled':''}" id="samp-pdmg-${vi}-${si}"
-          oninput="onCommaInput(this)"
-          onblur="onSampleInput(${vi},${si},'prevDamaged',this.value.replace(/,/g,''))" autocomplete="off"></td>`;
+        bodyHtml += `<tr>
+          <td class="no">${globalNo}</td>
+          <td class="vname-cell"><span>${label}</span></td>
+          <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.prevDamaged!==''?Number(s.prevDamaged).toLocaleString():''}"
+            class="prev ${s.prevDamaged!==''?'filled':''}" id="samp-pdmg-${vi}-${si}"
+            oninput="onCommaInput(this)"
+            onblur="onSampleInput(${vi},${si},'prevDamaged',this.value.replace(/,/g,''))" autocomplete="off"></td>
+          <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
+            class="${s.damaged!==''?'filled':''}" id="samp-dmg-${vi}-${si}"
+            oninput="onCommaInput(this)"
+            onblur="onSampleInput(${vi},${si},'damaged',this.value.replace(/,/g,''))" autocomplete="off"></td>
+          <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.prevNormal!==''?Number(s.prevNormal).toLocaleString():''}"
+            class="prev ${s.prevNormal!==''?'filled':''}" id="samp-pnrm-${vi}-${si}"
+            oninput="onCommaInput(this)"
+            onblur="onSampleInput(${vi},${si},'prevNormal',this.value.replace(/,/g,''))" autocomplete="off"></td>
+          <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
+            class="${s.normal!==''?'filled':''}" id="samp-nrm-${vi}-${si}"
+            oninput="onCommaInput(this)"
+            onblur="onSampleInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off"></td>
+          <td><input type="text" class="auto-cell" readonly id="samp-tot-${vi}-${si}" value="${s.total!==''?Number(s.total).toLocaleString():''}"></td>
+        </tr>`;
+      } else {
+        bodyHtml += `<tr>
+          <td class="no">${globalNo}</td>
+          <td class="vname-cell"><span>${label}</span></td>
+          <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
+            class="${s.damaged!==''?'filled':''}" id="samp-dmg-${vi}-${si}"
+            oninput="onCommaInput(this)"
+            onblur="onSampleInput(${vi},${si},'damaged',this.value.replace(/,/g,''))" autocomplete="off"></td>
+          <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
+            class="${s.normal!==''?'filled':''}" id="samp-nrm-${vi}-${si}"
+            oninput="onCommaInput(this)"
+            onblur="onSampleInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off"></td>
+          <td><input type="text" class="auto-cell" readonly id="samp-tot-${vi}-${si}" value="${s.total!==''?Number(s.total).toLocaleString():''}"></td>
+        </tr>`;
       }
-      bodyHtml += `
-        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
-          class="${s.damaged!==''?'filled':''}" id="samp-dmg-${vi}-${si}"
-          oninput="onCommaInput(this)"
-          onblur="onSampleInput(${vi},${si},'damaged',this.value.replace(/,/g,''))" autocomplete="off"></td>`;
-      if(multiSurveyMode){
-        bodyHtml += `
-        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.prevNormal!==''?Number(s.prevNormal).toLocaleString():''}"
-          class="prev ${s.prevNormal!==''?'filled':''}" id="samp-pnrm-${vi}-${si}"
-          oninput="onCommaInput(this)"
-          onblur="onSampleInput(${vi},${si},'prevNormal',this.value.replace(/,/g,''))" autocomplete="off"></td>`;
-      }
-      bodyHtml += `
-        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
-          class="${s.normal!==''?'filled':''}" id="samp-nrm-${vi}-${si}"
-          oninput="onCommaInput(this)"
-          onblur="onSampleInput(${vi},${si},'normal',this.value.replace(/,/g,''))" autocomplete="off"></td>
-        <td><input type="text" class="auto-cell" readonly id="samp-tot-${vi}-${si}" value="${s.total!==''?Number(s.total).toLocaleString():''}"></td>
-      </tr>`;
     });
   });
 
@@ -934,9 +952,13 @@ function onSampleInput(vi,si,field,rawVal){
     const base = numSafe(s.damaged)+numSafe(s.normal);
     s.total = String(multiSurveyMode ? base+numSafe(s.prevDamaged) : base);
   } else { s.total=''; }
-  // 표 전체를 다시 그리지 않고 해당 셀만 갱신 (포커스 유지, 엔터 이동 안정성)
+  // 표/카드 전체를 다시 그리지 않고 해당 셀만 갱신 (포커스 유지, 엔터 이동 안정성)
   const totEl = document.getElementById(`samp-tot-${vi}-${si}`);
-  if(totEl) totEl.value = s.total!==''?Number(s.total).toLocaleString():'';
+  if(totEl){
+    const disp = s.total!==''?Number(s.total).toLocaleString():'-';
+    if('value' in totEl) totEl.value = s.total!==''?Number(s.total).toLocaleString():'';
+    else totEl.textContent = disp;
+  }
   updateSampleFooter();
   calcTotals();
   saveState();
