@@ -545,7 +545,6 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
               <th style="padding:5px 3px;border:1px solid #d1d5db;text-align:center;font-weight:700">조사대상<br>주수</th>
               <th style="padding:5px 3px;border:1px solid #d1d5db;text-align:center;font-weight:700">표본<br>주수</th>
               <th style="padding:5px 3px;border:1px solid #d1d5db;text-align:center;font-weight:700">적정<br>표본</th>
-              <th style="padding:5px 3px;border:1px solid #d1d5db;text-align:center;font-weight:700">표본착과수<br>합계</th>
               <th style="padding:5px 3px;border:1px solid #d1d5db;text-align:center;font-weight:700">1주당<br>착과수</th>
               <th style="padding:5px 3px;border:1px solid #d1d5db;text-align:center;font-weight:700;background:#0F4C81;color:#fff">착과수</th>
             </tr>
@@ -2610,7 +2609,6 @@ async function saveImage() {
         ${td(st>0?st.toLocaleString():'-',emA,true,'#185FA5')}
         ${td(sN>0?sN:'-',bg)}
         ${td(properN>0?properN:'-',bg)}
-        ${td(sSum>0?Math.round(sSum).toLocaleString():'-',bg)}
         ${td(perTree>0?perTree.toFixed(4):'-',bg)}
         ${td(after>0?after.toLocaleString():'-',emB,true,'#0F4C81')}
       </tr>`;
@@ -2632,7 +2630,6 @@ async function saveImage() {
       ${td(totalSurvey>0?totalSurvey.toLocaleString():'-','#EFE2C4',true,'#185FA5')}
       ${td(totalSampleN>0?totalSampleN:'-','#F5ECD9',true,'#7a5b1e')}
       ${td(totalProperSum>0?totalProperSum:'-','#F5ECD9',true,'#7a5b1e')}
-      ${td(totalSampleSum>0?Math.round(totalSampleSum).toLocaleString():'-','#F5ECD9',true,'#7a5b1e')}
       ${td('-','#F5ECD9',true,'#7a5b1e')}
       ${td(totalAfterSum>0?totalAfterSum.toLocaleString():'-','#EFE2C4',true,'#0F4C81')}
     </tr>`;
