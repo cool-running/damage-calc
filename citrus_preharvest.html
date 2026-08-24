@@ -79,6 +79,15 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .section{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;border:0.5px solid var(--border)}
 .sec-title{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:12px;letter-spacing:0.04em}
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.multi-chip{display:inline-flex;align-items:center;height:28px;padding:0 10px;border:1.5px solid #D9A441;border-radius:20px;background:white;color:#8a6d2f;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.multi-chip input{position:absolute;opacity:0;width:0;height:0}
+.multi-chip.active{background:#D9A441;color:#fff}
+.prior-toggle{position:relative;display:inline-block;cursor:pointer}
+.prior-toggle input{position:absolute;opacity:0;width:0;height:0}
+.prior-toggle-track{display:block;width:44px;height:26px;background:#ddd;border-radius:14px;position:relative;transition:background .2s}
+.prior-toggle-thumb{position:absolute;top:2px;left:2px;width:22px;height:22px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3);transition:transform .2s}
+.prior-toggle input:checked + .prior-toggle-track{background:var(--blue)}
+.prior-toggle input:checked + .prior-toggle-track .prior-toggle-thumb{transform:translateX(18px)}
 .sec-head .sec-title{margin-bottom:0}
 
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
@@ -162,6 +171,13 @@ body.big-text .hist-btn{height:50px !important}
 .samp-tbl tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .samp-tbl tbody td input.auto-cell{border:0.5px solid var(--border);background:var(--auto);color:var(--sub);font-weight:600}
 .samp-tbl tfoot td{padding:7px 2px;background:#eef3e7;font-weight:800;font-size:11px;text-align:center;border-top:1.5px solid var(--blue2);color:var(--blue)}
+.samp-tbl.multi{min-width:470px}
+.samp-tbl.multi thead th{font-size:8.5px;line-height:1.25}
+.samp-tbl.multi tbody td{padding:2px 1px}
+.samp-tbl.multi tbody td input{height:30px;font-size:11px;padding:0 1px}
+.samp-tbl.multi tbody td input.prev{background:#f5f2ea;border-color:#D9C79E;color:#8a6d2f}
+.samp-tbl.multi tbody td input.prev.filled{background:#FBF2DC;border-color:#C9A227;color:#7a5c00;font-weight:700}
+.samp-tbl.multi tfoot td{padding:6px 1px;font-size:9.5px}
 
 .guide{text-align:center;padding:16px 0;font-size:13px;color:var(--hint)}
 
@@ -178,7 +194,7 @@ body.big-text .hist-btn{height:50px !important}
 .locked input.inp:not([type=date]),.locked .samp-tbl input,.locked select.inp{pointer-events:none;opacity:0.72}
 .locked input[type=date].inp{pointer-events:none;opacity:0.72}
 .locked .datewrap{pointer-events:none;opacity:0.72}
-.locked .vr-samp-btn,.locked .add-variety-btn,.locked .del-variety-action,.locked .vr-name-toggle{pointer-events:none;opacity:0.4}
+.locked .vr-samp-btn,.locked .add-variety-btn,.locked .del-variety-action,.locked .vr-name-toggle,.locked .prior-toggle{pointer-events:none;opacity:0.4}
 
 /* 결과 */
 .result-box{background:linear-gradient(135deg,#5B7E3F 0%,#7FAD52 100%);border-radius:18px;padding:0 12px;margin-bottom:10px;color:white;border:1.5px solid rgba(255,255,255,0.25);box-shadow:0 8px 28px rgba(91,126,63,0.5),inset 0 1px 0 rgba(255,255,255,0.2)}
@@ -297,8 +313,14 @@ body.big-text .hist-btn{height:50px !important}
   <div class="section">
     <div class="sec-head">
       <div class="sec-title" style="margin-bottom:0">2. 표본조사</div>
-      <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
-        style="height:28px;width:80px;padding:0;border:1.5px solid #7FAD52;border-radius:20px;background:white;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+          style="height:28px;width:80px;padding:0;border:1.5px solid #7FAD52;border-radius:20px;background:white;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+        <label class="multi-chip" id="multi-chip" title="2차 이상 조사(이전 조사값 있음)">
+          <input type="checkbox" id="multi-survey-cb" onchange="onMultiSurveyToggle()">
+          <span>2차+</span>
+        </label>
+      </div>
     </div>
     <div id="sample-guide" class="guide">품종을 추가하고 표본을 추가하면 표본조사표가 생성됩니다</div>
     <div id="sample-section-wrap" style="display:none"></div>
@@ -312,16 +334,18 @@ body.big-text .hist-btn{height:50px !important}
 
   <!-- 결과 -->
   <div class="result-box pending" id="result-section">
-    <div style="display:flex;align-items:center;padding:14px 0">
-      <div style="padding-right:12px;flex-shrink:0">
-        <span style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:500;letter-spacing:0.04em">피해율</span>
+    <div style="display:flex;align-items:center;padding:12px 8px">
+      <div style="flex:1;display:flex;align-items:center;justify-content:flex-start;gap:5px;min-width:0;padding-left:14px">
+        <div style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:600;line-height:1.2;text-align:center;flex-shrink:0;white-space:nowrap">금차<br>피해율</div>
+        <div id="result-pct" style="font-size:18px;font-weight:800;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap;flex-shrink:0">- -</div>
       </div>
-      <div style="width:1px;height:34px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
-      <div style="padding:0 12px;flex:1;min-width:0">
-        <span id="result-pct" style="font-size:26px;font-weight:700;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</span>
+      <div style="width:1px;height:32px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
+      <div style="flex:1;text-align:center;min-width:0">
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:2px;white-space:nowrap">최종피해율</div>
+        <div id="result-final-pct" style="font-size:19px;font-weight:800;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</div>
       </div>
-      <div style="width:1px;height:34px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
-      <div style="padding-left:12px;flex-shrink:0">
+      <div style="width:1px;height:32px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
+      <div style="padding-left:10px;flex-shrink:0">
         <button class="save-btn" onclick="saveImage()"><span style="font-size:14px">📷</span><span>갤러리 저장</span></button>
       </div>
     </div>
@@ -372,9 +396,9 @@ body.big-text .hist-btn{height:50px !important}
 
       <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">3. 피해과실수 표본조사</div>
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:11%"><col style="width:27%"><col style="width:21%"><col style="width:21%"><col style="width:20%"></colgroup>
-          <thead><tr>
+        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed" id="cap-sample-tbl">
+          <colgroup id="cap-sample-colgroup"><col style="width:11%"><col style="width:27%"><col style="width:21%"><col style="width:21%"><col style="width:20%"></colgroup>
+          <thead id="cap-sample-thead"><tr>
             <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">표본주</th>
             <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">품종/수령</th>
             <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">100%<br>피해과실수</th>
@@ -382,7 +406,7 @@ body.big-text .hist-btn{height:50px !important}
             <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">과실수<br>합계</th>
           </tr></thead>
           <tbody id="cap-sample-table"></tbody>
-          <tfoot><tr>
+          <tfoot id="cap-sample-tfoot"><tr>
             <td colspan="2" style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11px;color:#5B7E3F">합계</td>
             <td style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11px;color:#5B7E3F" id="cap-foot-damaged">-</td>
             <td style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11px;color:#5B7E3F" id="cap-foot-normal">-</td>
@@ -392,22 +416,18 @@ body.big-text .hist-btn{height:50px !important}
       </div>
 
       <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
-        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">4. 금차 수확전 과실손해 피해율</div>
+        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">4. 수확전 과실손해 피해율</div>
         <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
+          <colgroup><col style="width:34%"><col style="width:33%"><col style="width:33%"></colgroup>
           <thead><tr>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">피해율</th>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">미보상비율</th>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">100%<br>피해과실수</th>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">정상과실수</th>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">과실수<br>합계</th>
+            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">(금차)<br>피해율</th>
+            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">(최종)<br>피해율</th>
+            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">미보상<br>비율</th>
           </tr></thead>
           <tbody><tr>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-pct">-</td>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-unins">-</td>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-damaged">-</td>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-normal">-</td>
-            <td style="padding:7px 2px;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-total">-</td>
+            <td style="padding:9px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:800;font-size:15px;color:#5B7E3F" id="cap-pct">-</td>
+            <td style="padding:9px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:13px" id="cap-final-pct">-</td>
+            <td style="padding:9px 2px;text-align:center;background:#fff;font-weight:700;font-size:13px" id="cap-unins">-</td>
           </tr></tbody>
         </table>
       </div>
@@ -525,12 +545,22 @@ function escAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
 const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
 // ── 품종 프리셋 (온주밀감) ──────────────────────────
-const VARIETY_PRESETS = ['궁천','흥진','유라','일남1호'];
+const VARIETY_PRESETS = ['궁천','흥진','유라','일남1호','산하홍','기타(온주밀감)'];
 
 // ── 상태 ──────────────────────────────────────────
 let varieties = [];
 let _isLocked = false;
 let sampleInputOrder = 'row'; // 'row'(구간별) | 'col'(항목별)
+let multiSurveyMode = false; // 2차 이상 조사 (누적 이전 데이터 입력)
+
+function onMultiSurveyToggle(){
+  multiSurveyMode = document.getElementById('multi-survey-cb').checked;
+  document.getElementById('multi-chip').classList.toggle('active', multiSurveyMode);
+  vibrate([15]);
+  renderSampleSection();
+  calcTotals();
+  saveState();
+}
 
 function toggleInputOrder(){
   sampleInputOrder = sampleInputOrder==='row' ? 'col' : 'row';
@@ -714,7 +744,7 @@ function recalcSampleCounts(){
 }
 function resizeSamples(v, target){
   if(!v.samples) v.samples=[];
-  while(v.samples.length < target) v.samples.push({total:'',damaged:'',normal:''});
+  while(v.samples.length < target) v.samples.push({total:'',damaged:'',normal:'',prevDamaged:'',prevNormal:''});
   while(v.samples.length > target){
     const last = v.samples[v.samples.length-1];
     if(!last.total && !last.damaged && !last.normal){ v.samples.pop(); }
@@ -744,7 +774,7 @@ function renderSampleSection(){
 
   let globalNo = 0;
   let bodyHtml = '';
-  let totalSum=0, damagedSum=0, normalSum=0;
+  let totalSum=0, damagedSum=0, normalSum=0, prevDamagedSum=0, prevNormalSum=0;
 
   varieties.forEach((v,vi)=>{
     const n = (v.samples||[]).length;
@@ -755,15 +785,34 @@ function renderSampleSection(){
       globalNo++;
       const totalNum = numSafe(s.total);
       const dmgNum = numSafe(s.damaged);
-      if(s.damaged!=='' || s.normal!==''){ totalSum+=totalNum; damagedSum+=dmgNum; normalSum+=numSafe(s.normal); }
+      const hasData = s.damaged!=='' || s.normal!=='' || (multiSurveyMode && (s.prevDamaged!=='' || s.prevNormal!==''));
+      if(hasData){
+        totalSum+=totalNum; damagedSum+=dmgNum; normalSum+=numSafe(s.normal);
+        prevDamagedSum += numSafe(s.prevDamaged); prevNormalSum += numSafe(s.prevNormal);
+      }
       bodyHtml += `<tr>
         <td class="no">${globalNo}</td>
         <td class="vname-cell"><span>${label}</span></td>`;
+      if(multiSurveyMode){
+        bodyHtml += `
+        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.prevDamaged!==''?Number(s.prevDamaged).toLocaleString():''}"
+          class="prev ${s.prevDamaged!==''?'filled':''}" id="samp-pdmg-${vi}-${si}"
+          oninput="onCommaInput(this)"
+          onblur="onSampleInput(${vi},${si},'prevDamaged',this.value.replace(/,/g,''))" autocomplete="off"></td>`;
+      }
       bodyHtml += `
         <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.damaged!==''?Number(s.damaged).toLocaleString():''}"
           class="${s.damaged!==''?'filled':''}" id="samp-dmg-${vi}-${si}"
           oninput="onCommaInput(this)"
-          onblur="onSampleInput(${vi},${si},'damaged',this.value.replace(/,/g,''))" autocomplete="off"></td>
+          onblur="onSampleInput(${vi},${si},'damaged',this.value.replace(/,/g,''))" autocomplete="off"></td>`;
+      if(multiSurveyMode){
+        bodyHtml += `
+        <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.prevNormal!==''?Number(s.prevNormal).toLocaleString():''}"
+          class="prev ${s.prevNormal!==''?'filled':''}" id="samp-pnrm-${vi}-${si}"
+          oninput="onCommaInput(this)"
+          onblur="onSampleInput(${vi},${si},'prevNormal',this.value.replace(/,/g,''))" autocomplete="off"></td>`;
+      }
+      bodyHtml += `
         <td><input type="text" inputmode="numeric" enterkeyhint="next" value="${s.normal!==''?Number(s.normal).toLocaleString():''}"
           class="${s.normal!==''?'filled':''}" id="samp-nrm-${vi}-${si}"
           oninput="onCommaInput(this)"
@@ -773,17 +822,33 @@ function renderSampleSection(){
     });
   });
 
-  wrap.innerHTML = `<table class="samp-tbl">
-    <colgroup><col style="width:7%"><col style="width:24%"><col style="width:23%"><col style="width:23%"><col style="width:23%"></colgroup>
-    <thead><tr><th>No</th><th>품종/수령</th><th>피해과</th><th>정상과</th><th>합계</th></tr></thead>
-    <tbody>${bodyHtml}</tbody>
-    <tfoot><tr>
-      <td colspan="2">합계</td>
-      <td id="samp-foot-dmg">${totalSum>0?damagedSum.toLocaleString():'-'}</td>
-      <td id="samp-foot-nrm">${totalSum>0?normalSum.toLocaleString():'-'}</td>
-      <td id="samp-foot-tot">${totalSum>0?totalSum.toLocaleString():'-'}</td>
-    </tr></tfoot>
-  </table>`;
+  if(multiSurveyMode){
+    wrap.innerHTML = `<div style="overflow-x:auto"><table class="samp-tbl multi">
+      <colgroup><col style="width:30px"><col style="width:68px"><col style="width:64px"><col style="width:60px"><col style="width:64px"><col style="width:60px"><col style="width:60px"></colgroup>
+      <thead><tr><th>No</th><th>품종/수령</th><th>(누적)이전<br>피해과</th><th>금차<br>피해과</th><th>(누적)이전<br>정상과</th><th>정상과</th><th>합계</th></tr></thead>
+      <tbody>${bodyHtml}</tbody>
+      <tfoot><tr>
+        <td colspan="2">합계</td>
+        <td id="samp-foot-pdmg">${totalSum>0?prevDamagedSum.toLocaleString():'-'}</td>
+        <td id="samp-foot-dmg">${totalSum>0?damagedSum.toLocaleString():'-'}</td>
+        <td id="samp-foot-pnrm">${totalSum>0?prevNormalSum.toLocaleString():'-'}</td>
+        <td id="samp-foot-nrm">${totalSum>0?normalSum.toLocaleString():'-'}</td>
+        <td id="samp-foot-tot">${totalSum>0?totalSum.toLocaleString():'-'}</td>
+      </tr></tfoot>
+    </table></div>`;
+  } else {
+    wrap.innerHTML = `<table class="samp-tbl">
+      <colgroup><col style="width:7%"><col style="width:24%"><col style="width:23%"><col style="width:23%"><col style="width:23%"></colgroup>
+      <thead><tr><th>No</th><th>품종/수령</th><th>피해과</th><th>정상과</th><th>합계</th></tr></thead>
+      <tbody>${bodyHtml}</tbody>
+      <tfoot><tr>
+        <td colspan="2">합계</td>
+        <td id="samp-foot-dmg">${totalSum>0?damagedSum.toLocaleString():'-'}</td>
+        <td id="samp-foot-nrm">${totalSum>0?normalSum.toLocaleString():'-'}</td>
+        <td id="samp-foot-tot">${totalSum>0?totalSum.toLocaleString():'-'}</td>
+      </tr></tfoot>
+    </table>`;
+  }
   setTimeout(bindMobileFocusHandlers,0);
 }
 
@@ -818,7 +883,7 @@ function confirmSampleAdd(vi){
   document.getElementById('sample-add-btn').onclick = () => {
     closeAddOverlay();
     v.samplesManual = true;
-    v.samples.push({total:'',damaged:'',normal:''});
+    v.samples.push({total:'',damaged:'',normal:'',prevDamaged:'',prevNormal:''});
     renderVarietySetup();
     renderSampleSection();
     calcTotals();
@@ -853,8 +918,12 @@ function onSampleInput(vi,si,field,rawVal){
   if(!s) return;
   if(field==='damaged') s.damaged = rawVal;
   if(field==='normal') s.normal = rawVal;
-  if(s.damaged!=='' && s.normal!==''){ s.total = String(numSafe(s.damaged)+numSafe(s.normal)); }
-  else { s.total=''; }
+  if(field==='prevDamaged') s.prevDamaged = rawVal;
+  if(field==='prevNormal') s.prevNormal = rawVal;
+  if(s.damaged!=='' && s.normal!==''){
+    const base = numSafe(s.damaged)+numSafe(s.normal);
+    s.total = String(multiSurveyMode ? base+numSafe(s.prevDamaged) : base);
+  } else { s.total=''; }
   // 표 전체를 다시 그리지 않고 해당 셀만 갱신 (포커스 유지, 엔터 이동 안정성)
   const totEl = document.getElementById(`samp-tot-${vi}-${si}`);
   if(totEl) totEl.value = s.total!==''?Number(s.total).toLocaleString():'';
@@ -863,32 +932,41 @@ function onSampleInput(vi,si,field,rawVal){
   saveState();
 }
 function updateSampleFooter(){
-  let totalSum=0, damagedSum=0, normalSum=0;
+  let totalSum=0, damagedSum=0, normalSum=0, prevDamagedSum=0, prevNormalSum=0;
   varieties.forEach(v=>{
     (v.samples||[]).forEach(s=>{
-      if(s.damaged!=='' || s.normal!==''){
+      if(s.damaged!=='' || s.normal!=='' || (multiSurveyMode && (s.prevDamaged!=='' || s.prevNormal!==''))){
         totalSum += numSafe(s.total);
         damagedSum += numSafe(s.damaged);
         normalSum += numSafe(s.normal);
+        prevDamagedSum += numSafe(s.prevDamaged);
+        prevNormalSum += numSafe(s.prevNormal);
       }
     });
   });
   const dmgEl = document.getElementById('samp-foot-dmg');
   const nrmEl = document.getElementById('samp-foot-nrm');
   const totEl = document.getElementById('samp-foot-tot');
+  const pdmgEl = document.getElementById('samp-foot-pdmg');
+  const pnrmEl = document.getElementById('samp-foot-pnrm');
   if(dmgEl) dmgEl.textContent = totalSum>0?damagedSum.toLocaleString():'-';
   if(nrmEl) nrmEl.textContent = totalSum>0?normalSum.toLocaleString():'-';
   if(totEl) totEl.textContent = totalSum>0?totalSum.toLocaleString():'-';
+  if(pdmgEl) pdmgEl.textContent = totalSum>0?prevDamagedSum.toLocaleString():'-';
+  if(pnrmEl) pnrmEl.textContent = totalSum>0?prevNormalSum.toLocaleString():'-';
 }
 
 // ── 합계 및 피해율 계산 ────────────────────────────
 function calcTotals(){
-  let totalSum=0, damagedSum=0;
+  let totalSum=0, damagedSum=0, normalSum=0, prevDamagedSum=0;
   varieties.forEach(v=>{
     (v.samples||[]).forEach(s=>{
-      if(s.damaged!=='' || s.normal!==''){
+      const hasData = s.damaged!=='' || s.normal!=='' || (multiSurveyMode && (s.prevDamaged!=='' || s.prevNormal!==''));
+      if(hasData){
         totalSum += numSafe(s.total);
         damagedSum += numSafe(s.damaged);
+        normalSum += numSafe(s.normal);
+        prevDamagedSum += numSafe(s.prevDamaged);
       }
     });
   });
@@ -896,14 +974,22 @@ function calcTotals(){
   const uninsRate = numSafe(document.getElementById('unins_rate').value)/100;
   const resultBox = document.getElementById('result-section');
   const pctEl = document.getElementById('result-pct');
+  const finalPctEl = document.getElementById('result-final-pct');
 
   if(totalSum>0){
-    let pct = (damagedSum/totalSum)*(1-uninsRate);
-    if(pct<0) pct=0;
-    pctEl.textContent = roundUpPct(pct)+'%';
+    const curDenom = damagedSum+normalSum;
+    let curPct = curDenom>0 ? (damagedSum/curDenom)*(1-uninsRate) : 0;
+    if(curPct<0) curPct=0;
+
+    let finalPct = multiSurveyMode ? (prevDamagedSum+damagedSum)/totalSum*(1-uninsRate) : curPct;
+    if(finalPct<0) finalPct=0;
+
+    pctEl.textContent = roundUpPct(curPct)+'%';
+    if(finalPctEl) finalPctEl.textContent = roundUpPct(finalPct)+'%';
     resultBox.classList.remove('pending');
   } else {
     pctEl.textContent = '- -';
+    if(finalPctEl) finalPctEl.textContent = '- -';
     resultBox.classList.add('pending');
   }
 }
@@ -955,6 +1041,9 @@ function resetAll(){
   });
   document.getElementById('survey_date').value = fmt(new Date());
   markFilled(document.getElementById('survey_date'));
+  multiSurveyMode = false;
+  document.getElementById('multi-survey-cb').checked = false;
+  document.getElementById('multi-chip').classList.remove('active');
   varieties = [newVariety()];
   renderVarietySetup();
   recalcSampleCounts();
@@ -990,40 +1079,85 @@ function fillCaptureTemplate(){
   }).join('');
 
   let rowsHtml=''; let no=1;
-  let totalSum=0,damagedSum=0,normalSum=0;
+  let totalSum=0,damagedSum=0,normalSum=0,prevDamagedSum=0,prevNormalSum=0;
   varieties.forEach((v,vi)=>{
-    const validSamples = (v.samples||[]).filter(s=>s.damaged!=='' || s.normal!=='');
+    const validSamples = (v.samples||[]).filter(s=>s.damaged!=='' || s.normal!=='' || (multiSurveyMode && (s.prevDamaged!=='' || s.prevNormal!=='')));
     const name = v.name || `품종${vi+1}`;
     const label = v.age ? `${name} ${v.age}년` : name;
     validSamples.forEach((s,si)=>{
       totalSum+=numSafe(s.total); damagedSum+=numSafe(s.damaged); normalSum+=numSafe(s.normal);
+      prevDamagedSum+=numSafe(s.prevDamaged); prevNormalSum+=numSafe(s.prevNormal);
       rowsHtml+=`<tr>
         <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${no++}</td>
         <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:10.5px;color:#5B7E3F">${label}</td>`;
+      if(multiSurveyMode){
+        rowsHtml+=`
+        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#FBF2DC;font-size:10.5px;color:#7a5c00">${numSafe(s.prevDamaged).toLocaleString()}</td>`;
+      }
       rowsHtml+=`
-        <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.damaged).toLocaleString()}</td>
+        <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.damaged).toLocaleString()}</td>`;
+      if(multiSurveyMode){
+        rowsHtml+=`
+        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#FBF2DC;font-size:10.5px;color:#7a5c00">${numSafe(s.prevNormal).toLocaleString()}</td>`;
+      }
+      rowsHtml+=`
         <td style="padding:6px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.normal).toLocaleString()}</td>
         <td style="padding:6px 2px;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.total).toLocaleString()}</td>
       </tr>`;
     });
   });
-  document.getElementById('cap-sample-table').innerHTML = rowsHtml || '<tr><td colspan="5" style="padding:10px;text-align:center;color:#999;font-size:11px">표본 데이터 없음</td></tr>';
-  document.getElementById('cap-foot-damaged').textContent = totalSum>0?damagedSum.toLocaleString():'-';
-  document.getElementById('cap-foot-normal').textContent = totalSum>0?normalSum.toLocaleString():'-';
-  document.getElementById('cap-foot-total').textContent = totalSum>0?totalSum.toLocaleString():'-';
+
+  const sampColCount = multiSurveyMode ? 7 : 5;
+  document.getElementById('cap-sample-table').innerHTML = rowsHtml || `<tr><td colspan="${sampColCount}" style="padding:10px;text-align:center;color:#999;font-size:11px">표본 데이터 없음</td></tr>`;
+
+  if(multiSurveyMode){
+    document.getElementById('cap-sample-colgroup').innerHTML =
+      '<col style="width:8%"><col style="width:18%"><col style="width:16%"><col style="width:15%"><col style="width:16%"><col style="width:13%"><col style="width:14%">';
+    document.getElementById('cap-sample-thead').innerHTML = `<tr>
+      <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:8.5px;font-weight:700;text-align:center">표본주</th>
+      <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:8.5px;font-weight:700;text-align:center">품종/수령</th>
+      <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:8px;font-weight:700;text-align:center">(누적)이전<br>100%피해</th>
+      <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:8px;font-weight:700;text-align:center">금차<br>100%피해</th>
+      <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:8px;font-weight:700;text-align:center">(누적)이전<br>정상과실수</th>
+      <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:8.5px;font-weight:700;text-align:center">정상<br>과실수</th>
+      <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:8.5px;font-weight:700;text-align:center">과실수<br>합계</th>
+    </tr>`;
+    document.getElementById('cap-sample-tfoot').innerHTML = `<tr>
+      <td colspan="2" style="padding:6px 1px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">합계</td>
+      <td style="padding:6px 1px;background:#FBF2DC;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#7a5c00">${totalSum>0?prevDamagedSum.toLocaleString():'-'}</td>
+      <td style="padding:6px 1px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">${totalSum>0?damagedSum.toLocaleString():'-'}</td>
+      <td style="padding:6px 1px;background:#FBF2DC;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#7a5c00">${totalSum>0?prevNormalSum.toLocaleString():'-'}</td>
+      <td style="padding:6px 1px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">${totalSum>0?normalSum.toLocaleString():'-'}</td>
+      <td style="padding:6px 1px;background:#eef3e7;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">${totalSum>0?totalSum.toLocaleString():'-'}</td>
+    </tr>`;
+  } else {
+    document.getElementById('cap-sample-colgroup').innerHTML =
+      '<col style="width:11%"><col style="width:27%"><col style="width:21%"><col style="width:21%"><col style="width:20%">';
+    document.getElementById('cap-sample-thead').innerHTML = `<tr>
+      <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">표본주</th>
+      <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">품종/수령</th>
+      <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">100%<br>피해과실수</th>
+      <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">정상과실수</th>
+      <th style="padding:6px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">과실수<br>합계</th>
+    </tr>`;
+    document.getElementById('cap-sample-tfoot').innerHTML = `<tr>
+      <td colspan="2" style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11px;color:#5B7E3F">합계</td>
+      <td style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11px;color:#5B7E3F">${totalSum>0?damagedSum.toLocaleString():'-'}</td>
+      <td style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11px;color:#5B7E3F">${totalSum>0?normalSum.toLocaleString():'-'}</td>
+      <td style="padding:6px 2px;background:#eef3e7;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11px;color:#5B7E3F">${totalSum>0?totalSum.toLocaleString():'-'}</td>
+    </tr>`;
+  }
 
   const uninsRate = numSafe(document.getElementById('unins_rate').value);
-  let pctDisp = '- -';
-  if(totalSum>0){
-    let pct = (damagedSum/totalSum)*(1-uninsRate/100);
-    if(pct<0) pct=0;
-    pctDisp = roundUpPct(pct)+'%';
-  }
-  document.getElementById('cap-pct').textContent = pctDisp;
+  const curDenom = damagedSum+normalSum;
+  let curPct = curDenom>0 ? (damagedSum/curDenom)*(1-uninsRate/100) : 0;
+  if(curPct<0) curPct=0;
+  let finalPct = multiSurveyMode && totalSum>0 ? (prevDamagedSum+damagedSum)/totalSum*(1-uninsRate/100) : curPct;
+  if(finalPct<0) finalPct=0;
+
+  document.getElementById('cap-final-pct').textContent = curDenom>0 ? roundUpPct(finalPct)+'%' : '- -';
+  document.getElementById('cap-pct').textContent = curDenom>0 ? roundUpPct(curPct)+'%' : '- -';
   document.getElementById('cap-unins').textContent = uninsRate?uninsRate+'%':'0%';
-  document.getElementById('cap-total').textContent = totalSum>0?totalSum.toLocaleString():'-';
-  document.getElementById('cap-damaged').textContent = totalSum>0?damagedSum.toLocaleString():'-';
-  document.getElementById('cap-normal').textContent = totalSum>0?normalSum.toLocaleString():'-';
 }
 
 // ── 이미지 캐시 저장 (당일 미리보기용, index.html 저장목록 연동) ──
@@ -1143,6 +1277,9 @@ function loadHistoryRecord(idx){
   markFilled(document.getElementById('survey_date'));
 
   varieties = (r.varieties && r.varieties.length) ? JSON.parse(JSON.stringify(r.varieties)) : [newVariety()];
+  multiSurveyMode = !!r.multiSurveyMode;
+  document.getElementById('multi-survey-cb').checked = multiSurveyMode;
+  document.getElementById('multi-chip').classList.toggle('active', multiSurveyMode);
 
   setEditMode();
   renderVarietySetup();
@@ -1173,6 +1310,7 @@ function saveToHistory(){
     unins_rate: document.getElementById('unins_rate').value,
     survey_date: surveyDate,
     varieties: JSON.parse(JSON.stringify(varieties)),
+    multiSurveyMode: multiSurveyMode,
     pct: pct,
     saved_at: new Date().toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/ /g,'')
   };
@@ -1194,6 +1332,7 @@ function saveState(){
     unins_rate: document.getElementById('unins_rate').value,
     survey_date: document.getElementById('survey_date').value,
     varieties: varieties,
+    multiSurveyMode: multiSurveyMode,
     isLocked: _isLocked
   };
   try{ localStorage.setItem('citrus_pre_state', JSON.stringify(state)); }catch(e){}
@@ -1212,6 +1351,9 @@ function loadState(){
     markFilled(document.getElementById('survey_date'));
 
     varieties = (state.varieties && state.varieties.length) ? state.varieties : [newVariety()];
+    multiSurveyMode = !!state.multiSurveyMode;
+    document.getElementById('multi-survey-cb').checked = multiSurveyMode;
+  document.getElementById('multi-chip').classList.toggle('active', multiSurveyMode);
 
     if(state.isLocked){ setCalcMode(true); } else { setEditMode(true); }
     return true;
