@@ -240,6 +240,16 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-name">밤</div>
       <div class="crop-desc">수확개시전 수확량조사</div>
     </div>
+    <div class="crop-card done" onclick="go('citrus_preharvest')">
+      <div class="crop-icon">🍊</div>
+      <div class="crop-name">감귤(온주밀감류)</div>
+      <div class="crop-desc">수확전 손해조사</div>
+    </div>
+    <div class="crop-card done" onclick="go('citrus_fruitdamage')">
+      <div class="crop-icon">🍊</div>
+      <div class="crop-name">감귤(온주밀감류)</div>
+      <div class="crop-desc">과실손해조사</div>
+    </div>
   </div>
 </div>
 
@@ -324,6 +334,7 @@ function go(page){
     apple:'./apple.html', apple_multi:'./apple_multi.html', sunburn:'./sunburn.html',
     jujube:'./jujube.html',
     walnut:'./walnut.html', chestnut:'./chestnut.html',
+    citrus_preharvest:'./citrus_preharvest.html', citrus_fruitdamage:'./citrus_fruitdamage.html',
     fruit:'./fruit.html', rice:'./rice.html',
     wheat_barley_oat:'./wheat_barley_oat.html',
     wheat:'./wheat.html',
