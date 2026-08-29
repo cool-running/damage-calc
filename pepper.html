@@ -196,7 +196,7 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
 .btn-calc{border:2px solid var(--green);background:#fff;color:var(--green)}
 .btn-edit.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
 .btn-calc.active{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(91,126,63,0.35)}
-.locked input.inp,.locked select.inp,.locked table.smp input,.locked .prev-row input,.locked .datewrap,.locked .add-btn,.locked .del-sample-btn,.locked .scell,.locked .smp-rhead input,.locked .sample-btn-row{pointer-events:none;opacity:0.72}
+body.locked input.inp,body.locked select.inp,body.locked table.smp input,body.locked .prev-row input,body.locked .datewrap,body.locked .add-btn,body.locked .del-sample-btn,body.locked .scell,body.locked .smp-rhead input,body.locked .sample-btn-row{pointer-events:none;opacity:0.72}
 
 .result{background:var(--org);border-radius:12px;padding:14px 12px;display:flex;align-items:center}
 .result.pending{opacity:0.75}
@@ -450,9 +450,9 @@ body.big-text .scell-badge{font-size:10px!important;top:4px!important}
   <div style="background:linear-gradient(180deg,#3f5a2b 0%,#5B7E3F 9%,#f3f4f6 9%,#f3f4f6 100%);padding:0 16px 22px;box-sizing:border-box">
     <div style="height:18px"></div>
     <div style="display:flex;align-items:baseline;justify-content:space-between;color:#fff;margin-bottom:13px;flex-wrap:nowrap">
-      <div style="display:flex;align-items:baseline;gap:6px;min-width:0;overflow:hidden">
-        <span id="cap-date" style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0"></span>
-        <span id="cap-farmno" style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+      <div style="display:flex;align-items:baseline;gap:6px;flex-shrink:0">
+        <span id="cap-date" style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap"></span>
+        <span id="cap-farmno" style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;letter-spacing:0.2px"></span>
       </div>
       <span style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0;margin-left:8px">🌶️ 고추 생산비조사</span>
     </div>
@@ -1066,6 +1066,7 @@ function applyModeUI(m){
   $('btn-calc').classList.toggle('active',m==='calc');
   $('result').classList.toggle('pending',m!=='calc');
   document.querySelector('.content').classList.toggle('locked',m==='calc');
+  document.body.classList.toggle('locked',m==='calc');
   setLockBadge(m==='calc');
   if(m==='calc'&&document.activeElement&&typeof document.activeElement.blur==='function') document.activeElement.blur();
   persist();
@@ -1173,7 +1174,7 @@ function disasterLabel(){
 function fillCaptureTemplate(){
   $('cap-date').textContent=st.survey_date||'';
   $('cap-farmno').textContent=st.contractor_name
-    ? st.contractor_name+(st.farm_no?' ('+st.farm_no+')':'')
+    ? st.contractor_name+(st.farm_no?' ('+st.farm_no+' )':'')
     : (st.farm_no?('농지번호: '+st.farm_no):'');
   // 1. 사고원인
   const d=DISASTERS[st.disasterIdx];
