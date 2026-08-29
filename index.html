@@ -43,10 +43,10 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 
 .tab-slider-wrap{overflow:hidden;width:100%;flex:1;min-height:0;position:relative}
 .tab-slider{display:flex;align-items:stretch;height:100%;transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);will-change:transform}
-.tab-content{flex:0 0 100%;width:100%;height:100%;padding:8px 12px 14px;box-sizing:border-box;overflow-y:hidden}
-#tab-3{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tab-content{flex:0 0 100%;width:100%;height:100%;padding:8px 12px 14px;box-sizing:border-box;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 .crop-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(6,1fr);gap:8px;height:100%}
+.crop-grid+.crop-grid{margin-top:8px}
 .crop-card{background:var(--card);border-radius:var(--r);padding:6px 6px;text-align:center;border:0.5px solid var(--border);cursor:pointer;position:relative;transition:transform 0.1s;touch-action:manipulation;box-sizing:border-box;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
 .crop-card:active{transform:scale(0.97)}
 .crop-card.done{border-color:var(--green)}
@@ -223,7 +223,15 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-name">생산비조사</div>
       <div class="crop-desc">무·배추·파·시금치·양상추</div>
     </div>
+    <div class="crop-card done" onclick="go('corn')">
+      <div class="crop-icon">🌽</div>
+      <div class="crop-name">옥수수</div>
+      <div class="crop-desc">수확량 조사</div>
+    </div>
   </div>
+  <!-- 밭작물 카드가 12개(6행)를 넘어가면, 바로 위 crop-grid 닫는 태그 다음 줄에
+       crop-grid 클래스를 가진 div를 새 카드들과 함께 하나 더 추가하면 됩니다.
+       탭이 세로로 스크롤되면서 2페이지로 자연스럽게 이어집니다 (JS 수정 불필요). -->
 </div>
 
 <!-- ② 과수 (4종 + 종합 합침) -->
@@ -358,6 +366,7 @@ function go(page){
     garlic:'./garlic.html', onion:'./onion.html', bean:'./bean.html',
     sweetpotato:'./sweetpotato.html', red_bean:'./red_bean.html', tea:'./tea.html',
     potato:'./potato.html', radish:'./radish.html', minipumpkin:'./minipumpkin.html', pepper:'./pepper.html', radishcost:'./radishcost.html',
+    corn:'./corn.html',
     apple:'./apple.html', apple_multi:'./apple_multi.html', sunburn:'./sunburn.html',
     jujube:'./jujube.html',
     walnut:'./walnut.html', chestnut:'./chestnut.html',
@@ -376,7 +385,7 @@ let currentFilter='all';
 const CROP_ICONS={
   '고추':'🌶️',
   '마늘':'🧄','양파':'🧅','콩':'🫘','고구마':'🍠','팥':'🫘','감자':'🥔',
-  '벼':'🌾','밀':'🍞','보리':'🌿','귀리':'🥣',
+  '벼':'🌾','밀':'🍞','보리':'🌿','귀리':'🥣','옥수수':'🌽',
   '착과수':'🍎','일소':'☀️',
   '사과':'🍎','배':'🍐','단감':'🟠','떫은감':'🟤',
   '대추':'🔴','호두':'🥜','밤':'🌰',
