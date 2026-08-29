@@ -575,7 +575,7 @@ const KEY='pepper_state', HKEY='pepper_history', BKEY='pepper_bigtext';
 let st={
   farm_no:'',contractor_name:'',survey_date:'',pumjong:'홍고추',region:'강원외',
   disasterIdx:0,diseaseIdx:0,uninsRate:'',
-  phase:'pre',plantDate:'',accDate:'',harvestStart:'',accDate2:'',covEnd:'',covEndManual:false,harvestPlan:'',harvestPlanManual:false,
+  phase:'pre',plantDate:'',plantDateAuto:false,accDate:'',harvestStart:'',accDate2:'',covEnd:'',covEndManual:false,harvestPlan:'',harvestPlanManual:false,
   insArea:'',actArea:'',dmgArea:'',
   ginujeok:'',samples:[]
 };
@@ -914,6 +914,7 @@ function onField(el){
   else if(el.id==='plantDate'||el.id==='plantDate2'){
     // 정식일은 전/후 탭 공용 — 한쪽 입력 시 양쪽·st 동기화
     st.plantDate=el.value;
+    st.plantDateAuto=false; // 사용자가 직접 건드리면 자동기본값이 아닌 실제 입력으로 취급
     ['plantDate','plantDate2'].forEach(pid=>{ const p=$(pid); if(p&&p!==el){ p.value=el.value; markFilled(p); } });
     autoFillDates();
   }
@@ -949,15 +950,17 @@ function phaseHasInput(phase){
   // 조사일자로 자동 채워진 사고일자는 '입력'으로 보지 않음
   const acc1=(st.accDate && st.accDate!==st.survey_date) ? st.accDate : '';
   const acc2=(st.accDate2 && st.accDate2!==st.survey_date) ? st.accDate2 : '';
+  const plantReal = st.plantDate && !st.plantDateAuto; // 자동기본값(5월 세팅)은 '입력'으로 안 침
   if(phase==='pre'){
-    return !!(st.plantDate||acc1||st.harvestPlan);
+    return !!(plantReal||acc1||st.harvestPlan);
   }else{
-    return !!(st.plantDate||st.harvestStart||acc2||st.covEnd);
+    return !!(plantReal||st.harvestStart||acc2||st.covEnd);
   }
 }
 function clearPhaseInput(phase){
   // 정식일까지 모두 삭제 (정식일은 공용이라 양쪽 입력칸 동시 클리어)
   st.plantDate='';
+  st.plantDateAuto=false;
   ['plantDate','plantDate2'].forEach(id=>{const e=$(id);if(e){e.value='';markFilled(e);}});
   if(phase==='pre'){
     st.accDate=''; st.harvestPlan=''; st.harvestPlanManual=false;
@@ -1314,7 +1317,7 @@ function saveImage(){
 
 restore();
 if(!st.survey_date) st.survey_date=todayStr();
-if(!st.plantDate) st.plantDate=new Date().getFullYear()+'-05-15';
+if(!st.plantDate){ st.plantDate=new Date().getFullYear()+'-05-15'; st.plantDateAuto=true; }
 if(localStorage.getItem(BKEY)==='1'){document.body.classList.add('big-text');$('bigtext-btn').classList.add('on');$('bigtext-label').textContent='원래대로';}
 loadForm();
 // 날짜칸: 칸 어디를 눌러도 달력이 뜨도록 (모바일 호환)
