@@ -49,6 +49,12 @@ function bindEnterNavigation(){
     if(el.dataset.enterBound === '1') return;
     el.dataset.enterBound = '1';
     const moveNext = ()=>{
+      if(el.closest('#sample-body')){
+        const next = getNextOrderedInput(el);
+        if(next){ next.focus(); try{ next.select(); }catch(_){} }
+        else { el.blur(); }
+        return;
+      }
       const list = Array.from(document.querySelectorAll(selector)).filter(e=>e.offsetParent!==null && !e.disabled && !e.readOnly);
       const i = list.indexOf(el);
       const next = i>=0 ? list[i+1] : null;
@@ -62,6 +68,113 @@ function bindEnterNavigation(){
       if(e.inputType==='insertLineBreak'){ e.preventDefault(); moveNext(); }
     });
   });
+}
+
+function getNextOrderedInput(el){
+  const rows=Array.from(document.querySelectorAll('#sample-body tr'));
+  if(sampleInputOrder==='row'){
+    const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
+    const i=cur.indexOf(el);
+    return cur[i+1]||null;
+  }
+  // 열 우선: 같은 열의 다음 행 → 없으면 다음 열의 첫 행
+  const td=el.closest('td');
+  const tr=el.closest('tr');
+  const rowIdx=rows.indexOf(tr);
+  const colIdx=Array.from(tr.children).indexOf(td);
+  const totalCols=rows[0]?rows[0].children.length:0;
+  for(let r=rowIdx+1;r<rows.length;r++){
+    const cell=rows[r].children[colIdx];
+    const inp=cell?cell.querySelector('input'):null;
+    if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+  }
+  for(let c=colIdx+1;c<totalCols;c++){
+    for(let r=0;r<rows.length;r++){
+      const cell=rows[r].children[c];
+      const inp=cell?cell.querySelector('input'):null;
+      if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+    }
+  }
+  return null;
+}
+function toggleInputOrder(){
+  sampleInputOrder=sampleInputOrder==='row'?'col':'row';
+  try{ if(navigator.vibrate) navigator.vibrate([15]); }catch(e){}
+  updateInputOrderBtn();
+  try{ localStorage.setItem('corn_input_order',sampleInputOrder); }catch(e){}
+}
+function updateInputOrderBtn(){
+  const btn=document.getElementById('order-toggle-btn');
+  if(!btn) return;
+  const rightArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg>';
+  const downArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="12" y1="4" x2="12" y2="18"/><polyline points="6,12 12,18 18,12"/></svg>';
+  if(sampleInputOrder==='row'){
+    btn.innerHTML=rightArrow+'<span>구간별</span>';
+    btn.title='구간(행)별로 입력 — 엔터하면 같은 구간의 다음 칸으로 이동';
+  }else{
+    btn.innerHTML=downArrow+'<span>항목별</span>';
+    btn.title='항목(열)별로 입력 — 엔터하면 같은 항목의 다음 구간으로 이동';
+  }
+}
+
+// ── 일괄입력 패널 열고/닫기 ─────────────────────────────
+function toggleBatchRow(){
+  const row=document.getElementById('batch-row');
+  const btn=document.getElementById('batch-toggle-btn');
+  const open=row.style.display==='none'||row.style.display==='';
+  row.style.display=open?'flex':'none';
+  if(btn){
+    btn.style.background=open?'#185FA5':'white';
+    btn.style.color=open?'white':'#185FA5';
+  }
+  if(!open){
+    const blc=document.getElementById('batch-len-chk'), bwc=document.getElementById('batch-wid-chk');
+    if(blc) blc.checked=false;
+    if(bwc) bwc.checked=false;
+  }
+}
+function normDim(val){
+  if(!val&&val!==0) return '';
+  let v=String(val).trim();
+  if(/^\.\d/.test(v)) v='0'+v;
+  const n=parseFloat(v);
+  return isNaN(n)?'':n.toString();
+}
+function toggleBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  const valInput=document.getElementById('batch-len-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].len) valInput.value=samples[0].len;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchLenInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  if(!chk.checked) return;
+  const val=normDim(document.getElementById('batch-len-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.len=val; });
+  renderSamples(); calc(); saveState();
+}
+function toggleBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  const valInput=document.getElementById('batch-wid-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].wid) valInput.value=samples[0].wid;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchWidInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  if(!chk.checked) return;
+  const val=normDim(document.getElementById('batch-wid-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.wid=val; });
+  renderSamples(); calc(); saveState();
 }
 document.addEventListener('DOMContentLoaded', ()=>{
   bindMobileFocusHandlers();
@@ -374,21 +487,51 @@ body.big-text tfoot td{font-size:12px !important;padding:8px 1px !important}
 
   <div class="section">
     <div class="sec-head">
-      <div class="sec-title">표본구간 조사</div>
+      <div class="sec-title" style="min-width:0">표본구간 조사</div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+          style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+        <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
+          style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap">⚡ 일괄입력</button>
+      </div>
     </div>
     <div style="font-size:10px;color:var(--hint);margin-bottom:8px">이랑길이·이랑폭(m) / 품종별 상품·중품·하품목이하 개수</div>
     <div id="sample-guide" class="guide">실제경작면적 입력 후 자동으로 구간이 생성됩니다</div>
-    <div id="sample-tbl-wrap" class="tbl-wrap" style="display:none">
-      <table id="sample-table" style="width:100%">
-        <colgroup id="sample-colgroup"></colgroup>
-        <thead id="sample-thead"></thead>
-        <tbody id="sample-body"></tbody>
-        <tfoot id="sample-tfoot"></tfoot>
-      </table>
-    </div>
-    <div class="sample-btn-row" id="sample-btn-row" style="display:none">
-      <button class="add-btn" onclick="addSample()">+ 표본구간 추가</button>
-      <button class="del-sample-btn" onclick="removeSample()">- 표본구간 삭제</button>
+    <div id="sample-wrap" style="display:none">
+      <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
+        <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+          <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+            길이
+          </label>
+          <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+            style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+            oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+          <button onclick="applyBatchLen()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+          <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+            폭
+          </label>
+          <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+            style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+            oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+          <button onclick="applyBatchWid()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+        </div>
+      </div>
+      <div id="sample-tbl-wrap" class="tbl-wrap">
+        <table id="sample-table" style="width:100%">
+          <colgroup id="sample-colgroup"></colgroup>
+          <thead id="sample-thead"></thead>
+          <tbody id="sample-body"></tbody>
+          <tfoot id="sample-tfoot"></tfoot>
+        </table>
+      </div>
+      <div class="sample-btn-row" id="sample-btn-row">
+        <button class="add-btn" onclick="addSample()">+ 표본구간 추가</button>
+        <button class="del-sample-btn" onclick="removeSample()">- 표본구간 삭제</button>
+      </div>
     </div>
     <div class="sum-strip" id="sum-strip" style="display:none">
       <span>표본구간 면적합계: <strong id="s-area">-</strong></span>
@@ -587,6 +730,7 @@ function getSampleCount(area){
 
 // ───────────────────────────────────────────── 상태 ─────────────────────────────────────────────
 let samples = []; // {len,wid,v:[{sang,jung,ha},{sang,jung,ha},{sang,jung,ha}]}
+let sampleInputOrder='row'; // 'row'(좌→우, 위→아래) | 'col'(위→아래, 좌→우)
 let _isLocked = false;
 
 function markFilled(el){
@@ -662,8 +806,7 @@ function updateSamplesAndCalc(){
   const area = getSurveyAreaNow();
   const need = getSampleCount(area);
   document.getElementById('sample-guide').style.display = need>0 ? 'none' : 'block';
-  document.getElementById('sample-tbl-wrap').style.display = need>0 ? 'block' : 'none';
-  document.getElementById('sample-btn-row').style.display = need>0 ? 'flex' : 'none';
+  document.getElementById('sample-wrap').style.display = need>0 ? 'block' : 'none';
   document.getElementById('sum-strip').style.display = need>0 ? 'flex' : 'none';
   if(need>0){
     if(samples.length===0){
@@ -1264,6 +1407,11 @@ try{
     document.getElementById('bigtext-label').textContent='원래대로';
   }
 }catch(e){}
+try{
+  const savedOrder=localStorage.getItem('corn_input_order');
+  if(savedOrder==='col'||savedOrder==='row') sampleInputOrder=savedOrder;
+}catch(e){}
+updateInputOrderBtn();
 
 updateSamplesAndCalc();
 setTimeout(()=>{ renderSamples(); calc(); }, 30);
