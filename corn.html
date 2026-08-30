@@ -280,8 +280,6 @@ body.big-text tfoot td{font-size:12px !important;padding:8px 1px !important}
 .sum-strip{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
 .sum-strip span{font-size:12px;color:var(--sub)}
 .sum-strip strong{font-size:13px;font-weight:800;color:var(--text)}
-.density-ok{font-size:11px;font-weight:800;color:#1D9E75;background:#e8faf3;border-radius:6px;padding:2px 6px}
-.density-bad{font-size:11px;font-weight:800;color:#c0392b;background:#FFF0F0;border-radius:6px;padding:2px 6px}
 
 /* 갤러리 캡처 템플릿 */
 .cap-th{height:34px;padding:4px 3px;background:#5B7E3F;color:#fff;font-weight:700;font-size:10.5px;border:1px solid #d1d5db;text-align:center;vertical-align:middle;line-height:1.25;box-sizing:border-box}
@@ -536,7 +534,7 @@ body.big-text tfoot td{font-size:12px !important;padding:8px 1px !important}
     <div class="sum-strip" id="sum-strip" style="display:none">
       <span>표본구간 면적합계: <strong id="s-area">-</strong></span>
       <span>표본피해수확량 합계: <strong id="s-damage">-</strong></span>
-      <span>재식주수(10a당): <strong id="s-density">-</strong> <span id="s-density-badge"></span></span>
+      <span>재식주수(10a당): <strong id="s-density">-</strong></span>
     </div>
   </div>
 
@@ -690,11 +688,7 @@ const DENSITY_REGION_MAP = {
   '충북,충남,대전,세종':'충북,충남,대전','전북':'전북,전남,광주,제주','전남,광주,제주':'전북,전남,광주,제주',
   '경북,대구':'경북,대구','경남,울산,부산':'경남,울산,부산'
 };
-// 적정 재식밀도 범위 (10a당 재식주수) - 전북,전남,광주,제주만 하한 3000, 나머지 3500 / 상한 공통 5000
-const DENSITY_OK_RANGE = {
-  '강원':[3500,5000],'경기,인천,서울':[3500,5000],'충북,충남,대전':[3500,5000],
-  '전북,전남,광주,제주':[3000,5000],'경북,대구':[3500,5000],'경남,울산,부산':[3500,5000]
-};
+// 적정 재식밀도 범위 테이블은 전산이 화면에 표시하지 않아 제거함 (재식주수 숫자만 참고용으로 표시)
 const VARIETY_WEIGHT = {mibaek2:180, daehak:160, miheuk:190, ilmi:190, yeonja:190, eolluk:190, chalok4:190, baksa:190};
 // 표준가격(25년 기준, 원/kg) - 강원도만 별도, 나머지는 전국 동일
 const STANDARD_PRICE = {'강원':2044};
@@ -976,24 +970,10 @@ function calc(){
   document.getElementById('s-area').textContent = sumArea>0 ? sumArea.toFixed(2)+' ㎡' : '-';
   document.getElementById('s-damage').textContent = sumDamage>0 ? sumDamage.toFixed(3)+' kg' : '-';
 
-  // ── 재식주수(10a당) 표시: 구간별 실측밀도의 평균 (참고용 배지 표시에만 사용, 실제 계산은 이미 구간별로 반영됨) ──
+  // ── 재식주수(10a당) 표시: 구간별 실측밀도의 평균 (참고용 숫자만, 실제 계산은 이미 구간별로 반영됨) ──
   const densityEl = document.getElementById('s-density');
-  const densityBadgeEl = document.getElementById('s-density-badge');
-  let densityStatus = null; // null=데이터없음, true=적정, false=부적정 (참고용 경고일 뿐 계산을 막지 않음)
   const avgDensity = densityRowCount>0 ? sumDensityVal/densityRowCount : 0;
-  if(avgDensity>0){
-    densityEl.textContent = Math.round(avgDensity).toLocaleString();
-    const range = densityRegionGroup ? DENSITY_OK_RANGE[densityRegionGroup] : null;
-    if(range){
-      densityStatus = avgDensity>=range[0] && avgDensity<=range[1];
-      densityBadgeEl.textContent = densityStatus ? '적정' : '부적정';
-      densityBadgeEl.className = densityStatus ? 'density-ok' : 'density-bad';
-    } else {
-      densityBadgeEl.textContent=''; densityBadgeEl.className='';
-    }
-  } else {
-    densityEl.textContent='-'; densityBadgeEl.textContent=''; densityBadgeEl.className='';
-  }
+  densityEl.textContent = avgDensity>0 ? Math.round(avgDensity).toLocaleString() : '-';
 
   const unitDamagePrecise = sumArea>0 ? sumDamage/sumArea : 0; // 최종 계산은 반올림 전 정밀값 사용
   const unitDamage = Math.round(unitDamagePrecise*10000)/10000; // 표시용(4자리 반올림)
@@ -1036,7 +1016,7 @@ function calc(){
     boxEl.classList.add('pending');
   }
 
-  window._calcResult = {region, timingIdx, stdYield, actArea, deadArea, otherArea, harvArea, surveyArea, insAmount, totalDamageYield, uninsLoss, lossAmount, payout, damageRate, densityStatus};
+  window._calcResult = {region, timingIdx, stdYield, actArea, deadArea, otherArea, harvArea, surveyArea, insAmount, totalDamageYield, uninsLoss, lossAmount, payout, damageRate};
 }
 
 // ───────────────────────────────────────────── 잠금/수정 ─────────────────────────────────────────────
