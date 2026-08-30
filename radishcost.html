@@ -51,13 +51,13 @@ select.inp{cursor:pointer;text-align-last:center}
 input.inp.filled,select.inp.filled{background:var(--fill-bg);border-color:var(--fill-bd);color:#000;font-weight:700}
 /* 날짜칸: 보이는 텍스트(가운데정렬) + 위에 겹친 투명 date input */
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;letter-spacing:-0.02em}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .datewrap.filled .date-disp{background:var(--fill-bg);border-color:var(--fill-bd);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:#bbb;font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
 .datewrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
 .datewrap:focus-within .date-disp{border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,0.15);background:#dceeff;color:#185FA5}
-body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
+body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 input.inp:focus,select.inp:focus,table.smp input:focus,.prev-row input:focus,
 input.inp.filled:focus,select.inp.filled:focus,table.smp input.filled:focus,.prev-row input.filled:focus{
   outline:none!important;border-color:var(--blue)!important;
@@ -625,7 +625,7 @@ function markFilled(el){
       wrap.classList.toggle('filled',has);
       const disp=wrap.querySelector('.date-disp');
       if(disp){
-        if(has){ disp.textContent=el.value; disp.classList.remove('ph'); }
+        if(has){ disp.textContent=el.value.slice(2); disp.classList.remove('ph'); }
         else{ disp.textContent=disp.getAttribute('data-ph')||'년-월-일'; disp.classList.add('ph'); }
       }
     }
