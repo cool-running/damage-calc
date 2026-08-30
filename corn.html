@@ -861,13 +861,13 @@ function renderSamples(){
 
   tbodyEl.innerHTML = samples.map((s,idx)=>{
     let tds = `<td class="no">${idx+1}</td>
-      <td><input type="number" inputmode="decimal" value="${s.len}" oninput="onSampleDimInput(${idx},'len',this)"></td>
-      <td><input type="number" inputmode="decimal" value="${s.wid}" oninput="onSampleDimInput(${idx},'wid',this)"></td>`;
+      <td><input type="text" inputmode="decimal" value="${s.len}" autocomplete="off" oninput="onSampleDimInput(${idx},'len',this)"></td>
+      <td><input type="text" inputmode="decimal" value="${s.wid}" autocomplete="off" oninput="onSampleDimInput(${idx},'wid',this)"></td>`;
     activeIdx.forEach(vi=>{
       const vc = s.v[vi];
-      tds += `<td><input type="number" inputmode="decimal" value="${vc.sang}" oninput="onSampleVInput(${idx},${vi},'sang',this)"></td>
-        <td><input type="number" inputmode="decimal" value="${vc.jung}" oninput="onSampleVInput(${idx},${vi},'jung',this)"></td>
-        <td><input type="number" inputmode="decimal" value="${vc.ha}" oninput="onSampleVInput(${idx},${vi},'ha',this)"></td>`;
+      tds += `<td><input type="text" inputmode="decimal" value="${vc.sang}" autocomplete="off" oninput="onSampleVInput(${idx},${vi},'sang',this)"></td>
+        <td><input type="text" inputmode="decimal" value="${vc.jung}" autocomplete="off" oninput="onSampleVInput(${idx},${vi},'jung',this)"></td>
+        <td><input type="text" inputmode="decimal" value="${vc.ha}" autocomplete="off" oninput="onSampleVInput(${idx},${vi},'ha',this)"></td>`;
     });
     return `<tr>${tds}</tr>`;
   }).join('');
