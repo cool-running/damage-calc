@@ -179,13 +179,13 @@ tfoot td.v{color:var(--text)}
 
 /* 날짜칸: 보이는 텍스트(가운데정렬) + 위에 겹친 투명 date input */
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
 .datewrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
 .datewrap:focus-within .date-disp{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.15)}
-body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
+body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -215,25 +215,24 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
       <button class="reset-btn" onclick="openResetModal()">전체 초기화</button>
     </div>
     <div style="display:flex;gap:6px;align-items:flex-end">
-      <div class="field" style="flex:0 0 30%;min-width:0">
+      <div class="field" style="flex:0 0 28%;min-width:0">
         <label>계약자명</label>
         <input type="text" id="contractor_name" class="inp" placeholder="이름"
           oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
       </div>
-      <div class="field" style="flex:0 0 30%;min-width:0">
+      <div class="field" style="flex:0 0 22%;min-width:0">
         <label>농지번호</label>
         <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리"
           maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);markFilled(this);checkDupFarmNo(this.value)" autocomplete="off">
       </div>
-      <div style="flex:1"></div>
+      <div class="field" style="flex:1;min-width:0">
+        <label>조사일자</label>
+        <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="markFilled(this)" autocomplete="off"></div>
+      </div>
       <div style="flex:0 0 40px">
         <button onclick="openHistoryModal()" title="이전 기록 불러오기"
           style="width:100%;height:40px;border:1.5px solid var(--green2);border-radius:var(--rs);background:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">📋</button>
       </div>
-    </div>
-    <div class="field" style="margin-top:8px">
-      <label>조사일자</label>
-      <div class="datewrap"><div class="date-disp ph" data-ph="조사일자">조사일자</div><input type="date" id="survey_date" onchange="markFilled(this)" autocomplete="off"></div>
     </div>
   </div>
 
