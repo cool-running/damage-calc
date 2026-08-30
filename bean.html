@@ -341,12 +341,14 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
 
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:932px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="min-height:932px;background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
-    <div style="height:26px"></div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">
-      <div style="font-size:15px;font-weight:700">콩 피해율 계산결과</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-        <span id="cap-date-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
-        <span id="cap-farmno-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
+    <div style="padding-top:18px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;margin-bottom:14px;flex-wrap:nowrap">
+      <div style="display:flex;align-items:baseline;gap:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <span id="cap-date-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9)"></span>
+        <span id="cap-farmno-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:0.8px;padding-right:2px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0">
+        <span style="font-size:15px;line-height:1;filter:grayscale(1) brightness(0) invert(1)">🫘</span>
+        <span style="font-size:13px;font-weight:700;line-height:1;color:rgba(255,255,255,0.9)">콩 피해율 계산결과</span>
       </div>
     </div>
 
@@ -358,7 +360,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
           <thead><tr>
             <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">평년수확량</th>
             <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">가입면적</th>
-            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">원장변경유무</th>
+            <th style="padding:7px 4px;background:#4a7aad;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">원장변경여부</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-avgYield">-</td>
@@ -1216,7 +1218,7 @@ function fillBeanCaptureTemplate(){
   if(capDateEl) capDateEl.textContent = survDateVal || '';
   const farmNoFull = farmNoVal + (_farmNoSeq>0?'('+_farmNoSeq+')':'');
   if(capFarmEl) capFarmEl.textContent = contractorName
-    ? contractorName + (farmNoFull ? '('+farmNoFull+')' : '')
+    ? contractorName + (farmNoFull ? ' ('+farmNoFull+')' : '')
     : (farmNoVal ? '농지번호: '+farmNoFull : '');
   const avgYield = document.getElementById('avgYield')?.value ? document.getElementById('avgYield').value + ' kg' : '-';
   const insArea = document.getElementById('insArea')?.value ? document.getElementById('insArea').value + ' ㎡' : '-';
@@ -1255,6 +1257,16 @@ function fillBeanCaptureTemplate(){
       </tr>`;
     }
   });
+  if(html){
+    const g = id => (document.getElementById(id)?.textContent || '-');
+    html+=`<tr style="border-top:2px solid #4a7aad;background:#eaf1f8">
+      <td style="padding:7px 4px;text-align:center;font-weight:700;font-size:12px;color:#4a7aad;border-right:1px solid #d1d5db">합계</td>
+      <td style="padding:7px 4px;text-align:center;font-weight:700;font-size:12px;color:#4a7aad;border-right:1px solid #d1d5db">${g('t-len')}</td>
+      <td style="padding:7px 4px;text-align:center;font-weight:700;font-size:12px;color:#4a7aad;border-right:1px solid #d1d5db">${g('t-wid')}</td>
+      <td style="padding:7px 4px;text-align:center;font-weight:700;font-size:12px;color:#4a7aad;border-right:1px solid #d1d5db">${g('t-weight')}</td>
+      <td style="padding:7px 4px;text-align:center;font-weight:900;font-size:12px;color:#4a7aad">${g('t-moist')}</td>
+    </tr>`;
+  }
   tbody.innerHTML = html || '<tr><td colspan="5" style="padding:10px;text-align:center;font-size:13px">-</td></tr>';
 }
 
