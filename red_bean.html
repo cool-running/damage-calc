@@ -37,6 +37,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 .sec-head .sec-title{margin-bottom:0}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;text-align:center}
@@ -197,16 +198,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
     </div>
   </div>
 
-  <!-- ② 보험가입사항 (공통) -->
+  <!-- ② 면적정보 -->
   <div class="section">
-    <div class="g3" style="align-items:center;margin-bottom:8px">
-      <div class="field" style="justify-content:center">
-        <span class="sec-title" style="margin-bottom:0">② 보험가입사항</span>
-      </div>
-      <div class="field"></div>
-      <div class="field"><label>계약변경여부</label>
-        <input type="text" id="contractYn" class="auto" readonly></div>
-    </div>
+    <div class="sec-title">면적정보</div>
     <div class="g3">
       <div class="field"><label>평년수확량</label>
         <span class="unit-badge">kg</span>
@@ -229,24 +223,51 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
         <span class="unit-badge">㎡</span>
         <input type="number" id="harvArea" class="inp" inputmode="decimal" placeholder="0" oninput="markFilled(this)" onblur="calc()" autocomplete="off"></div>
     </div>
-    <div class="g3">
-      <div class="field"><label>조사대상면적</label>
-        <input type="text" id="surveyArea" class="auto" readonly></div>
-      <div class="field"><label>조사수확량</label>
-        <span class="unit-badge">kg</span>
-        <input type="text" id="commonSurvey" class="auto" readonly></div>
-      <div class="field"><label>미보상비율</label>
-        <span class="unit-badge">%</span>
+    <div class="g4">
+      <div class="field"><label>미보상비율 <span style="font-weight:400;color:var(--hint);font-size:10px">%</span></label>
         <input type="number" id="uninsRate" class="inp" inputmode="decimal" placeholder="0" enterkeyhint="done" oninput="markFilled(this)" onblur="calc()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" autocomplete="off"></div>
+      <div class="field"><label>조사대상면적 <span style="font-weight:400;color:var(--hint);font-size:10px">㎡</span></label>
+        <input type="text" id="surveyArea" class="auto" readonly></div>
+      <div class="field"><label>조사수확량 <span style="font-weight:400;color:var(--hint);font-size:10px">kg</span></label>
+        <input type="text" id="commonSurvey" class="auto" readonly></div>
+      <div class="field"><label>계약변경</label>
+        <input type="text" id="contractYn" class="auto" readonly style="text-align:center"></div>
     </div>
   </div>
 
-  <!-- ③ 표본조사 -->
+  <!-- 표본조사 -->
   <div id="sec-sample">
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title">③ 표본구간 조사 <span id="sample-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
-        <span style="font-size:10px;color:var(--hint);font-weight:400">길이·폭(m) / 중량(g) / 함수율(%)</span>
+        <div class="sec-title" style="min-width:0">표본구간 조사 <span id="sample-badge" style="font-size:13px;font-weight:700;color:var(--blue)"></span></div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+            style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+          <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
+            style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap">⚡ 일괄입력</button>
+        </div>
+      </div>
+      <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
+        <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+          <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+            길이
+          </label>
+          <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+            style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+            oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+          <button onclick="applyBatchLen()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+          <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+            <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+            폭
+          </label>
+          <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+            style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+            oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+          <button onclick="applyBatchWid()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+        </div>
       </div>
       <div class="tbl-wrap">
         <table>
@@ -320,12 +341,14 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
 
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:932px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="min-height:932px;background:linear-gradient(180deg,#2d5016 0%,#7FAD52 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
-    <div style="height:26px"></div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">
-      <div style="font-size:15px;font-weight:700">팥 피해율 계산결과</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-        <span id="cap-date-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
-        <span id="cap-farmno-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
+    <div style="padding-top:18px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;margin-bottom:14px;flex-wrap:nowrap">
+      <div style="display:flex;align-items:baseline;gap:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <span id="cap-date-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9)"></span>
+        <span id="cap-farmno-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:0.8px;padding-right:2px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0">
+        <span style="font-size:15px;line-height:1">🫘</span>
+        <span style="font-size:13px;font-weight:700;line-height:1;color:rgba(255,255,255,0.9)">팥 피해율 계산결과</span>
       </div>
     </div>
 
@@ -337,7 +360,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
           <thead><tr>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">평년수확량</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">가입면적</th>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">원장변경유무</th>
+            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">원장변경여부</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-avgYield">-</td>
@@ -392,11 +415,11 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
             <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">미보상감수량</th>
           </tr></thead>
           <tbody><tr>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-pct-inline">-</td>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-unins-rate">-</td>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-result-survey">-</td>
-            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-loss">-</td>
-            <td style="padding:7px 2px;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-uninsLoss">-</td>
+            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;vertical-align:middle;background:#fff;font-weight:700;font-size:12px" id="cap-pct-inline">-</td>
+            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;vertical-align:middle;background:#fff;font-weight:700;font-size:12px" id="cap-unins-rate">-</td>
+            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;vertical-align:middle;background:#fff;font-weight:700;font-size:12px" id="cap-result-survey">-</td>
+            <td style="padding:7px 2px;border-right:1px solid #d1d5db;text-align:center;vertical-align:middle;background:#fff;font-weight:700;font-size:12px" id="cap-loss">-</td>
+            <td style="padding:7px 2px;text-align:center;vertical-align:middle;background:#fff;font-weight:700;font-size:12px" id="cap-uninsLoss">-</td>
           </tr></tbody>
         </table>
       </div>
@@ -643,10 +666,14 @@ function bindMobileFocusHandlers(){
         if(e.cancelable) e.preventDefault();
         el.focus();
         el.classList.add('mobile-focus');
+        const isDim = el.classList.contains('dim-input');
         setTimeout(()=>{
-          try{ el.select(); }catch(_){
+          try{
+            if(isDim){ const L=el.value.length; el.setSelectionRange(L,L); }
+            else{ el.select(); }
+          }catch(_){
             const len=el.value.length;
-            try{ el.setSelectionRange(0,len); }catch(_){}
+            try{ el.setSelectionRange(0,len); }catch(__){}
           }
         }, 50);
       },{passive:false});
@@ -745,7 +772,7 @@ function calcCommon(){
   const contractEl = document.getElementById('contractYn');
   const isChanged = insArea>0&&actArea>0&&Math.abs(areaErr)>0.1;
   if(insArea>0&&actArea>0){
-    contractEl.value = isChanged ? '원장변경 대상' : '이상무';
+    contractEl.value = isChanged ? '여' : '부';
     contractEl.style.color = isChanged ? '#e24b4a' : '#5B7E3F';
     contractEl.style.fontWeight = '700';
   } else {
@@ -758,7 +785,7 @@ function calcCommon(){
   const effArea = (insArea>0 && !isChanged) ? insArea : (actArea||insArea);
   const surveyArea = Math.max(0, effArea - deadArea - uninsArea - harvArea);
 
-  document.getElementById('surveyArea').value = surveyArea>0 ? surveyArea.toLocaleString()+' ㎡' : '';
+  document.getElementById('surveyArea').value = surveyArea>0 ? surveyArea.toLocaleString() : '';
 
   const effAvg = isChanged
     ? Math.round(Math.round(avgYield/insArea*10000)/10000 * actArea) : avgYield;
@@ -812,7 +839,7 @@ function calc(){
 
   document.getElementById('s-area').textContent = totalArea>0 ? totalArea.toFixed(2)+' ㎡' : '-';
   document.getElementById('s-unit').textContent = m2r3.toFixed(4)+' kg/㎡';
-  document.getElementById('commonSurvey').value = surveyYield.toLocaleString()+' kg';
+  document.getElementById('commonSurvey').value = surveyYield.toLocaleString();
   showResult(effAvg, surveyYield, m2r3.toFixed(4)+' kg/㎡', surveyArea, uninsLoss, pihaeyul);
   saveState();
 }
@@ -832,7 +859,7 @@ function calcFull(){
   }
 
   const surveyYield = Math.round(fullWeight*(1-fullMoisture/100)/(1-STD));
-  document.getElementById('commonSurvey').value = surveyYield.toLocaleString()+' kg';
+  document.getElementById('commonSurvey').value = surveyYield.toLocaleString();
 
   const uninsLoss = Math.round(Math.max(0,effAvg-surveyYield)*fullUninsRate);
   // ROUND 피해율 (소수4자리)
@@ -930,12 +957,10 @@ function renderSamples(){
   document.getElementById('sample-body').innerHTML = samples.map((s,i)=>`
     <tr>
       <td style="font-weight:600;color:var(--sub);font-size:10px">${i+1}</td>
-      <td><input type="text" value="${s.len?formatDim(s.len):''}" inputmode="decimal"
-        class="${s.len?'filled':''}"
+      <td><input type="text" value="${s.len?formatDim(s.len):''}" inputmode="decimal" class="dim-input ${s.len?'filled':''}"
         oninput="this.classList.toggle('filled',!!this.value);calcTotals()"
         onblur="this.value=normalizeDim(this.value);samples[${i}].len=this.value;calc()" autocomplete="off"></td>
-      <td><input type="text" value="${s.wid?formatDim(s.wid):''}" inputmode="decimal"
-        class="${s.wid?'filled':''}"
+      <td><input type="text" value="${s.wid?formatDim(s.wid):''}" inputmode="decimal" class="dim-input ${s.wid?'filled':''}"
         oninput="this.classList.toggle('filled',!!this.value);calcTotals()"
         onblur="this.value=normalizeDim(this.value);samples[${i}].wid=this.value;calc()" autocomplete="off"></td>
       <td><input type="number" value="${s.weight||''}" inputmode="decimal"
@@ -943,14 +968,153 @@ function renderSamples(){
         oninput="samples[${i}].weight=this.value;this.classList.toggle('filled',!!this.value);calcTotals()"
         onblur="calc()" autocomplete="off"></td>
       <td><input type="number" value="${s.moist||''}" inputmode="decimal" step="0.1"
-        enterkeyhint="${i < samples.length-1 ? 'next' : 'done'}"
         class="${s.moist?'filled':''}"
         oninput="samples[${i}].moist=this.value;this.classList.toggle('filled',!!this.value);calcTotals()"
-        onblur="calc()"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();if(${i} < samples.length-1){const _rows=document.querySelectorAll('#sample-body tr');const _next=_rows[${i+1}]?.querySelector('input');if(_next)_next.focus();}else{this.setAttribute('readonly','');setTimeout(()=>{this.blur();this.removeAttribute('readonly');},10);}}"
-        autocomplete="off"></td>
+        onblur="calc()" autocomplete="off"></td>
     </tr>`).join('');
+  setTimeout(()=>{ bindMobileFocusHandlers(); bindSampleNextNavigation(); },0);
   calcTotals();
+}
+
+let sampleInputOrder='row'; // 'row'(구간별: 좌→우,위→아래) | 'col'(항목별: 위→아래,좌→우)
+
+function getNextOrderedInput(el){
+  const rows=Array.from(document.querySelectorAll('#sample-body tr'));
+  if(sampleInputOrder==='row'){
+    const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled&&x.type!=='hidden');
+    const i=cur.indexOf(el);
+    return cur[i+1]||null;
+  }
+  const td=el.closest('td');
+  const tr=el.closest('tr');
+  const rowIdx=rows.indexOf(tr);
+  const colIdx=Array.from(tr.children).indexOf(td);
+  const totalCols=rows[0]?rows[0].children.length:0;
+  for(let r=rowIdx+1;r<rows.length;r++){
+    const cell=rows[r].children[colIdx];
+    const inp=cell?cell.querySelector('input'):null;
+    if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+  }
+  for(let c=colIdx+1;c<totalCols;c++){
+    for(let r=0;r<rows.length;r++){
+      const cell=rows[r].children[c];
+      const inp=cell?cell.querySelector('input'):null;
+      if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+    }
+  }
+  return null;
+}
+function toggleInputOrder(){
+  sampleInputOrder=sampleInputOrder==='row'?'col':'row';
+  try{ if(navigator.vibrate) navigator.vibrate([15]); }catch(e){}
+  updateInputOrderBtn();
+  try{ localStorage.setItem('red_bean_input_order',sampleInputOrder); }catch(e){}
+}
+function updateInputOrderBtn(){
+  const btn=document.getElementById('order-toggle-btn');
+  if(!btn) return;
+  const rightArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg>';
+  const downArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="12" y1="4" x2="12" y2="18"/><polyline points="6,12 12,18 18,12"/></svg>';
+  if(sampleInputOrder==='row'){
+    btn.innerHTML=rightArrow+'<span>구간별</span>';
+    btn.title='구간(행)별로 입력 — 엔터하면 같은 구간의 다음 칸으로 이동';
+  }else{
+    btn.innerHTML=downArrow+'<span>항목별</span>';
+    btn.title='항목(열)별로 입력 — 엔터하면 같은 항목의 다음 구간으로 이동';
+  }
+}
+function bindSampleNextNavigation(){
+  const inputs=Array.from(document.querySelectorAll('#sample-body input'));
+  inputs.forEach(el=>{
+    if(el.dataset.nextBound==='1')return;
+    el.dataset.nextBound='1';
+    el.setAttribute('enterkeyhint','next');
+    const moveNext=()=>{
+      const next=getNextOrderedInput(el);
+      if(next){
+        next.focus();
+        if(next.classList.contains('dim-input')){ const L=next.value.length; try{next.setSelectionRange(L,L);}catch(_){} }
+        else{ next.select?.(); }
+      }else{ el.blur(); }
+    };
+    el.addEventListener('keydown',(e)=>{
+      if(e.key!=='Enter')return;
+      e.preventDefault();
+      moveNext();
+    });
+    el.addEventListener('beforeinput',(e)=>{
+      if(e.inputType==='insertLineBreak'){ e.preventDefault(); moveNext(); }
+    });
+  });
+}
+
+// ── 일괄입력 패널 열고/닫기 ─────────────────────────────
+function toggleBatchRow(){
+  const row=document.getElementById('batch-row');
+  const btn=document.getElementById('batch-toggle-btn');
+  const open=row.style.display==='none'||row.style.display==='';
+  row.style.display=open?'flex':'none';
+  if(btn){
+    btn.style.background=open?'#185FA5':'white';
+    btn.style.color=open?'white':'#185FA5';
+  }
+  if(!open){
+    const blc=document.getElementById('batch-len-chk'), bwc=document.getElementById('batch-wid-chk');
+    if(blc) blc.checked=false;
+    if(bwc) bwc.checked=false;
+  }
+}
+
+// ── 길이/폭 일괄적용 ─────────────────────────────────
+function toggleBatchLen(){
+  const chk = document.getElementById('batch-len-chk');
+  const valInput = document.getElementById('batch-len-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].len){
+      valInput.value = formatDim(samples[0].len);
+    }
+    valInput.focus();
+    valInput.select?.();
+  }
+}
+function onBatchLenInput(el){
+  el.classList.toggle('filled', el.value!=='');
+}
+function applyBatchLen(){
+  const chk = document.getElementById('batch-len-chk');
+  if(!chk.checked) return;
+  const val = normalizeDim(document.getElementById('batch-len-val').value);
+  if(val==='') return;
+  vibrate([20]);
+  samples.forEach(s=>{ s.len=val; });
+  renderSamples();
+  calc();
+  saveState();
+}
+function toggleBatchWid(){
+  const chk = document.getElementById('batch-wid-chk');
+  const valInput = document.getElementById('batch-wid-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].wid){
+      valInput.value = formatDim(samples[0].wid);
+    }
+    valInput.focus();
+    valInput.select?.();
+  }
+}
+function onBatchWidInput(el){
+  el.classList.toggle('filled', el.value!=='');
+}
+function applyBatchWid(){
+  const chk = document.getElementById('batch-wid-chk');
+  if(!chk.checked) return;
+  const val = normalizeDim(document.getElementById('batch-wid-val').value);
+  if(val==='') return;
+  vibrate([20]);
+  samples.forEach(s=>{ s.wid=val; });
+  renderSamples();
+  calc();
+  saveState();
 }
 
 function calcTotals(){
@@ -1038,6 +1202,13 @@ function resetAll(){
   document.getElementById('sample-badge').textContent = samples.length>0 ? `(${samples.length}구간)` : '';
   document.getElementById('s-area').textContent='-';
   document.getElementById('s-unit').textContent='-';
+  const blc=document.getElementById('batch-len-chk'), blv=document.getElementById('batch-len-val');
+  const bwc=document.getElementById('batch-wid-chk'), bwv=document.getElementById('batch-wid-val');
+  if(blc) blc.checked=false; if(blv){ blv.value=''; blv.classList.remove('filled'); }
+  if(bwc) bwc.checked=false; if(bwv){ bwv.value=''; bwv.classList.remove('filled'); }
+  const brow=document.getElementById('batch-row'), bbtn=document.getElementById('batch-toggle-btn');
+  if(brow) brow.style.display='none';
+  if(bbtn){ bbtn.style.background='white'; bbtn.style.color='#185FA5'; }
   document.getElementById('result-section').className='result-box pending';
   document.getElementById('result-pct').textContent='입력 대기중';
   _isLocked = false; unlockInputs();
@@ -1061,12 +1232,12 @@ function fillBeanCaptureTemplate(){
   if(capDateEl) capDateEl.textContent = survDateVal || '';
   const farmNoFull = farmNoVal + (_farmNoSeq>0?'('+_farmNoSeq+')':'');
   if(capFarmEl) capFarmEl.textContent = contractorName
-    ? contractorName + (farmNoFull ? '('+farmNoFull+')' : '')
+    ? contractorName + (farmNoFull ? ' ('+farmNoFull+')' : '')
     : (farmNoVal ? '농지번호: '+farmNoFull : '');
   const avgYield = document.getElementById('avgYield')?.value ? document.getElementById('avgYield').value + ' kg' : '-';
   const insArea = document.getElementById('insArea')?.value ? document.getElementById('insArea').value + ' ㎡' : '-';
   const contract = document.getElementById('contractYn')?.value || '-';
-  const contractColor = contract==='이상무' ? '#111827' : (contract==='원장변경 대상' ? '#e24b4a' : '#333');
+  const contractColor = contract==='부' ? '#5B7E3F' : (contract==='여' ? '#e24b4a' : '#333');
   const actArea = document.getElementById('actArea')?.value ? document.getElementById('actArea').value + ' ㎡' : '-';
   const deadArea = document.getElementById('deadArea')?.value ? document.getElementById('deadArea').value + ' ㎡' : '0 ㎡';
   const uninsArea = document.getElementById('uninsArea')?.value ? document.getElementById('uninsArea').value + ' ㎡' : '0 ㎡';
@@ -1103,6 +1274,16 @@ function fillBeanCaptureTemplate(){
       </tr>`;
     }
   });
+  if(html){
+    const g = id => (document.getElementById(id)?.textContent || '-');
+    html+=`<tr style="border-top:2px solid #5B7E3F;background:#eef5f0">
+      <td style="padding:7px 4px;text-align:center;vertical-align:middle;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">합계</td>
+      <td style="padding:7px 4px;text-align:center;vertical-align:middle;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">${g('t-len')}</td>
+      <td style="padding:7px 4px;text-align:center;vertical-align:middle;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">${g('t-wid')}</td>
+      <td style="padding:7px 4px;text-align:center;vertical-align:middle;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">${g('t-weight')}</td>
+      <td style="padding:7px 4px;text-align:center;vertical-align:middle;font-weight:900;font-size:12px;color:#5B7E3F">${g('t-moist')}</td>
+    </tr>`;
+  }
   tbody.innerHTML = html || '<tr><td colspan="5" style="padding:10px;text-align:center;font-size:13px">-</td></tr>';
 }
 
