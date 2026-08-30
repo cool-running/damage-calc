@@ -225,7 +225,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 .unit-badge{position:absolute;right:6px;top:0;font-size:10px;font-weight:600;color:var(--sub);background:var(--bg);border-radius:4px;padding:1px 4px;line-height:1.4;pointer-events:none;z-index:1}
 
-input.inp,select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+input.inp,select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center}
 select.inp{text-align-last:center;direction:ltr}
 input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2);background:#dceeff;color:#185FA5}
 input.inp::placeholder{color:var(--hint);text-align:center}
@@ -234,7 +234,7 @@ select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-w
 input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2);background:#dceeff;color:#185FA5}
 
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
@@ -250,8 +250,7 @@ input.auto.strong{color:var(--green);font-weight:800;font-size:14px}
 body.big-text input.inp,body.big-text select.inp{height:50px !important;font-size:18px !important;font-weight:700 !important}
 body.big-text input.auto{height:46px !important;font-size:16px !important;font-weight:700 !important}
 body.big-text .field label{font-size:12.5px !important}
-body.big-text .datewrap .date-disp{height:50px;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.big-text #region,body.big-text #ins_amount{font-size:15px !important}
+body.big-text .unit-hide-bigtext{display:none !important}
 
 /* 품종 설정 */
 
@@ -421,18 +420,22 @@ body.big-text tfoot td{font-size:12px !important;padding:8px 1px !important}
       <div class="field"><label>기수확면적</label><span class="unit-badge">㎡</span>
         <input type="text" id="harv_area" class="inp" inputmode="decimal" oninput="onCommaInput(this)" onblur="updateSamplesAndCalc()"></div>
     </div>
-    <div class="g3">
-      <div class="field">
-        <label>조사대상면적</label>
-        <input type="text" id="survey_area_disp" class="auto" readonly>
-      </div>
-      <div class="field">
-        <label>피해수확량</label><span class="unit-badge">kg</span>
-        <input type="text" id="damage_yield_disp" class="auto" readonly>
-      </div>
+    <div class="g4">
       <div class="field">
         <label>미보상비율</label><span class="unit-badge">%</span>
         <input type="number" id="unins_rate" class="inp" inputmode="decimal" oninput="markFilled(this)" onblur="calc()">
+      </div>
+      <div class="field">
+        <label>조사대상면적 <span class="unit-hide-bigtext" style="font-weight:400;color:var(--hint);font-size:10px">㎡</span></label>
+        <input type="text" id="survey_area_disp" class="auto" readonly>
+      </div>
+      <div class="field">
+        <label>피해수확량 <span class="unit-hide-bigtext" style="font-weight:400;color:var(--hint);font-size:10px">kg</span></label>
+        <input type="text" id="damage_yield_disp" class="auto" readonly>
+      </div>
+      <div class="field">
+        <label>계약변경여부</label>
+        <input type="text" id="contract_yn_disp" class="auto" readonly style="text-align:center">
       </div>
     </div>
   </div>
@@ -582,12 +585,12 @@ body.big-text tfoot td{font-size:12px !important;padding:8px 1px !important}
           <span style="font-size:10px;font-weight:600;color:#999">(단위: ㎡)</span>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:11px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:18.5%"><col style="width:18.5%"><col style="width:26%"><col style="width:18.5%"><col style="width:18.5%"></colgroup>
+          <colgroup><col style="width:16%"><col style="width:16%"><col style="width:22%"><col style="width:16%"><col style="width:16%"><col style="width:14%"></colgroup>
           <tr>
-            <td class="cap-th">실제경작면적</td><td class="cap-th">고사면적</td><td class="cap-th">타작물·미보상</td><td class="cap-th">기수확면적</td><td class="cap-th">조사대상면적</td>
+            <td class="cap-th">실제경작면적</td><td class="cap-th">고사면적</td><td class="cap-th">타작물·미보상</td><td class="cap-th">기수확면적</td><td class="cap-th">조사대상면적</td><td class="cap-th">계약변경</td>
           </tr>
           <tr>
-            <td id="cap-actarea" class="cap-td">-</td><td id="cap-dead" class="cap-td">-</td><td id="cap-other" class="cap-td">-</td><td id="cap-harv" class="cap-td">-</td><td id="cap-surveyarea" class="cap-td">-</td>
+            <td id="cap-actarea" class="cap-td">-</td><td id="cap-dead" class="cap-td">-</td><td id="cap-other" class="cap-td">-</td><td id="cap-harv" class="cap-td">-</td><td id="cap-surveyarea" class="cap-td">-</td><td id="cap-contract" class="cap-td">-</td>
           </tr>
         </table>
       </div>
@@ -936,7 +939,20 @@ function calc(){
 
   const surveyArea = Math.max(0, actArea - deadArea - otherArea - harvArea);
   const unitStdYield = actArea>0 ? stdYield/actArea : 0;
-  document.getElementById('survey_area_disp').value = surveyArea>0 ? surveyArea.toLocaleString(undefined,{maximumFractionDigits:1})+' ㎡' : '';
+  document.getElementById('survey_area_disp').value = surveyArea>0 ? surveyArea.toLocaleString(undefined,{maximumFractionDigits:1}) : '';
+
+  const insArea = toNum('ins_area');
+  const areaErr = insArea>0 ? (actArea-insArea)/insArea : 0;
+  const isChanged = insArea>0 && actArea>0 && Math.abs(areaErr)>0.1;
+  const contractEl = document.getElementById('contract_yn_disp');
+  if(insArea>0 && actArea>0){
+    contractEl.value = isChanged ? '여' : '부';
+    contractEl.style.color = isChanged ? '#e24b4a' : '#5B7E3F';
+    contractEl.style.fontWeight = '700';
+  } else {
+    contractEl.value = '';
+    contractEl.style.color = '';
+  }
 
   const activeIdx = activeVarietyIdx();
   const densityRegionGroup = region ? DENSITY_REGION_MAP[region] : null;
@@ -999,7 +1015,7 @@ function calc(){
   const payout = Math.max(0, Math.min(insAmount, lossAmount) - selfDeductible);
   const damageRate = stdYield>0 ? Math.max(0,(totalDamageYield - uninsLoss))/stdYield : 0;
 
-  document.getElementById('damage_yield_disp').value = (sumArea>0 && totalDamageYield>0) ? totalDamageYield+' kg' : '';
+  document.getElementById('damage_yield_disp').value = (sumArea>0 && totalDamageYield>0) ? totalDamageYield.toLocaleString() : '';
 
   const hasSample = sumArea>0;
   document.getElementById('m-damage').textContent = hasSample && totalDamageYield>0? totalDamageYield+' kg' : '-';
@@ -1018,7 +1034,7 @@ function calc(){
     boxEl.classList.add('pending');
   }
 
-  window._calcResult = {region, timingIdx, stdYield, actArea, deadArea, otherArea, harvArea, surveyArea, insAmount, totalDamageYield, uninsLoss, lossAmount, payout, damageRate};
+  window._calcResult = {region, timingIdx, stdYield, actArea, deadArea, otherArea, harvArea, surveyArea, insAmount, totalDamageYield, uninsLoss, lossAmount, payout, damageRate, contractYn: contractEl.value};
 }
 
 // ───────────────────────────────────────────── 잠금/수정 ─────────────────────────────────────────────
@@ -1222,6 +1238,10 @@ function saveImage(){
   document.getElementById('cap-other').textContent = r.otherArea ? r.otherArea.toLocaleString() : '-';
   document.getElementById('cap-harv').textContent = r.harvArea ? r.harvArea.toLocaleString() : '-';
   document.getElementById('cap-surveyarea').textContent = r.surveyArea ? r.surveyArea.toLocaleString(undefined,{maximumFractionDigits:1}) : '-';
+  const capContractEl = document.getElementById('cap-contract');
+  capContractEl.textContent = r.contractYn || '-';
+  capContractEl.style.color = r.contractYn==='여' ? '#e24b4a' : (r.contractYn==='부' ? '#5B7E3F' : '#333');
+  capContractEl.style.fontWeight = '700';
 
   document.getElementById('cap-sample-wrap').innerHTML = buildCaptureSampleTable();
 
