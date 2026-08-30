@@ -51,13 +51,13 @@ select.inp{cursor:pointer;text-align-last:center}
 input.inp.filled,select.inp.filled{background:var(--fill-bg);border-color:var(--fill-bd);color:#000;font-weight:700}
 /* 날짜칸: 보이는 텍스트(가운데정렬) + 위에 겹친 투명 date input */
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;letter-spacing:-0.02em}
 .datewrap.filled .date-disp{background:var(--fill-bg);border-color:var(--fill-bd);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:#bbb;font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
 .datewrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
 .datewrap:focus-within .date-disp{border-color:var(--blue);box-shadow:0 0 0 3px rgba(55,138,221,0.15);background:#dceeff;color:#185FA5}
-body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 input.inp:focus,select.inp:focus,table.smp input:focus,.prev-row input:focus,
 input.inp.filled:focus,select.inp.filled:focus,table.smp input.filled:focus,.prev-row input.filled:focus{
   outline:none!important;border-color:var(--blue)!important;
@@ -342,11 +342,13 @@ body.locked input.inp,body.locked select.inp,body.locked table.smp input,body.lo
       <div class="autobar" style="margin-top:0"><span>면적피해비율</span><b id="r-areapct">-</b></div>
       <div class="autobar" style="margin-top:0"><span>경과비율</span><b id="coeff-area">-</b></div>
     </div>
-    <div class="g2" style="margin-top:8px">
+    <div class="g3" style="margin-top:8px">
       <div class="field"><label>미보상비율</label><span class="unit-badge">%</span>
         <input type="text" id="uninsRate" class="inp" inputmode="decimal" placeholder="%" oninput="onField(this)"></div>
       <div class="field"><label>기누적피해율</label><span class="unit-badge">%</span>
         <input type="text" id="ginujeok" class="inp" inputmode="decimal" placeholder="이전최대피해율" oninput="onField(this)"></div>
+      <div class="field"><label>계약변경여부</label>
+        <input type="text" id="contract_yn_disp" class="auto" readonly style="text-align:center" value="-"></div>
     </div>
   </div>
 
@@ -1010,6 +1012,18 @@ function calc(){
   $('r-nujeok2').textContent=nj===null?'-':fmtPct(nj);
   $('r-ginujeok2').textContent=fmtPct(gnj);
   $('result-pct').textContent=(nj!==null)?fmtPct(Math.max(0,nj-gnj)):'- -';
+
+  const insA=num(st.insArea), actA=num(st.actArea);
+  const isChanged = insA>0 && actA>0 && Math.abs((actA-insA)/insA)>0.1;
+  const contractEl=$('contract_yn_disp');
+  if(insA>0 && actA>0){
+    contractEl.value = isChanged ? '여' : '부';
+    contractEl.style.color = isChanged ? '#e24b4a' : '#5B7E3F';
+    contractEl.style.fontWeight = '700';
+  } else {
+    contractEl.value = '-';
+    contractEl.style.color = '';
+  }
 }
 
 function vibrate(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
