@@ -37,6 +37,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
 .sec-head .sec-title{margin-bottom:0}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;text-align:center}
@@ -197,16 +198,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
     </div>
   </div>
 
-  <!-- ② 보험가입사항 (공통) -->
+  <!-- ② 면적정보 -->
   <div class="section">
-    <div class="g3" style="align-items:center;margin-bottom:8px">
-      <div class="field" style="justify-content:center">
-        <span class="sec-title" style="margin-bottom:0">② 보험가입사항</span>
-      </div>
-      <div class="field"></div>
-      <div class="field"><label>계약변경여부</label>
-        <input type="text" id="contractYn" class="auto" readonly></div>
-    </div>
+    <div class="sec-title">② 면적정보</div>
     <div class="g3">
       <div class="field"><label>평년수확량</label>
         <span class="unit-badge">kg</span>
@@ -229,15 +223,18 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
         <span class="unit-badge">㎡</span>
         <input type="number" id="harvArea" class="inp" inputmode="decimal" placeholder="0" oninput="markFilled(this)" onblur="calc()" autocomplete="off"></div>
     </div>
-    <div class="g3">
+    <div class="g4">
+      <div class="field"><label>미보상비율</label>
+        <span class="unit-badge">%</span>
+        <input type="number" id="uninsRate" class="inp" inputmode="decimal" placeholder="0" enterkeyhint="done" oninput="markFilled(this)" onblur="calc()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" autocomplete="off"></div>
       <div class="field"><label>조사대상면적</label>
+        <span class="unit-badge">㎡</span>
         <input type="text" id="surveyArea" class="auto" readonly></div>
       <div class="field"><label>조사수확량</label>
         <span class="unit-badge">kg</span>
         <input type="text" id="commonSurvey" class="auto" readonly></div>
-      <div class="field"><label>미보상비율</label>
-        <span class="unit-badge">%</span>
-        <input type="number" id="uninsRate" class="inp" inputmode="decimal" placeholder="0" enterkeyhint="done" oninput="markFilled(this)" onblur="calc()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" autocomplete="off"></div>
+      <div class="field"><label>계약변경</label>
+        <input type="text" id="contractYn" class="auto" readonly></div>
     </div>
   </div>
 
@@ -765,7 +762,7 @@ function calcCommon(){
   const contractEl = document.getElementById('contractYn');
   const isChanged = insArea>0&&actArea>0&&Math.abs(areaErr)>0.1;
   if(insArea>0&&actArea>0){
-    contractEl.value = isChanged ? '원장변경 대상' : '이상무';
+    contractEl.value = isChanged ? '여' : '부';
     contractEl.style.color = isChanged ? '#e24b4a' : '#1D9E75';
     contractEl.style.fontWeight = '700';
   } else {
@@ -778,7 +775,7 @@ function calcCommon(){
   const effArea = (insArea>0 && !isChanged) ? insArea : (actArea||insArea);
   const surveyArea = Math.max(0, effArea - deadArea - uninsArea - harvArea);
 
-  document.getElementById('surveyArea').value = surveyArea>0 ? surveyArea.toLocaleString()+' ㎡' : '';
+  document.getElementById('surveyArea').value = surveyArea>0 ? surveyArea.toLocaleString() : '';
 
   const effAvg = isChanged
     ? Math.round(Math.round(avgYield/insArea*10000)/10000 * actArea) : avgYield;
@@ -832,7 +829,7 @@ function calc(){
 
   document.getElementById('s-area').textContent = totalArea>0 ? totalArea.toFixed(2)+' ㎡' : '-';
   document.getElementById('s-unit').textContent = m2r3.toFixed(4)+' kg/㎡';
-  document.getElementById('commonSurvey').value = surveyYield.toLocaleString()+' kg';
+  document.getElementById('commonSurvey').value = surveyYield.toLocaleString();
   showResult(effAvg, surveyYield, m2r3.toFixed(4)+' kg/㎡', surveyArea, uninsLoss, pihaeyul);
   saveState();
 }
@@ -852,7 +849,7 @@ function calcFull(){
   }
 
   const surveyYield = Math.round(fullWeight*(1-fullMoisture/100)/(1-STD));
-  document.getElementById('commonSurvey').value = surveyYield.toLocaleString()+' kg';
+  document.getElementById('commonSurvey').value = surveyYield.toLocaleString();
 
   const uninsLoss = Math.round(Math.max(0,effAvg-surveyYield)*fullUninsRate);
   // ROUND 피해율 (소수4자리)
@@ -1227,7 +1224,7 @@ function fillBeanCaptureTemplate(){
   const avgYield = document.getElementById('avgYield')?.value ? document.getElementById('avgYield').value + ' kg' : '-';
   const insArea = document.getElementById('insArea')?.value ? document.getElementById('insArea').value + ' ㎡' : '-';
   const contract = document.getElementById('contractYn')?.value || '-';
-  const contractColor = contract==='이상무' ? '#111827' : (contract==='원장변경 대상' ? '#e24b4a' : '#333');
+  const contractColor = contract==='부' ? '#1D9E75' : (contract==='여' ? '#e24b4a' : '#333');
   const actArea = document.getElementById('actArea')?.value ? document.getElementById('actArea').value + ' ㎡' : '-';
   const deadArea = document.getElementById('deadArea')?.value ? document.getElementById('deadArea').value + ' ㎡' : '0 ㎡';
   const uninsArea = document.getElementById('uninsArea')?.value ? document.getElementById('uninsArea').value + ' ㎡' : '0 ㎡';
