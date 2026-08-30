@@ -23,6 +23,7 @@ function bindMobileFocusHandlers(){
     const isSelect = el.tagName === 'SELECT';
     const isDate = el.type === 'date';
     if(!isSelect && !isDate){
+      const cursorEndOnly = el.hasAttribute('data-cursor-end');
       let _tsx=0, _tsy=0, _scrolling=false;
       el.addEventListener('touchstart',(e)=>{ _tsx=e.touches[0].clientX; _tsy=e.touches[0].clientY; _scrolling=false; },{passive:true});
       el.addEventListener('touchmove',(e)=>{ if(Math.abs(e.touches[0].clientX-_tsx)>6||Math.abs(e.touches[0].clientY-_tsy)>6) _scrolling=true; },{passive:true});
@@ -32,9 +33,14 @@ function bindMobileFocusHandlers(){
         el.focus();
         el.classList.add('mobile-focus');
         setTimeout(()=>{
-          try{ el.select(); }catch(_){
+          if(cursorEndOnly){
             const len=el.value.length;
-            try{ el.setSelectionRange(0,len); }catch(_){}
+            try{ el.setSelectionRange(len,len); }catch(_){}
+          } else {
+            try{ el.select(); }catch(_){
+              const len=el.value.length;
+              try{ el.setSelectionRange(0,len); }catch(_){}
+            }
           }
         }, 50);
       },{passive:false});
@@ -44,31 +50,87 @@ function bindMobileFocusHandlers(){
 
 document.addEventListener('DOMContentLoaded', ()=>{
   bindMobileFocusHandlers();
-  bindSampleNextNavigation();
+  bindNextNav();
   document.addEventListener('click', ()=>{
     setTimeout(bindMobileFocusHandlers, 0);
   }, {passive:true});
 });
 
-function bindSampleNextNavigation(){
-  const inputs = Array.from(document.querySelectorAll('#sample-body input'));
-  inputs.forEach((el, idx) => {
+let sampleInputOrder='row'; // 'row'(구간별: 좌→우, 위→아래) | 'col'(항목별: 위→아래, 좌→우)
+
+function getNextOrderedInput(el){
+  const rows=Array.from(document.querySelectorAll('#sample-body tr'));
+  if(sampleInputOrder==='row'){
+    const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
+    const i=cur.indexOf(el);
+    return cur[i+1]||null;
+  }
+  const td=el.closest('td');
+  const tr=el.closest('tr');
+  const rowIdx=rows.indexOf(tr);
+  const colIdx=Array.from(tr.children).indexOf(td);
+  const totalCols=rows[0]?rows[0].children.length:0;
+  for(let r=rowIdx+1;r<rows.length;r++){
+    const cell=rows[r].children[colIdx];
+    const inp=cell?cell.querySelector('input'):null;
+    if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+  }
+  for(let c=colIdx+1;c<totalCols;c++){
+    for(let r=0;r<rows.length;r++){
+      const cell=rows[r].children[c];
+      const inp=cell?cell.querySelector('input'):null;
+      if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+    }
+  }
+  return null;
+}
+function toggleInputOrder(){
+  sampleInputOrder=sampleInputOrder==='row'?'col':'row';
+  try{ if(navigator.vibrate) navigator.vibrate([15]); }catch(e){}
+  updateInputOrderBtn();
+  try{ localStorage.setItem('sweetpotato_input_order',sampleInputOrder); }catch(e){}
+}
+function updateInputOrderBtn(){
+  const btn=document.getElementById('order-toggle-btn');
+  if(!btn) return;
+  const rightArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg>';
+  const downArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="12" y1="4" x2="12" y2="18"/><polyline points="6,12 12,18 18,12"/></svg>';
+  if(sampleInputOrder==='row'){
+    btn.innerHTML=rightArrow+'<span>구간별</span>';
+    btn.title='구간(행)별로 입력 — 엔터하면 같은 구간의 다음 칸으로 이동';
+  }else{
+    btn.innerHTML=downArrow+'<span>항목별</span>';
+    btn.title='항목(열)별로 입력 — 엔터하면 같은 항목의 다음 구간으로 이동';
+  }
+}
+
+function bindNextNav(){
+  const inputs = Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
+  inputs.forEach((el) => {
     if (el.dataset.nextBound === '1') return;
     el.dataset.nextBound = '1';
     el.setAttribute('enterkeyhint', 'next');
-    el.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter') return;
-      e.preventDefault();
-      const currentInputs = Array.from(document.querySelectorAll('#sample-body input')).filter(x => x.offsetParent !== null && !x.disabled && x.type !== 'hidden');
-      const currentIndex = currentInputs.indexOf(el);
-      if (currentIndex === -1) return;
-      const next = currentInputs[currentIndex + 1];
+    const moveNext = () => {
+      const next = getNextOrderedInput(el);
       if (next) {
         next.focus();
-        next.select?.();
+        if(next.hasAttribute('data-cursor-end')){
+          const len=next.value.length;
+          try{ next.setSelectionRange(len,len); }catch(_){}
+        } else {
+          next.select?.();
+        }
       } else {
         el.blur();
       }
+    };
+    el.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      moveNext();
+    });
+    el.addEventListener('beforeinput', (e) => {
+      if (e.inputType === 'insertLineBreak') { e.preventDefault(); moveNext(); }
     });
   });
 }
@@ -89,7 +151,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .header{background:var(--green);color:white;padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px}
 .back-btn{width:32px;height:32px;background:rgba(255,255,255,0.15);border:none;border-radius:8px;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .header-icon{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.header h1{font-size:16px;font-weight:600}
+.header h1{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .header-sub{font-size:11px;opacity:0.75;margin-top:1px}
 .hdr-state{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,0.92);border:1px solid rgba(255,255,255,0.6);white-space:nowrap;transition:all .15s}
 .hdr-state.unlocked{color:#137a4d}
@@ -109,11 +171,12 @@ input,textarea{-webkit-user-select:text;user-select:text}
 
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 
-input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center}
-select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;text-align-last:center;direction:ltr}
+input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;text-align-last:center;direction:ltr;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2)}
 input.inp::placeholder{color:var(--hint);text-align:center}
 input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000000;font-weight:700}
@@ -153,7 +216,7 @@ body.big-text input[type=date].inp{font-size:15px !important;letter-spacing:-0.0
 
 .tbl-wrap{overflow-x:auto;width:100%}
 table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
-thead th{background:#f8f8f8;padding:6px 4px 10px;text-align:center;font-weight:600;color:var(--sub);font-size:12px!important;border-bottom:1.5px solid var(--border);line-height:1.4;white-space:pre-line}
+thead th{background:#f8f8f8;padding:6px 1px 10px;text-align:center;font-weight:600;color:var(--sub);font-size:11.5px!important;border-bottom:1.5px solid var(--border);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 tbody td{padding:3px 2px;border-bottom:0.5px solid #eee;text-align:center;vertical-align:middle}
 tbody td.no{text-align:center;color:var(--sub);font-size:10px;font-weight:600;width:20px}
 tbody td input{width:100%;height:34px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:13px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text);transition:background 0.15s,border-color 0.15s}
@@ -232,7 +295,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
 <div class="header">
   <button class="back-btn" onclick="location.href='./index.html'">‹</button>
   <div class="header-icon">🍠</div>
-  <div style="flex:1">
+  <div style="flex:1;min-width:0">
     <h1>고구마 피해율계산기</h1>
     <div class="header-sub">밭작물 · 수확량 조사</div>
   </div>
@@ -261,8 +324,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
       </div>
       <div class="field" style="flex:0 0 22%;min-width:0">
         <label>농지번호</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리"
-          maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);markFilled(this);checkDupFarmNo(this.value)" autocomplete="off">
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" enterkeyhint="next"
+          maxlength="4" pattern="[0-9]{4}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);markFilled(this);checkDupFarmNo(this.value)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();const t=document.getElementById('avg_yield');if(t){t.focus();t.select();}}" autocomplete="off">
       </div>
       <div class="field" style="flex:1;min-width:0">
         <label>조사일자</label>
@@ -277,16 +341,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
 
   <!-- 면적 정보 -->
   <div class="section">
-    <div class="g3" style="align-items:center;margin-bottom:8px">
-      <div class="field" style="justify-content:center">
-        <span class="sec-title" style="margin-bottom:0">면적 정보</span>
-      </div>
-      <div class="field"></div>
-      <div class="field">
-        <label>계약변경여부</label>
-        <input type="text" id="contract_yn_disp" class="auto" readonly>
-      </div>
-    </div>
+    <div class="sec-title">면적 정보</div>
     <div class="g3">
       <div class="field">
         <label>평년수확량</label>
@@ -327,32 +382,62 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
           oninput="onCommaInput(this)" onblur="updateSamplesAndCalc()" autocomplete="off">
       </div>
     </div>
-    <div class="g3">
+    <div class="g4">
       <div class="field">
-        <label>조사대상면적</label>
+        <label>미보상비율 <span style="font-weight:400;color:var(--hint);font-size:10px">%</span></label>
+        <input type="number" id="unins_rate" class="inp" inputmode="decimal"
+          oninput="markFilled(this)" onblur="calc()" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>조사대상면적 <span style="font-weight:400;color:var(--hint);font-size:10px">㎡</span></label>
         <input type="text" id="survey_area_disp" class="auto" readonly>
       </div>
       <div class="field">
-        <label>조사수확량</label>
-        <span class="unit-badge">kg</span>
+        <label>조사수확량 <span style="font-weight:400;color:var(--hint);font-size:10px">kg</span></label>
         <input type="text" id="surv_yield_disp" class="auto" readonly>
       </div>
       <div class="field">
-        <label>미보상비율</label>
-        <span class="unit-badge">%</span>
-        <input type="number" id="unins_rate" class="inp" inputmode="decimal"
-          oninput="markFilled(this)" onblur="calc()" autocomplete="off">
+        <label>계약변경</label>
+        <input type="text" id="contract_yn_disp" class="auto" readonly style="text-align:center">
       </div>
     </div>
   </div>
 
   <!-- 표본구간 -->
   <div class="section">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="sec-title" style="margin-bottom:0">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
-      <span style="font-size:10px;color:var(--hint);font-weight:400">길이·폭(m) / 중량(g)</span>
+    <div class="sec-head">
+      <div class="sec-title" style="margin-bottom:0;min-width:0">표본구간 조사 <span id="sample-count-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+          style="height:28px;width:80px;padding:0;border:1.5px solid var(--green2);border-radius:20px;background:white;color:var(--green);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7E3F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+        <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
+          style="height:28px;width:80px;padding:0;border:1.5px solid var(--green2);border-radius:20px;background:white;color:var(--green);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap">⚡ 일괄입력</button>
+      </div>
     </div>
+    <div style="font-size:10.5px;color:var(--hint);margin-bottom:6px;line-height:1.5">길이·폭(m) / 정상·50%형·80%형(g)</div>
     <div id="sample-guide" class="guide">실제경작면적 입력 후 자동으로 구간이 생성됩니다</div>
+    <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
+      <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+        <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+          <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+          길이
+        </label>
+        <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+          style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+          oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+        <button onclick="applyBatchLen()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+        <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+          <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+          폭
+        </label>
+        <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+          style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+          oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+        <button onclick="applyBatchWid()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+      </div>
+    </div>
     <div id="sample-tbl-wrap" class="tbl-wrap" style="display:none">
       <table style="width:100%;table-layout:fixed">
         <colgroup>
@@ -368,7 +453,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
             <th>No.</th>
             <th>길이</th>
             <th>폭</th>
-            <th>정상(g)</th>
+            <th>정상</th>
             <th>50%형</th>
             <th>80%형</th>
           </tr>
@@ -428,12 +513,14 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
 <!-- 갤러리 저장용 캡처 템플릿 -->
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:932px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="min-height:932px;background:linear-gradient(180deg,#2d5016 0%,#7FAD52 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
-    <div style="height:26px"></div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">
-      <div style="font-size:15px;font-weight:700">고구마 피해율 계산결과</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-        <span id="cap-date-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
-        <span id="cap-farmno-disp" style="font-size:15px;font-weight:800;color:#fff"></span>
+    <div style="padding-top:18px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;margin-bottom:14px;flex-wrap:nowrap">
+      <div style="display:flex;align-items:baseline;gap:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <span id="cap-date-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9)"></span>
+        <span id="cap-farmno-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:0.8px;padding-right:2px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0">
+        <span style="font-size:15px;line-height:1">🍠</span>
+        <span style="font-size:13px;font-weight:700;line-height:1;color:rgba(255,255,255,0.9)">고구마 피해율 계산결과</span>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -445,7 +532,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
           <thead><tr>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">평년수확량</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">가입면적</th>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">원장변경유무</th>
+            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">원장변경여부</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-avg-yield">-</td>
@@ -476,24 +563,12 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
 
       <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
         <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">3. 표본조사</div>
-        <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px">3-1. 조사일자</div>
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden;margin-bottom:12px">
-          <thead><tr>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">조사일자</th>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">미보상비율</th>
-          </tr></thead>
-          <tbody><tr>
-            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#e8faf3;font-weight:700;font-size:12px" id="cap-surv-date">-</td>
-            <td style="padding:7px 4px;text-align:center;background:#e8faf3;font-weight:700;font-size:12px" id="cap-unins-rate">-</td>
-          </tr></tbody>
-        </table>
-        <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px">3-2. 표본구간</div>
         <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;border-radius:10px;overflow:hidden">
           <thead><tr>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">No</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">길이</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">폭</th>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">정상(g)</th>
+            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">정상</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">50%형</th>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:700;text-align:center">80%형</th>
           </tr></thead>
@@ -671,11 +746,11 @@ function renderSamples(){
   document.getElementById('sample-body').innerHTML = samples.map((s,i)=>`
     <tr>
       <td class="no">${i+1}</td>
-      <td><input type="text" value="${s.len?formatDim(s.len):''}" inputmode="decimal"
+      <td><input type="text" value="${s.len?formatDim(s.len):''}" inputmode="decimal" data-cursor-end="1"
         class="${s.len?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
         onblur="this.value=normalizeDim(this.value);samples[${i}].len=this.value;calcTotals();saveState()" autocomplete="off"></td>
-      <td><input type="text" value="${s.wid?formatDim(s.wid):''}" inputmode="decimal"
+      <td><input type="text" value="${s.wid?formatDim(s.wid):''}" inputmode="decimal" data-cursor-end="1"
         class="${s.wid?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
         onblur="this.value=normalizeDim(this.value);samples[${i}].wid=this.value;calcTotals();saveState()" autocomplete="off"></td>
@@ -693,10 +768,65 @@ function renderSamples(){
         onblur="samples[${i}].d80=this.value.replace(/,/g,'');calcTotals();saveState()" autocomplete="off"></td>
     </tr>`).join('');
 
-  setTimeout(()=>{ bindMobileFocusHandlers(); bindSampleNextNavigation(); }, 0);
+  setTimeout(()=>{ bindMobileFocusHandlers(); bindNextNav(); }, 0);
 }
 
 function addSample(){ samples.push({len:'',wid:'',norm:'',d50:'',d80:''}); renderSamples(); }
+
+// ── 일괄입력 패널 열고/닫기 ─────────────────────────────
+function toggleBatchRow(){
+  const row=document.getElementById('batch-row');
+  const btn=document.getElementById('batch-toggle-btn');
+  const open=row.style.display==='none'||row.style.display==='';
+  row.style.display=open?'flex':'none';
+  if(btn){
+    btn.style.background=open?'var(--green)':'white';
+    btn.style.color=open?'white':'var(--green)';
+  }
+  if(!open){
+    const blc=document.getElementById('batch-len-chk'), bwc=document.getElementById('batch-wid-chk');
+    if(blc) blc.checked=false;
+    if(bwc) bwc.checked=false;
+  }
+}
+
+// ── 길이/폭 일괄적용 ─────────────────────────────────
+function toggleBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  const valInput=document.getElementById('batch-len-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].len) valInput.value=samples[0].len;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchLenInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  if(!chk.checked) return;
+  const val=normalizeDim(document.getElementById('batch-len-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.len=val; });
+  renderSamples(); calcTotals(); saveState();
+}
+function toggleBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  const valInput=document.getElementById('batch-wid-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].wid) valInput.value=samples[0].wid;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchWidInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  if(!chk.checked) return;
+  const val=normalizeDim(document.getElementById('batch-wid-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.wid=val; });
+  renderSamples(); calcTotals(); saveState();
+}
 
 function removeSample(){
   const actArea  = toNum(document.getElementById('act_area'));
@@ -738,7 +868,7 @@ function updateSamplesAndCalc(){
 
 // ── 표본 합계 ─────────────────────────────────────
 function calcTotals(){
-  const round2 = v => Math.round(v*100)/100;
+  const round2 = v => Math.round((v+1e-9)*100)/100;
   const trunc2 = v => Math.trunc(v*100)/100;
 
   let tL=0, tW=0, tN=0, t50=0, t80=0, tA=0, tEff=0;
@@ -777,9 +907,9 @@ function calc(){
   const areaErrNum = insArea>0 ? (actArea-insArea)/insArea : 0;
   const isChanged  = insArea>0 && actArea>0 && Math.abs(areaErrNum)>0.1;
   if(insArea>0 && actArea>0){
-    contractEl.value = isChanged ? '원장변경 대상' : '이상무';
+    contractEl.value = isChanged ? '여' : '부';
     contractEl.style.color = isChanged ? '#e24b4a' : '#5B7E3F';
-    contractEl.style.fontWeight = isChanged ? '700' : '600';
+    contractEl.style.fontWeight = '700';
   } else {
     contractEl.value = '';
     contractEl.style.color = '';
@@ -790,7 +920,7 @@ function calc(){
   const surveyArea = Math.max(0, effArea-deadArea-otherArea-harvArea);
 
   // 조사대상면적 표시
-  document.getElementById('survey_area_disp').value = surveyArea>0 ? surveyArea.toLocaleString()+' ㎡' : '';
+  document.getElementById('survey_area_disp').value = surveyArea>0 ? surveyArea.toLocaleString() : '';
 
   // 면적 변경 평년수확량
   const effAvg = isChanged
@@ -808,7 +938,7 @@ function calc(){
   }
 
   // ── 표본 합산 ─────────────────────────────────
-  const round2 = v => Math.round(v*100)/100;
+  const round2 = v => Math.round((v+1e-9)*100)/100;
   const round3 = v => Math.round(v*1000)/1000;
   const round4 = v => Math.round(v*10000)/10000;
   const trunc2 = v => Math.trunc(v*100)/100;
@@ -847,7 +977,7 @@ function calc(){
   document.getElementById('r-surv').textContent  = survYield.toLocaleString('ko-KR')+' kg';
   document.getElementById('r-loss').textContent  = netLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
   document.getElementById('r-unins').textContent = uninsLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
-  document.getElementById('surv_yield_disp').value = survYield.toLocaleString('ko-KR')+' kg';
+  document.getElementById('surv_yield_disp').value = survYield.toLocaleString('ko-KR');
 
   resultBox.className='result-box';
   const _rawPctS = Math.round((effAvg - survYield) / effAvg * 10000) / 100;
@@ -1080,6 +1210,13 @@ function resetAll(){
   document.getElementById('contract_yn_disp').value='';
   _isLocked=false; setEditMode(true);
   samples=[];
+  const blc=document.getElementById('batch-len-chk'), blv=document.getElementById('batch-len-val');
+  const bwc=document.getElementById('batch-wid-chk'), bwv=document.getElementById('batch-wid-val');
+  if(blc) blc.checked=false; if(blv){ blv.value=''; blv.classList.remove('filled'); }
+  if(bwc) bwc.checked=false; if(bwv){ bwv.value=''; bwv.classList.remove('filled'); }
+  const brow=document.getElementById('batch-row'), bbtn=document.getElementById('batch-toggle-btn');
+  if(brow) brow.style.display='none';
+  if(bbtn){ bbtn.style.background='white'; bbtn.style.color='var(--green)'; }
   renderSamples();
   document.getElementById('s-area').textContent='-';
   document.getElementById('s-unit').textContent='-';
@@ -1097,7 +1234,7 @@ function fillCaptureTemplate(){
   document.getElementById('cap-date-disp').textContent  = survDateVal;
   const farmNoFull = farmNoVal + (_farmNoSeq>0?'('+_farmNoSeq+')':'');
   document.getElementById('cap-farmno-disp').textContent = contractorName
-    ? contractorName + (farmNoFull ? '('+farmNoFull+')' : '')
+    ? contractorName + (farmNoFull ? ' ('+farmNoFull+')' : '')
     : (farmNoVal ? '농지번호: '+farmNoFull : '');
 
   const _fmtNum = (v, unit) => { const n = parseFloat((v||'').replace(/,/g,'')); return (!isNaN(n) && n > 0) ? n.toLocaleString()+unit : '-'; };
@@ -1106,7 +1243,7 @@ function fillCaptureTemplate(){
   const contractV = document.getElementById('contract_yn_disp').value || '-';
   const capC = document.getElementById('cap-contract');
   capC.textContent = contractV;
-  capC.style.color = contractV.includes('변경') ? '#e24b4a' : '#111827';
+  capC.style.color = contractV === '여' ? '#e24b4a' : (contractV === '부' ? '#5B7E3F' : '#111827');
   capC.style.fontWeight='700';
 
   document.getElementById('cap-act-area').textContent   = _fmtNum(document.getElementById('act_area').value, ' ㎡');
@@ -1118,9 +1255,6 @@ function fillCaptureTemplate(){
   document.getElementById('cap-other-area').textContent = _fmtArea(document.getElementById('other_area').value);
   document.getElementById('cap-harv-area').textContent  = _fmtArea(document.getElementById('harv_area').value);
 
-  const fmtShort = v => { if(!v) return '-'; const p=v.split('-'); return p.length===3?`${p[0].slice(2)}-${p[1]}-${p[2]}`:v; };
-  document.getElementById('cap-surv-date').textContent  = fmtShort(survDateVal);
-  document.getElementById('cap-unins-rate').textContent = document.getElementById('unins_rate').value ? document.getElementById('unins_rate').value+'%' : '0%';
   document.getElementById('cap-unins-rate2').textContent = document.getElementById('unins_rate').value ? document.getElementById('unins_rate').value+'%' : '0%';
 
   document.getElementById('cap-pct').textContent  = document.getElementById('result-pct').textContent || '-';
@@ -1145,6 +1279,17 @@ function fillCaptureTemplate(){
       </tr>`;
     }
   });
+  if(html){
+    const g = id => (document.getElementById(id)?.textContent || '-');
+    html+=`<tr style="border-top:2px solid #5B7E3F;background:#eef5f0">
+      <td style="padding:5px 3px;text-align:center;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">합계</td>
+      <td style="padding:5px 3px;text-align:center;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">${g('t-len')}</td>
+      <td style="padding:5px 3px;text-align:center;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">${g('t-wid')}</td>
+      <td style="padding:5px 3px;text-align:center;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">${g('t-norm')}</td>
+      <td style="padding:5px 3px;text-align:center;font-weight:700;font-size:12px;color:#5B7E3F;border-right:1px solid #d1d5db">${g('t-d50')}</td>
+      <td style="padding:5px 3px;text-align:center;font-weight:900;font-size:12px;color:#5B7E3F">${g('t-d80')}</td>
+    </tr>`;
+  }
   tbody.innerHTML = html || '<tr><td colspan="6" style="padding:10px;text-align:center;font-size:12px">-</td></tr>';
 }
 
@@ -1260,6 +1405,11 @@ document.getElementById('btn-install').addEventListener('click',async()=>{
 
 // ── 초기 실행 ─────────────────────────────────────
 const loaded = loadState();
+try{
+  const savedOrder=localStorage.getItem('sweetpotato_input_order');
+  if(savedOrder==='col'||savedOrder==='row') sampleInputOrder=savedOrder;
+}catch(e){}
+updateInputOrderBtn();
 document.getElementById('survey_date').value=fmt(new Date());
 markFilled(document.getElementById('survey_date'));
 
@@ -1274,24 +1424,6 @@ setTimeout(()=>{
     updateSamplesAndCalc();
   }
 }, 50);
-
-function bindSampleNextNavigation(){
-  const inputs = Array.from(document.querySelectorAll('#sample-body input'));
-  inputs.forEach((el)=>{
-    if(el.dataset.nextBound==='1') return;
-    el.dataset.nextBound='1';
-    el.setAttribute('enterkeyhint','next');
-    el.addEventListener('keydown',(e)=>{
-      if(e.key!=='Enter') return;
-      e.preventDefault();
-      const currentInputs=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled&&x.type!=='hidden');
-      const currentIndex=currentInputs.indexOf(el);
-      if(currentIndex===-1) return;
-      const next=currentInputs[currentIndex+1];
-      if(next){ next.focus(); next.select?.(); } else { el.blur(); }
-    });
-  });
-}
 </script>
 
 <script>
