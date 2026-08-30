@@ -1021,15 +1021,21 @@ function bindSampleNextNavigation(){
     if(el.dataset.nextBound==='1')return;
     el.dataset.nextBound='1';
     el.setAttribute('enterkeyhint','next');
-    el.addEventListener('keydown',(e)=>{
-      if(e.key!=='Enter')return;
-      e.preventDefault();
+    const moveNext=()=>{
       const next=getNextOrderedInput(el);
       if(next){
         next.focus();
         if(next.classList.contains('dim-input')){ const L=next.value.length; try{next.setSelectionRange(L,L);}catch(_){} }
         else{ next.select?.(); }
       }else{ el.blur(); }
+    };
+    el.addEventListener('keydown',(e)=>{
+      if(e.key!=='Enter')return;
+      e.preventDefault();
+      moveNext();
+    });
+    el.addEventListener('beforeinput',(e)=>{
+      if(e.inputType==='insertLineBreak'){ e.preventDefault(); moveNext(); }
     });
   });
 }
