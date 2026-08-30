@@ -28,7 +28,15 @@ function bindMobileFocusHandlers(){
         if(e.cancelable)e.preventDefault();
         el.focus();
         el.classList.add('mobile-focus');
-        setTimeout(()=>{try{el.select();}catch(_){try{el.setSelectionRange(0,el.value.length);}catch(_){}}},50);
+        const isDim=el.hasAttribute('data-cursor-end');
+        setTimeout(()=>{
+          if(isDim){
+            const len=el.value.length;
+            try{ el.setSelectionRange(len,len); }catch(_){}
+          } else {
+            try{el.select();}catch(_){try{el.setSelectionRange(0,el.value.length);}catch(_){}}
+          }
+        },50);
       },{passive:false});
     }
   });
@@ -72,6 +80,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .sec-head .sec-title{margin-bottom:0}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 .unit-badge{position:absolute;right:6px;top:0;font-size:10px;font-weight:600;color:var(--sub);background:var(--bg);border-radius:4px;padding:1px 4px;line-height:1.4;pointer-events:none;z-index:1}
@@ -106,6 +115,7 @@ input.inp.filled:focus,select.inp.filled:focus,tbody td input.filled:focus{
 body.big-text input.inp,body.big-text select.inp{height:52px!important;font-size:20px!important;font-weight:700!important;border-width:2px!important}
 body.big-text input.auto{height:52px!important;font-size:18px!important;font-weight:600!important}
 body.big-text .field label{font-size:13px!important}
+body.big-text .unit-hide-bigtext{display:none!important}
 body.big-text tbody td input,body.big-text tbody td select{height:44px!important;font-size:16px!important;font-weight:700!important}
 body.big-text thead th{font-size:12px!important;padding:8px 2px!important}
 body.big-text tfoot td{font-size:12px!important;padding:8px 1px!important}
@@ -173,13 +183,13 @@ tbody td input.filled.mobile-focus,tbody td input.filled:focus{background:#dceef
 
 /* 날짜칸: 보이는 텍스트(가운데정렬) + 위에 겹친 투명 date input */
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
 .datewrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
 .datewrap:focus-within .date-disp{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.15)}
-body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 </style>
 </head>
 <body>
@@ -213,8 +223,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
       </div>
       <div class="field" style="flex:0 0 22%;min-width:0">
         <label>농지번호</label>
-        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" maxlength="4"
-          oninput="markFilled(this)" autocomplete="off">
+        <input type="text" id="farm_no" class="inp" inputmode="numeric" placeholder="4자리" maxlength="4" enterkeyhint="next"
+          oninput="markFilled(this)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();const t=document.getElementById('avg_yield');if(t){t.focus();t.select();}}" autocomplete="off">
       </div>
       <div class="field" style="flex:1;min-width:0">
         <label>조사일자</label>
@@ -258,21 +269,49 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
         <input type="text" id="harv_area" class="inp" inputmode="decimal" oninput="onCommaInput(this)" onblur="updateSamplesAndCalc()" autocomplete="off">
       </div>
     </div>
-    <div class="g3">
+    <div class="g4">
       <div class="field">
         <label>미보상비율</label><span class="unit-badge">%</span>
         <input type="number" id="unins_rate" class="inp" inputmode="decimal" oninput="markFilled(this)" onblur="calc()" autocomplete="off">
       </div>
-      <div class="field"><label style="color:var(--green)">조사대상면적</label><input type="text" id="survey_area_disp" class="auto" readonly></div>
-      <div class="field"><label style="color:var(--green)">계약변경여부</label><input type="text" id="contract_yn_disp" class="auto" readonly></div>
+      <div class="field"><label style="color:var(--green)">조사대상면적 <span class="unit-hide-bigtext" style="font-weight:400;color:var(--hint);font-size:10px">㎡</span></label><input type="text" id="survey_area_disp" class="auto" readonly></div>
+      <div class="field"><label style="color:var(--green)">조사수확량 <span class="unit-hide-bigtext" style="font-weight:400;color:var(--hint);font-size:10px">kg</span></label><input type="text" id="surv_yield_disp" class="auto" readonly></div>
+      <div class="field"><label style="color:var(--green)">계약변경여부</label><input type="text" id="contract_yn_disp" class="auto" readonly style="text-align:center"></div>
     </div>
   </div>
 
   <!-- 표본구간 조사 2-1 무게조사 -->
   <div class="section">
-    <div style="margin-bottom:10px">
-      <div class="sec-title" style="margin-bottom:0">② 표본조사 2-1 무게조사 <span id="sample-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
-      <div style="font-size:10px;color:var(--hint);margin-top:2px">길이·폭(m) / 중량(g)</div>
+    <div class="sec-head">
+      <div class="sec-title" style="margin-bottom:0;min-width:0">표본조사 2-1 무게조사 <span id="sample-badge" style="font-size:14px;font-weight:700;color:var(--green)"></span></div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button id="order-toggle-btn" onclick="toggleInputOrder()" type="button"
+          style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg><span>구간별</span></button>
+        <button id="batch-toggle-btn" onclick="toggleBatchRow()" type="button"
+          style="height:28px;width:80px;padding:0;border:1.5px solid #378ADD;border-radius:20px;background:white;color:#185FA5;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap">⚡ 일괄입력</button>
+      </div>
+    </div>
+    <div id="batch-row" style="display:none;gap:8px;margin-bottom:10px">
+      <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+        <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+          <input type="checkbox" id="batch-len-chk" onchange="toggleBatchLen()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+          길이
+        </label>
+        <input type="text" id="batch-len-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+          style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+          oninput="onBatchLenInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+        <button onclick="applyBatchLen()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;gap:4px;background:#EBF4FF;border:1.5px solid #378ADD;border-radius:10px;padding:6px;min-width:0">
+        <label style="display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;font-size:10px;font-weight:700;color:#185FA5;flex-shrink:0">
+          <input type="checkbox" id="batch-wid-chk" onchange="toggleBatchWid()" style="width:18px;height:18px;accent-color:#185FA5;cursor:pointer;flex-shrink:0">
+          폭
+        </label>
+        <input type="text" id="batch-wid-val" inputmode="decimal" placeholder="일괄" enterkeyhint="done"
+          style="flex:1;height:32px;min-width:0;border:1.5px solid #378ADD;border-radius:7px;padding:0 2px;font-size:12px;font-weight:700;text-align:center;background:white;color:#185FA5;-webkit-appearance:none"
+          oninput="onBatchWidInput(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" autocomplete="off">
+        <button onclick="applyBatchWid()" title="적용" style="height:32px;width:30px;background:#185FA5;color:white;border:none;border-radius:7px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">✓</button>
+      </div>
     </div>
 
     <div id="sample-guide" style="text-align:center;padding:16px 0;font-size:13px;color:var(--hint)">실제경작면적 입력 후 자동으로 구간이 생성됩니다</div>
@@ -284,9 +323,9 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
         </colgroup>
         <thead>
           <tr>
-            <th>No</th><th>길이(m)</th><th>폭(m)</th>
-            <th>정상(g)</th>
-            <th>50%형(g)</th>
+            <th>No</th><th>길이</th><th>폭</th>
+            <th>정상</th>
+            <th>50%형</th>
           </tr>
         </thead>
         <tbody id="sample-body"></tbody>
@@ -541,12 +580,14 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
 <!-- 캡처 템플릿 -->
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:800px;background:#f3f4f6;padding:0;z-index:-1">
   <div style="min-height:800px;background:linear-gradient(180deg,#3a6b25 0%,#5B7E3F 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
-    <div style="height:20px"></div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;color:#fff;margin-bottom:14px">
-      <div style="font-size:15px;font-weight:700">🥔 감자 피해율 계산결과</div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-        <span id="cap-date-disp" style="font-size:13px;font-weight:700;color:#fff"></span>
-        <span id="cap-farmno-disp" style="font-size:13px;font-weight:700;color:#fff"></span>
+    <div style="padding-top:18px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;margin-bottom:14px;flex-wrap:nowrap">
+      <div style="display:flex;align-items:baseline;gap:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <span id="cap-date-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9)"></span>
+        <span id="cap-farmno-disp" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:0.8px;padding-right:2px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0">
+        <span style="font-size:15px;line-height:1">🥔</span>
+        <span style="font-size:13px;font-weight:700;line-height:1;color:rgba(255,255,255,0.9)">감자 피해율 계산결과</span>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
@@ -559,7 +600,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
           <thead><tr>
             <th style="padding:5px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">평년수확량</th>
             <th style="padding:5px;background:#5B7E3F;color:#fff;border-right:1px solid #e0e0e0;text-align:center">가입면적</th>
-            <th style="padding:5px;background:#5B7E3F;color:#fff;text-align:center">계약변경</th>
+            <th style="padding:5px;background:#5B7E3F;color:#fff;text-align:center">계약변경여부</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:5px;text-align:center;font-weight:700;font-size:11px" id="cap-avg-yield">-</td>
@@ -631,11 +672,11 @@ body.big-text .datewrap .date-disp{height:52px;font-size:15px;font-weight:800;wh
             <th style="padding:5px;background:#5B7E3F;color:#fff;text-align:center">미보상감수량</th>
           </tr></thead>
           <tbody><tr>
-            <td style="padding:5px;text-align:center;font-weight:700;font-size:11px" id="cap-pct">-</td>
-            <td style="padding:5px;text-align:center;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-unins">-</td>
-            <td style="padding:5px;text-align:center;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-surv">-</td>
-            <td style="padding:5px;text-align:center;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-bug">-</td>
-            <td style="padding:5px;text-align:center;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-unins-loss">-</td>
+            <td style="padding:5px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px" id="cap-pct">-</td>
+            <td style="padding:5px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-unins">-</td>
+            <td style="padding:5px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-surv">-</td>
+            <td style="padding:5px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-bug">-</td>
+            <td style="padding:5px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;border-left:1px solid #e0e0e0" id="cap-unins-loss">-</td>
           </tr></tbody>
         </table>
       </div>
@@ -729,7 +770,7 @@ function updateSamplesAndCalc(){
   const actArea=toNum(document.getElementById('act_area'))||toNum(document.getElementById('ins_area'));
   const deadArea=parseFloat((document.getElementById('dead_area').value||'').replace(/,/g,''))||0;
   const otherArea=parseFloat((document.getElementById('other_area').value||'').replace(/,/g,''))||0;
-  const harvArea=parseFloat(document.getElementById('harv_area').value)||0;
+  const harvArea=parseFloat((document.getElementById('harv_area').value||'').replace(/,/g,''))||0;
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const needed=getSampleCount(surveyArea);
 
@@ -767,10 +808,10 @@ function renderSamples(){
   document.getElementById('sample-body').innerHTML = samples.map((s,i)=>`
     <tr>
       <td style="font-weight:700;color:var(--sub);font-size:12px;text-align:center">${i+1}</td>
-      <td><input type="text" value="${s.len||''}" inputmode="decimal" class="${s.len?'filled':''}"
+      <td><input type="text" value="${s.len||''}" inputmode="decimal" data-cursor-end="1" class="${s.len?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
         onblur="this.value=normalizeDim(this.value);samples[${i}].len=this.value;calcTotals();saveState()" autocomplete="off"></td>
-      <td><input type="text" value="${s.wid||''}" inputmode="decimal" class="${s.wid?'filled':''}"
+      <td><input type="text" value="${s.wid||''}" inputmode="decimal" data-cursor-end="1" class="${s.wid?'filled':''}"
         oninput="this.classList.toggle('filled',this.value!='')"
         onblur="this.value=normalizeDim(this.value);samples[${i}].wid=this.value;calcTotals();saveState()" autocomplete="off"></td>
       <td><input type="text" value="${s.norm?Number(s.norm).toLocaleString():''}" inputmode="decimal" class="${s.norm?'filled':''}"
@@ -780,7 +821,7 @@ function renderSamples(){
         oninput="onCommaInput(this);samples[${i}].d50=this.value.replace(/,/g,'')"
         onblur="samples[${i}].d50=this.value.replace(/,/g,'');calcTotals();saveState()" autocomplete="off"></td>
     </tr>`).join('');
-  setTimeout(()=>{bindMobileFocusHandlers();},0);
+  setTimeout(()=>{bindMobileFocusHandlers();bindNextNav();},0);
 }
 
 function addSample(){
@@ -789,11 +830,144 @@ function addSample(){
   renderSamples();
   renderBugTable(); // 병충해 구간번호 드롭다운 동기화
 }
+
+let sampleInputOrder='row'; // 'row'(구간별: 좌→우, 위→아래) | 'col'(항목별: 위→아래, 좌→우)
+
+function getNextOrderedInput(el){
+  const rows=Array.from(document.querySelectorAll('#sample-body tr'));
+  if(sampleInputOrder==='row'){
+    const cur=Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
+    const i=cur.indexOf(el);
+    return cur[i+1]||null;
+  }
+  const td=el.closest('td');
+  const tr=el.closest('tr');
+  const rowIdx=rows.indexOf(tr);
+  const colIdx=Array.from(tr.children).indexOf(td);
+  const totalCols=rows[0]?rows[0].children.length:0;
+  for(let r=rowIdx+1;r<rows.length;r++){
+    const cell=rows[r].children[colIdx];
+    const inp=cell?cell.querySelector('input'):null;
+    if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+  }
+  for(let c=colIdx+1;c<totalCols;c++){
+    for(let r=0;r<rows.length;r++){
+      const cell=rows[r].children[c];
+      const inp=cell?cell.querySelector('input'):null;
+      if(inp&&inp.offsetParent!==null&&!inp.disabled) return inp;
+    }
+  }
+  return null;
+}
+function toggleInputOrder(){
+  sampleInputOrder=sampleInputOrder==='row'?'col':'row';
+  try{ if(navigator.vibrate) navigator.vibrate([15]); }catch(e){}
+  updateInputOrderBtn();
+  try{ localStorage.setItem('potato_input_order',sampleInputOrder); }catch(e){}
+}
+function updateInputOrderBtn(){
+  const btn=document.getElementById('order-toggle-btn');
+  if(!btn) return;
+  const rightArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="4" y1="12" x2="18" y2="12"/><polyline points="12,6 18,12 12,18"/></svg>';
+  const downArrow='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><line x1="12" y1="4" x2="12" y2="18"/><polyline points="6,12 12,18 18,12"/></svg>';
+  if(sampleInputOrder==='row'){
+    btn.innerHTML=rightArrow+'<span>구간별</span>';
+    btn.title='구간(행)별로 입력 — 엔터하면 같은 구간의 다음 칸으로 이동';
+  }else{
+    btn.innerHTML=downArrow+'<span>항목별</span>';
+    btn.title='항목(열)별로 입력 — 엔터하면 같은 항목의 다음 구간으로 이동';
+  }
+}
+
+function bindNextNav(){
+  const inputs = Array.from(document.querySelectorAll('#sample-body input')).filter(x=>x.offsetParent!==null&&!x.disabled);
+  inputs.forEach((el) => {
+    if (el.dataset.nextBound === '1') return;
+    el.dataset.nextBound = '1';
+    el.setAttribute('enterkeyhint', 'next');
+    const moveNext = () => {
+      const next = getNextOrderedInput(el);
+      if (next) {
+        next.focus();
+        if(next.hasAttribute('data-cursor-end')){
+          const len=next.value.length;
+          try{ next.setSelectionRange(len,len); }catch(_){}
+        } else {
+          next.select?.();
+        }
+      } else {
+        el.blur();
+      }
+    };
+    el.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      moveNext();
+    });
+    el.addEventListener('beforeinput', (e) => {
+      if (e.inputType === 'insertLineBreak') { e.preventDefault(); moveNext(); }
+    });
+  });
+}
+
+// ── 일괄입력 패널 열고/닫기 ─────────────────────────────
+function toggleBatchRow(){
+  const row=document.getElementById('batch-row');
+  const btn=document.getElementById('batch-toggle-btn');
+  const open=row.style.display==='none'||row.style.display==='';
+  row.style.display=open?'flex':'none';
+  if(btn){
+    btn.style.background=open?'#185FA5':'white';
+    btn.style.color=open?'white':'#185FA5';
+  }
+  if(!open){
+    const blc=document.getElementById('batch-len-chk'), bwc=document.getElementById('batch-wid-chk');
+    if(blc) blc.checked=false;
+    if(bwc) bwc.checked=false;
+  }
+}
+function toggleBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  const valInput=document.getElementById('batch-len-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].len) valInput.value=samples[0].len;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchLenInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchLen(){
+  const chk=document.getElementById('batch-len-chk');
+  if(!chk.checked) return;
+  const val=normalizeDim(document.getElementById('batch-len-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.len=val; });
+  renderSamples(); calcTotals(); saveState();
+}
+function toggleBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  const valInput=document.getElementById('batch-wid-val');
+  if(chk.checked){
+    if(!valInput.value && samples.length>0 && samples[0].wid) valInput.value=samples[0].wid;
+    valInput.focus(); valInput.select?.();
+  }
+}
+function onBatchWidInput(el){ el.classList.toggle('filled', el.value!==''); }
+function applyBatchWid(){
+  const chk=document.getElementById('batch-wid-chk');
+  if(!chk.checked) return;
+  const val=normalizeDim(document.getElementById('batch-wid-val').value);
+  if(val==='') return;
+  try{ if(navigator.vibrate) navigator.vibrate([20]); }catch(e){}
+  samples.forEach(s=>{ s.wid=val; });
+  renderSamples(); calcTotals(); saveState();
+}
+
 function removeSample(){
   const actArea=toNum(document.getElementById('act_area'))||toNum(document.getElementById('ins_area'));
   const deadArea=parseFloat((document.getElementById('dead_area').value||'').replace(/,/g,''))||0;
   const otherArea=parseFloat((document.getElementById('other_area').value||'').replace(/,/g,''))||0;
-  const harvArea=parseFloat(document.getElementById('harv_area').value)||0;
+  const harvArea=parseFloat((document.getElementById('harv_area').value||'').replace(/,/g,''))||0;
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const needed=getSampleCount(surveyArea);
   if(samples.length<=needed){ document.getElementById('delete-limit-overlay').classList.add('show'); return; }
@@ -1027,7 +1201,7 @@ function calc(){
   const actArea=toNum(document.getElementById('act_area'))||insArea;
   const deadArea=parseFloat((document.getElementById('dead_area').value||'').replace(/,/g,''))||0;
   const otherArea=parseFloat((document.getElementById('other_area').value||'').replace(/,/g,''))||0;
-  const harvArea=parseFloat(document.getElementById('harv_area').value)||0;
+  const harvArea=parseFloat((document.getElementById('harv_area').value||'').replace(/,/g,''))||0;
   const uninsRate=(parseFloat(document.getElementById('unins_rate').value)||0)/100;
 
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
@@ -1036,7 +1210,7 @@ function calc(){
   const surveyArea=Math.max(0,effArea-deadArea-otherArea-harvArea);
 
   // 자동계산 표시
-  document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString()+' ㎡':'';
+  document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString():'';
   const contractEl=document.getElementById('contract_yn_disp');
   if(insArea>0&&actArea>0){
     contractEl.value=isChanged?'여':'부';
@@ -1051,6 +1225,7 @@ function calc(){
 
   if(!avgYield||!actArea||surveyArea<=0){
     resultBox.className='result-box pending'; pctEl.textContent='- -';
+    document.getElementById('surv_yield_disp').value='';
     return;
   }
 
@@ -1081,6 +1256,7 @@ function calc(){
 
   if(tA<=0||tEff<=0){
     resultBox.className='result-box pending'; pctEl.textContent='- -';
+    document.getElementById('surv_yield_disp').value='';
     return;
   }
 
@@ -1090,6 +1266,7 @@ function calc(){
   // ④ 조사수확량 = ROUND(단위면적당×조사대상) + ROUND(단위평년R3×(타작물+기수확))
   const unitAvgR3=round3(avgYield/insArea);
   const survYield=Math.round(unitYield*surveyArea)+Math.round(unitAvgR3*(otherArea+harvArea));
+  document.getElementById('surv_yield_disp').value=survYield.toLocaleString();
 
   // 병충해 감수량 = Σ 구간별 ROUND(중량×손해×인정 / 표본면적 × 조사대상 / 1,000)
   const bugLoss=tA>0&&surveyArea>0?bugRows.reduce((s,r)=>{
@@ -1292,12 +1469,22 @@ function resetAll(){
   document.getElementById('radio-no-dot').style.background='transparent';
   document.getElementById('bug-config').style.display='none';
   document.getElementById('survey_area_disp').value='';
+  document.getElementById('surv_yield_disp').value='';
   document.getElementById('contract_yn_disp').value='';
   _isLocked=false; setEditMode(true);
   renderSamples(); renderBugTable();
   document.getElementById('result-section').className='result-box pending';
   document.getElementById('result-pct').textContent='- -';
   document.getElementById('s-bug').textContent='-';
+  document.getElementById('s-area').textContent='-';
+  document.getElementById('s-unit').textContent='-';
+  const blc=document.getElementById('batch-len-chk'), blv=document.getElementById('batch-len-val');
+  const bwc=document.getElementById('batch-wid-chk'), bwv=document.getElementById('batch-wid-val');
+  if(blc) blc.checked=false; if(blv){ blv.value=''; blv.classList.remove('filled'); }
+  if(bwc) bwc.checked=false; if(bwv){ bwv.value=''; bwv.classList.remove('filled'); }
+  const brow=document.getElementById('batch-row'), bbtn=document.getElementById('batch-toggle-btn');
+  if(brow) brow.style.display='none';
+  if(bbtn){ bbtn.style.background='white'; bbtn.style.color='#185FA5'; }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1331,7 +1518,7 @@ async function saveImage(){
     const contractorName=(document.getElementById('contractor_name')?.value||'').trim();
     const survDate=document.getElementById('survey_date')?.value||'';
     document.getElementById('cap-date-disp').textContent=survDate;
-    document.getElementById('cap-farmno-disp').textContent=contractorName?contractorName+(farmNo?`(${farmNo})`:''):(farmNo?'농지번호: '+farmNo:'');
+    document.getElementById('cap-farmno-disp').textContent=contractorName?contractorName+(farmNo?` (${farmNo})`:''):(farmNo?'농지번호: '+farmNo:'');
 
     // 1. 기본정보
     document.getElementById('cap-avg-yield').textContent=document.getElementById('avg_yield').value?document.getElementById('avg_yield').value+' kg':'-';
@@ -1347,13 +1534,24 @@ async function saveImage(){
 
     // 3-1 중량조사 테이블
     const tbody=document.getElementById('cap-sample-tbody');
-    tbody.innerHTML=samples.map((s,i)=>`<tr>
+    let sampleHtml=samples.map((s,i)=>`<tr>
       <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px">${i+1}</td>
       <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.len||'-'}</td>
       <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.wid||'-'}</td>
       <td style="padding:4px;border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.norm?Number(s.norm).toLocaleString():'-'}</td>
       <td style="padding:4px;border-bottom:1px solid #e0e0e0;text-align:center;font-size:11px;background:#e8faf3;font-weight:700">${s.d50?Number(s.d50).toLocaleString():'-'}</td>
     </tr>`).join('');
+    if(samples.length>0){
+      const g=id=>(document.getElementById(id)?.textContent||'-');
+      sampleHtml+=`<tr style="border-top:2px solid #5B7E3F;background:#eef5f0">
+        <td style="padding:4px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;color:#5B7E3F;border-right:1px solid #e0e0e0">합계</td>
+        <td style="padding:4px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;color:#5B7E3F;border-right:1px solid #e0e0e0">${g('t-len')}</td>
+        <td style="padding:4px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;color:#5B7E3F;border-right:1px solid #e0e0e0">${g('t-wid')}</td>
+        <td style="padding:4px;text-align:center;vertical-align:middle;font-weight:700;font-size:11px;color:#5B7E3F;border-right:1px solid #e0e0e0">${g('t-norm')}</td>
+        <td style="padding:4px;text-align:center;vertical-align:middle;font-weight:900;font-size:11px;color:#5B7E3F">${g('t-d50')}</td>
+      </tr>`;
+    }
+    tbody.innerHTML=sampleHtml;
 
     // 3-2 병충해: 행=표본구간, 헤더2행(No|병충해종류|손해정도비율→%), 셀=중량
     const bugSection=document.getElementById('cap-bug-section');
@@ -1482,6 +1680,11 @@ if('serviceWorker' in navigator){
 
 // ── 초기 실행 ─────────────────────────────────────
 const loaded=loadState();
+try{
+  const savedOrder=localStorage.getItem('potato_input_order');
+  if(savedOrder==='col'||savedOrder==='row') sampleInputOrder=savedOrder;
+}catch(e){}
+updateInputOrderBtn();
 // 크게보기 복원
 try{
   if(localStorage.getItem('potato_bigtext')==='1'){
