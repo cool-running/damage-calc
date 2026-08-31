@@ -59,11 +59,13 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 
-input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background .15s,border-color .15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:13px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background .15s,border-color .15s;text-align:center;text-align-last:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+input.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background .15s,border-color .15s;text-align:center}
+select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:13px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background .15s,border-color .15s;text-align:center;text-align-last:center}
 input.inp:focus,select.inp:focus{outline:none!important;border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(55,138,221,0.18)!important;background:#dceeff!important;color:#185FA5!important}
 input.inp::placeholder{color:var(--hint);text-align:center}
 input.inp.filled{background:var(--done-bg);border-color:var(--done-bd);color:#000;font-weight:700}
@@ -71,13 +73,13 @@ select.inp.filled{background:var(--done-bg);border-color:var(--done-bd);color:#0
 input.inp.filled:focus,select.inp.filled:focus{border-color:#185FA5!important;box-shadow:0 0 0 3px rgba(55,138,221,0.18)!important;background:#dceeff!important;color:#185FA5!important}
 
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .datewrap.filled .date-disp{background:var(--done-bg);border-color:var(--done-bd);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2;-webkit-appearance:none;appearance:none;color:transparent;background:transparent}
 .datewrap input[type=date]:disabled{opacity:0;color:transparent;background:transparent}
 .datewrap:focus-within .date-disp{border-color:#185FA5;box-shadow:0 0 0 3px rgba(55,138,221,0.18);background:#dceeff;color:#185FA5}
-body.big-text .datewrap .date-disp{height:52px;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.big-text .datewrap .date-disp{height:52px;font-size:16px;font-weight:800}
 
 input.auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);padding:0 8px;font-size:13px;background:var(--auto);color:var(--sub);width:100%;-webkit-appearance:none;text-align:center}
 
@@ -91,6 +93,7 @@ body.big-text input.auto{height:50px !important;font-size:17px !important;font-w
 body.big-text .field label{font-size:13px !important}
 
 .unit-badge{position:absolute;right:6px;top:0;font-size:10px;font-weight:600;color:var(--sub);background:var(--bg);border-radius:4px;padding:1px 4px;line-height:1.4;pointer-events:none;z-index:1}
+.mini-unit{font-size:9px;font-weight:500;color:var(--hint);margin-left:1px}
 
 .vcard{border:2px solid var(--blue);border-radius:var(--r);padding:12px;margin-bottom:12px;background:#fbfdff;box-shadow:0 1px 4px rgba(24,95,165,0.06)}
 .vcard-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -278,7 +281,7 @@ body.big-text .scell .ci{font-size:19px!important}
 
   <div class="section">
     <div class="sec-title">기본정보</div>
-    <div class="g2" style="margin-top:0;margin-bottom:8px">
+    <div class="g4" style="margin-top:0">
       <div class="field">
         <label>평년수확량</label><span class="unit-badge">kg</span>
         <input type="text" id="avg_yield" class="inp" inputmode="decimal" oninput="onComma(this)" onblur="calc()" autocomplete="off">
@@ -287,16 +290,14 @@ body.big-text .scell .ci{font-size:19px!important}
         <label>미보상비율</label><span class="unit-badge">%</span>
         <input type="text" id="unins_rate" class="inp" inputmode="decimal" oninput="markFilled(this)" onblur="calc()" autocomplete="off">
       </div>
+      <div class="field"><label style="color:var(--sub)">표본주수</label><input class="auto" id="t-sampleN" readonly></div>
+      <div class="field"><label style="color:var(--sub)">계약변경여부</label><input class="auto" id="t-contract" readonly></div>
     </div>
     <div class="auto-strip" style="margin:0">
-      <div class="g2" style="margin-bottom:8px">
+      <div class="g3" style="margin-bottom:0">
         <div class="field"><label style="color:var(--sub)">가입주수</label><input class="auto" id="t-reg" readonly></div>
         <div class="field"><label style="color:var(--sub)">실제결과주수</label><input class="auto" id="t-actual" readonly></div>
-      </div>
-      <div class="g3" style="margin-bottom:0">
         <div class="field"><label style="color:var(--sub)">조사대상주수</label><input class="auto" id="t-survey" readonly></div>
-        <div class="field"><label style="color:var(--sub)">표본주수</label><input class="auto" id="t-sampleN" readonly></div>
-        <div class="field"><label style="color:var(--sub)">계약변경여부</label><input class="auto" id="t-contract" readonly></div>
       </div>
     </div>
   </div>
@@ -573,18 +574,31 @@ function renderVarieties(){
     const subLabel=group==='ap'?'세부품종':'재배목적';
     const typeBadge=`<div class="vhead-txt"><span class="vtype" id="v-name-${i}">${pname||'품종 선택'}</span><span class="vhead-sub" id="v-headsub-${i}"></span></div>`;
     const treeLabelKey=ap?'착과수 (개)':'착과량 (g)';
-    const perLabel=ap?'주당착과수':'주당착과량(g)';
+    const perLabel='주당착과';
     // 나무조사 단계에서는 입력 허용, 표본단계에서는 잠금(disabled) — 전체보기는 항상 편집
     const dis = treeLocked?'disabled':'';
 
-    // ── 적정표본 미리보기/확정 스트립 ──
+    // ── 조사대상주/적정표본/주당착과/피해구성률(+사과대추 개당과중) 통합 스트립 ──
+    const perUnit=ap?'개':'g';
     const properStrip = showFruit
-      ? `<div class="auto-strip"><div class="g3" style="margin-bottom:0">
-          <div class="field"><label style="color:var(--sub)">적정표본</label><input class="auto" id="v-proper-${i}" readonly></div>
-          <div class="field"><label style="color:var(--sub)">${perLabel}</label><input class="auto" id="v-per-${i}" readonly></div>
-          <div class="field"><label style="color:var(--sub)">피해구성률</label><input class="auto" id="v-dmg-${i}" readonly></div>
-        </div></div>`
-      : `<div class="auto-strip"><div class="field" style="margin:0"><label style="color:var(--sub)">적정표본 (예상)</label><input class="auto" id="v-proper-${i}" readonly></div></div>`;
+      ? (ap
+        ? `<div class="auto-strip"><div class="g5" style="margin-bottom:0">
+            <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
+            <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
+            <div class="field"><label style="color:var(--sub)">${perLabel}<span class="mini-unit">${perUnit}</span></label><input class="auto" id="v-per-${i}" readonly></div>
+            <div class="field"><label style="color:var(--sub)">피해구성<span class="mini-unit">%</span></label><input class="auto" id="v-dmg-${i}" readonly></div>
+            <div class="field"><label style="color:var(--sub)">개당과중${prevAp?'(공유)':''}<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
+          </div></div>`
+        : `<div class="auto-strip"><div class="g4" style="margin-bottom:0">
+            <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
+            <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
+            <div class="field"><label style="color:var(--sub)">${perLabel}<span class="mini-unit">${perUnit}</span></label><input class="auto" id="v-per-${i}" readonly></div>
+            <div class="field"><label style="color:var(--sub)">피해구성<span class="mini-unit">%</span></label><input class="auto" id="v-dmg-${i}" readonly></div>
+          </div></div>`)
+      : `<div class="auto-strip"><div class="g2" style="margin-bottom:0">
+          <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
+          <div class="field"><label style="color:var(--sub)">적정표본 (예상)<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
+        </div></div>`;
 
     // ── 표본 착과조사 (표본단계 또는 전체보기에서 표시) ──
     let fruitHtml='';
@@ -615,16 +629,9 @@ function renderVarieties(){
       <div class="tree-grid" id="tree-grid-${i}">${treeHtml}</div>
       <div class="warn" id="v-warn-${i}">⚠ 표본주가 적정표본수보다 부족합니다</div>
       ${ap&&!prevAp?`<div class="subtitle">과중조사 (품종 60개 이상)</div>
-        <div class="g3">
+        <div class="g2">
           <div class="field"><label>표본 과실수</label><span class="unit-badge">개</span><input class="inp wt-inp ${v.fcount!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.fcount}" oninput="onF(${i},'fcount',this)" onkeydown="navKey(event,this)"></div>
           <div class="field"><label>총 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${v.fweight!==''?'filled':''}" inputmode="decimal" enterkeyhint="next" value="${v.fweight}" oninput="onFWeight(${i},this)" onkeydown="navKey(event,this)"></div>
-          <div class="field"><label style="color:var(--sub)">개당과중</label><input class="auto" id="v-w-${i}" readonly></div>
-        </div>`
-      :ap&&prevAp?`<div class="subtitle" style="display:flex;align-items:center;gap:6px">
-          <span>개당과중</span><span style="font-size:11px;color:var(--main-d);background:var(--main-l);padding:2px 8px;border-radius:8px;font-weight:700">사과대추 ①번 품종 공유</span>
-        </div>
-        <div style="max-width:140px">
-          <div class="field"><label style="color:var(--sub)">개당과중</label><input class="auto" id="v-w-${i}" readonly></div>
         </div>`
       :''}
       <div class="dmg-toggle-row ${v.dmgOpen?'on':''}" onclick="toggleDmg(${i})">
@@ -667,19 +674,16 @@ function renderVarieties(){
       <div class="vcard-head">
         <div class="vbadge">${i+1}</div>${typeBadge}
       </div>
-      <div class="g2" style="margin-bottom:8px">
+      <div class="g3" style="margin-bottom:8px">
         <div class="field"><label>품종</label><select class="inp tree-field ${group?'filled':''}" ${dis} onchange="onGroup(${i},this)">${gopts}</select></div>
         <div class="field"><label>${subLabel}</label><select class="inp tree-field ${v.cat?'filled':''}" ${(group&&!treeLocked)?'':'disabled'} onchange="onSub(${i},this)">${sopts}</select></div>
-      </div>
-      <div class="g3">
         <div class="field"><label>수령</label><span class="unit-badge">년</span><input class="inp tree-field ${v.age!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.age}" oninput="onF(${i},'age',this)"></div>
+      </div>
+      <div class="g4">
         <div class="field"><label>가입주수</label><input class="inp tree-field ${v.reg!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.reg}" oninput="onF(${i},'reg',this)"></div>
         <div class="field"><label>실제결과주</label><input class="inp tree-field ${v.actual!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.actual}" oninput="onFsoft(${i},'actual',this)" onblur="onTreeBlur()"></div>
-      </div>
-      <div class="g3">
         <div class="field"><label>고사주</label><input class="inp tree-field ${v.dead!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.dead}" oninput="onFsoft(${i},'dead',this)" onblur="onTreeBlur()"></div>
         <div class="field"><label>미보상주</label><input class="inp tree-field ${v.unins!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.unins}" oninput="onFsoft(${i},'unins',this)" onblur="onTreeBlur()"></div>
-        <div class="field"><label style="color:var(--sub)">조사대상주</label><input class="auto" id="v-survey-${i}" readonly></div>
       </div>
       ${properStrip}
       ${fruitHtml}`;
@@ -1050,12 +1054,12 @@ function renderSampleSummary(R){
 function calc(){
   const R=computeAll();
   $('t-survey').value=R.totalSurvey?R.totalSurvey.toLocaleString():'';
-  $('t-sampleN').value=R.sampN?R.sampN+'주':'';
-  $('t-reg').value=R.totalReg?R.totalReg.toLocaleString()+'주':'';
-  $('t-actual').value=R.totalActual?R.totalActual.toLocaleString()+'주':'';
+  $('t-sampleN').value=R.sampN?R.sampN.toLocaleString():'';
+  $('t-reg').value=R.totalReg?R.totalReg.toLocaleString():'';
+  $('t-actual').value=R.totalActual?R.totalActual.toLocaleString():'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);
-  $('t-contract').value=hasReg?(R.contractChange?'여':'부'):'';
-  $('t-contract').style.color=R.contractChange?'var(--red)':'var(--green)';
+  $('t-contract').value=hasReg?(R.contractChange?'유':'무'):'';
+  $('t-contract').style.color=R.contractChange?'var(--red)':'var(--main)';
 
   R.rows.forEach((r,i)=>{
     const c=r.calc,v=r.v,ap=r.ap;
@@ -1068,10 +1072,10 @@ function calc(){
       const det = v.cat&&CATS[v.cat]?CATS[v.cat].label.replace(/^재래종\s*/,'').replace(/^복조·재래\s*/,'').replace(/^사과대추\s*/,''):'';
       hs.textContent=det;
     }
-    set(`v-proper-${i}`,c.proper?c.proper+'주':'');
-    set(`v-per-${i}`,c.sampleCnt>0?(ap?fmt(c.per):fmt(c.per)+'g'):'');
-    set(`v-dmg-${i}`,(parseFloat(v.normal)||parseFloat(v.p50)||parseFloat(v.p80)||parseFloat(v.p100))?(c.dmg*100).toFixed(1)+'%':'');
-    if(ap)set(`v-w-${i}`,c.weight?fmt(c.weight)+'g':'');
+    set(`v-proper-${i}`,c.proper?c.proper.toLocaleString():'');
+    set(`v-per-${i}`,c.sampleCnt>0?fmt(c.per):'');
+    set(`v-dmg-${i}`,(parseFloat(v.normal)||parseFloat(v.p50)||parseFloat(v.p80)||parseFloat(v.p100))?(c.dmg*100).toFixed(1):'');
+    if(ap)set(`v-w-${i}`,c.weight?fmt(c.weight):'');
     const w=$(`v-warn-${i}`);
     if(w){
       if(c.proper>0&&c.sampleCnt>c.proper){
@@ -1147,7 +1151,7 @@ function toggleBigText(){
   document.body.classList.toggle('big-text');
   const on=document.body.classList.contains('big-text');
   $('bigtext-btn').classList.toggle('on',on);
-  $('bigtext-label').textContent=on?'작게':'크게';
+  $('bigtext-label').textContent=on?'원래대로':'크게';
   calc();   // 비교표 폭 재배분
 }
 
