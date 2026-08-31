@@ -103,9 +103,13 @@ body.big-text .tinp{height:52px !important;line-height:48px !important;font-size
 .auto-strip .g2,.auto-strip .g3{margin-bottom:0}
 .tree-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:6px}
 .tree-head{display:flex;align-items:center;justify-content:space-between;margin:10px 0 0}
-.samp-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;white-space:nowrap}
-.samp-badge.samp-cur{background:#E3F2FD;color:#1565C0}
-.samp-badge.samp-proper{background:var(--main-l);color:var(--main-d)}
+.dual-auto{height:40px;border:0.5px solid var(--border);border-radius:var(--rs);background:var(--auto);display:flex;align-items:center;justify-content:center;gap:3px;font-size:13px;font-weight:800;width:100%}
+.dual-auto .db{color:#1565C0}
+.dual-auto .dg{color:var(--main-d)}
+.dual-auto .ds{color:var(--hint);font-weight:400;font-size:11px}
+.dual-lbl .lb{color:#1565C0;font-weight:700}
+.dual-lbl .lg{color:var(--main-d);font-weight:700}
+.dual-lbl .ls{color:var(--hint)}
 .tree-btns{display:flex;align-items:center;gap:6px}
 .tree-mini-btn{width:30px;height:30px;border-radius:7px;background:transparent;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;border:1.5px solid var(--border)}
 .tree-mini-btn.plus{border-color:var(--accent);color:var(--main-d)}
@@ -294,7 +298,9 @@ body.big-text .scell .ci{font-size:19px!important}
         <div class="field"><label style="color:var(--sub)">가입주수</label><input class="auto" id="t-reg" readonly></div>
         <div class="field"><label style="color:var(--sub)">실제결과주수</label><input class="auto" id="t-actual" readonly></div>
         <div class="field"><label style="color:var(--sub)">조사대상주수</label><input class="auto" id="t-survey" readonly></div>
-        <div class="field"><label style="color:var(--sub)">표본주수</label><input class="auto" id="t-sampleN" readonly></div>
+        <div class="field dual-lbl"><label><span class="lb">표본</span><span class="ls">/</span><span class="lg">적정</span></label>
+          <div class="dual-auto"><span class="db" id="t-sampleN-cur">-</span><span class="ds">/</span><span class="dg" id="t-sampleN-proper">-</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -589,7 +595,9 @@ function renderVarieties(){
     const properStrip=showFruit
       ?`<div class="auto-strip"><div class="g4" style="margin-bottom:0">
           <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
-          <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
+          <div class="field dual-lbl"><label><span class="lb">표본</span><span class="ls">/</span><span class="lg">적정</span></label>
+            <div class="dual-auto"><span class="db" id="v-sampcur-${i}">-</span><span class="ds">/</span><span class="dg" id="v-proper-${i}">-</span></div>
+          </div>
           <div class="field"><label style="color:var(--sub)">주당착과<span class="mini-unit">개</span></label><input class="auto" id="v-per-${i}" readonly></div>
           <div class="field"><label style="color:var(--sub)">주당낙과<span class="mini-unit">개</span></label><input class="auto" id="v-pern-${i}" readonly></div>
         </div></div>`
@@ -620,8 +628,6 @@ function renderVarieties(){
       <div class="tree-head">
         <div class="subtitle" style="margin:0;font-weight:800">표본주별 <span style="color:var(--red)">착과수</span> (개/송이)</div>
         <div style="display:flex;align-items:center;gap:5px">
-          <span class="samp-badge samp-cur">표본 <b id="v-sampn-${i}">0</b></span>
-          <span class="samp-badge samp-proper">적정 <b id="v-propern-${i}">0</b></span>
           <div class="tree-btns">
             <button class="tree-mini-btn minus" onclick="delTree(${i})">－</button>
             <button class="tree-mini-btn plus" onclick="addTree(${i})">＋</button>
@@ -638,8 +644,8 @@ function renderVarieties(){
       <div class="g4" style="margin-bottom:0">
         <div class="field"><label>표본과실수</label><span class="unit-badge">개</span><input class="inp wt-inp ${(v.fcnt||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.fcnt||''}" oninput="onCommaF(${i},'fcnt',this)" onkeydown="navKey(event,this)"></div>
         <div class="field"><label>정상 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${(v.wN||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.wN?Number(String(v.wN).replace(/,/g,'')).toLocaleString('ko-KR'):''}" oninput="onCommaF(${i},'wN',this)" onkeydown="navKey(event,this)"></div>
-        <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
         <div class="field"><label>소과 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${(v.wS||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.wS?Number(String(v.wS).replace(/,/g,'')).toLocaleString('ko-KR'):''}" oninput="onCommaF(${i},'wS',this)" onkeydown="navKey(event,this)"></div>
+        <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
       </div>`
       : `<div class="subtitle" style="margin-top:10px;display:flex;align-items:center;gap:6px">
         <span>과중조사</span>
@@ -949,6 +955,7 @@ function computeAll(){
     r.calc={proper,F,N,perChak,perNak,weight,dmg,ddmg,yld,uninsLoss,sampleCnt:tv.length};
   });
   const totalProper=rows.reduce((s,r)=>s+(r.calc.proper||0),0);
+  const totalSampleCnt=rows.reduce((s,r)=>s+(r.calc.sampleCnt||0),0);
 
   totalApplied=r4(totalApplied);
   totalYield=rdown4(totalYield);
@@ -957,7 +964,7 @@ function computeAll(){
   const _ratio=totalApplied>0?(totalApplied-totalYield-totalUninsLoss)/totalApplied:0;
   const rate=totalApplied>0?Math.ceil(Math.round(_ratio*1e6)/1e6*10000)/100:0;
 
-  return {avgYield,uninsRate,rows,totalSurvey,sampN,totalProper,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
+  return {avgYield,uninsRate,rows,totalSurvey,sampN,totalProper,totalSampleCnt,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
 }
 
 /* ───────── 품종별 비교 요약표 ───────── */
@@ -1061,7 +1068,8 @@ function renderSampleSummary(R){
 function calc(){
   const R=computeAll();
   $('t-survey').value=R.totalSurvey?R.totalSurvey.toLocaleString():'';
-  $('t-sampleN').value=R.totalProper?R.totalProper.toLocaleString():'';
+  $('t-sampleN-cur').textContent=R.totalSampleCnt?R.totalSampleCnt.toLocaleString():'-';
+  $('t-sampleN-proper').textContent=R.totalProper?R.totalProper.toLocaleString():'-';
   $('t-reg').value=R.totalReg?R.totalReg.toLocaleString():'';
   $('t-actual').value=R.totalActual?R.totalActual.toLocaleString():'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);
@@ -1072,8 +1080,6 @@ function calc(){
     const c=r.calc,v=r.v;
     const set=(id,val)=>{const e=$(id);if(e)e.value=val;};
     set(`v-survey-${i}`,r.survey?r.survey.toLocaleString():'');
-    const sb=$(`v-sampn-${i}`); if(sb)sb.textContent=c.sampleCnt||0;
-    const pb=$(`v-propern-${i}`); if(pb)pb.textContent=c.proper||0;
     const nm=$(`v-name-${i}`);
     if(nm){
       const catL=v.cat&&CATS[v.cat]?CATS[v.cat].label:'';
@@ -1081,7 +1087,8 @@ function calc(){
       const ageT=v.age?` ${v.age}년`:'';
       nm.textContent=([catL,dispN].filter(Boolean).join(' ')+ageT).trim()||'품종 선택';
     }
-    set(`v-proper-${i}`,c.proper?c.proper.toLocaleString():'');
+    {const e=$(`v-proper-${i}`); if(e)e.textContent=c.proper?c.proper.toLocaleString():'-';}
+    {const e=$(`v-sampcur-${i}`); if(e)e.textContent=c.sampleCnt?c.sampleCnt.toLocaleString():'0';}
     set(`v-per-${i}`,c.sampleCnt>0?c.perChak.toFixed(1):'');
     set(`v-pern-${i}`,c.perNak>0?c.perNak.toFixed(1):'');
     set(`v-w-${i}`,c.weight?c.weight.toFixed(2):'');
