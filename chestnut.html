@@ -55,6 +55,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 
@@ -88,6 +89,7 @@ body.big-text .auto-strip .field label,body.big-text .g4 .field label,body.big-t
 body.big-text .tinp{height:52px !important;line-height:48px !important;font-size:19px !important;font-weight:700 !important}
 
 .unit-badge{position:absolute;right:6px;top:0;font-size:10px;font-weight:600;color:var(--sub);background:var(--bg);border-radius:4px;padding:1px 4px;line-height:1.4;pointer-events:none;z-index:1}
+.mini-unit{font-size:9px;font-weight:500;color:var(--hint);margin-left:1px}
 
 .vcard{border:2px solid var(--accent);border-radius:var(--r);padding:12px;margin-bottom:12px;background:#fbfdff;box-shadow:0 1px 4px rgba(91,126,63,0.06)}
 .vcard.joosaeng{border-color:#9B7040;background:#fdf9f5;box-shadow:0 1px 4px rgba(107,79,42,0.06)}
@@ -273,7 +275,7 @@ body.big-text .scell .ci{font-size:19px!important}
 
   <div class="section">
     <div class="sec-title">기본정보</div>
-    <div class="g2" style="margin-top:0;margin-bottom:8px">
+    <div class="g3" style="margin-top:0;margin-bottom:8px">
       <div class="field">
         <label>평년수확량</label><span class="unit-badge">kg</span>
         <input type="text" id="avg_yield" class="inp" inputmode="decimal" oninput="onComma(this)" onblur="calc()" autocomplete="off">
@@ -282,16 +284,14 @@ body.big-text .scell .ci{font-size:19px!important}
         <label>미보상비율</label><span class="unit-badge">%</span>
         <input type="text" id="unins_rate" class="inp" inputmode="decimal" oninput="markFilled(this)" onblur="calc()" autocomplete="off">
       </div>
+      <div class="field"><label style="color:var(--sub)">계약변경여부</label><input class="auto" id="t-contract" readonly></div>
     </div>
     <div class="auto-strip" style="margin:0">
-      <div class="g2" style="margin-bottom:8px">
+      <div class="g4" style="margin-bottom:0">
         <div class="field"><label style="color:var(--sub)">가입주수</label><input class="auto" id="t-reg" readonly></div>
         <div class="field"><label style="color:var(--sub)">실제결과주수</label><input class="auto" id="t-actual" readonly></div>
-      </div>
-      <div class="g3" style="margin-bottom:0">
         <div class="field"><label style="color:var(--sub)">조사대상주수</label><input class="auto" id="t-survey" readonly></div>
         <div class="field"><label style="color:var(--sub)">표본주수</label><input class="auto" id="t-sampleN" readonly></div>
-        <div class="field"><label style="color:var(--sub)">계약변경</label><input class="auto" id="t-contract" readonly></div>
       </div>
     </div>
   </div>
@@ -584,12 +584,13 @@ function renderVarieties(){
     const typeBadge=`<div class="vhead-txt"><span class="vtype" id="v-name-${i}">${headLabel}</span></div>`;
 
     const properStrip=showFruit
-      ?`<div class="auto-strip"><div class="g3" style="margin-bottom:0">
-          <div class="field"><label style="color:var(--sub)">주당착과수</label><input class="auto" id="v-per-${i}" readonly></div>
-          <div class="field"><label style="color:var(--sub)">주당낙과수</label><input class="auto" id="v-pern-${i}" readonly></div>
-          <div class="field"><label style="color:var(--sub)">개당과중(g)</label><input class="auto" id="v-w-${i}" readonly></div>
+      ?`<div class="auto-strip"><div class="g4" style="margin-bottom:0">
+          <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
+          <div class="field"><label style="color:var(--sub)">주당착과<span class="mini-unit">개</span></label><input class="auto" id="v-per-${i}" readonly></div>
+          <div class="field"><label style="color:var(--sub)">주당낙과<span class="mini-unit">개</span></label><input class="auto" id="v-pern-${i}" readonly></div>
+          <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
         </div></div>`
-      :``;
+      :`<div class="auto-strip"><div class="field" style="margin:0"><label style="color:var(--sub)">조사대상주<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div></div>`;
 
     let fruitHtml='';
     if(showFruit){
@@ -627,18 +628,14 @@ function renderVarieties(){
 
       ${isWeightLeader(i)
       ? `<div class="subtitle" style="margin-top:10px">과중조사 <span style="font-size:10px;color:var(--hint);font-weight:400">품종별 20개↑, 농지 60개↑ · 소과(30mm이하)=무게×0.8 · 품종마다 조사</span></div>
-      <div class="g4" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:0">
+      <div class="g3" style="margin-bottom:0">
         <div class="field"><label>표본과실수</label><span class="unit-badge">개</span><input class="inp wt-inp ${(v.fcnt||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.fcnt||''}" oninput="onCommaF(${i},'fcnt',this)" onkeydown="navKey(event,this)"></div>
         <div class="field"><label>정상 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${(v.wN||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.wN?Number(String(v.wN).replace(/,/g,'')).toLocaleString('ko-KR'):''}" oninput="onCommaF(${i},'wN',this)" onkeydown="navKey(event,this)"></div>
         <div class="field"><label>소과 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${(v.wS||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.wS?Number(String(v.wS).replace(/,/g,'')).toLocaleString('ko-KR'):''}" oninput="onCommaF(${i},'wS',this)" onkeydown="navKey(event,this)"></div>
-        <div class="field"><label style="color:var(--sub)">개당과중</label><input class="auto" id="v-w2-${i}" readonly></div>
       </div>`
       : `<div class="subtitle" style="margin-top:10px;display:flex;align-items:center;gap:6px">
         <span>과중조사</span>
         <span style="font-size:11px;color:var(--main-d);background:var(--main-l);padding:2px 8px;border-radius:8px;font-weight:700">${weightLeaderIndex(i)+1}번과 동일품종 · 과중 공유</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:0">
-        <div class="field" style="grid-column:1 / 2"><label style="color:var(--sub)">개당과중</label><input class="auto" id="v-w2-${i}" readonly></div>
       </div>`}
 
       <div class="dmg-toggle-row ${v.dmgOpen?'on':''}" onclick="toggleDmg(${i})">
@@ -681,7 +678,7 @@ function renderVarieties(){
       <div class="vcard-head">
         <div class="vbadge">${i+1}</div>${typeBadge}
       </div>
-      <div class="g3" style="margin-bottom:8px">
+      <div class="g4" style="margin-bottom:8px">
         <div class="field"><label>숙기</label>
           <select class="inp tree-field ${cat?'filled':''}" onchange="onCat(${i},this)">${sopts}</select>
         </div>
@@ -689,27 +686,22 @@ function renderVarieties(){
         <div class="field"><label>수령</label><span class="unit-badge">년</span>
           <input class="inp tree-field ${v.age!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.age}" oninput="onF(${i},'age',this)">
         </div>
+        <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label>
+          <input class="auto" id="v-proper-${i}" readonly>
+        </div>
       </div>
-      <div class="g3" style="margin-bottom:8px">
+      <div class="g4" style="margin-bottom:8px">
         <div class="field"><label>가입주수</label>
           <input class="inp tree-field ${v.reg!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.reg}" oninput="onF(${i},'reg',this)">
         </div>
         <div class="field"><label>실제결과주</label>
           <input class="inp tree-field ${v.actual!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.actual}" oninput="onFsoft(${i},'actual',this)" onblur="onTreeBlur()">
         </div>
-        <div class="field"><label style="color:var(--sub)">조사대상주</label>
-          <input class="auto" id="v-survey-${i}" readonly>
-        </div>
-      </div>
-      <div class="g3" style="margin-bottom:8px">
         <div class="field"><label>고사주</label>
           <input class="inp tree-field ${v.dead!==''?'filled':''}" inputmode="numeric" value="${v.dead}" oninput="onFsoft(${i},'dead',this)" onblur="onTreeBlur()">
         </div>
         <div class="field"><label>미보상주</label>
           <input class="inp tree-field ${v.unins!==''?'filled':''}" inputmode="numeric" value="${v.unins}" oninput="onFsoft(${i},'unins',this)" onblur="onTreeBlur()">
-        </div>
-        <div class="field"><label style="color:var(--sub)">적정표본</label>
-          <input class="auto" id="v-proper-${i}" readonly>
         </div>
       </div>
       ${properStrip}
@@ -1061,11 +1053,11 @@ function renderSampleSummary(R){
 function calc(){
   const R=computeAll();
   $('t-survey').value=R.totalSurvey?R.totalSurvey.toLocaleString():'';
-  $('t-sampleN').value=R.totalProper?R.totalProper+'주':'';
-  $('t-reg').value=R.totalReg?R.totalReg.toLocaleString()+'주':'';
-  $('t-actual').value=R.totalActual?R.totalActual.toLocaleString()+'주':'';
+  $('t-sampleN').value=R.totalProper?R.totalProper.toLocaleString():'';
+  $('t-reg').value=R.totalReg?R.totalReg.toLocaleString():'';
+  $('t-actual').value=R.totalActual?R.totalActual.toLocaleString():'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);
-  $('t-contract').value=hasReg?(R.contractChange?'변경':'이상무'):'';
+  $('t-contract').value=hasReg?(R.contractChange?'여':'부'):'';
   $('t-contract').style.color=R.contractChange?'var(--red)':'var(--main)';
 
   R.rows.forEach((r,i)=>{
@@ -1079,12 +1071,10 @@ function calc(){
       const ageT=v.age?` ${v.age}년`:'';
       nm.textContent=([catL,dispN].filter(Boolean).join(' ')+ageT).trim()||'품종 선택';
     }
-    set(`v-proper-${i}`,c.proper?c.proper+'주':'');
-    set(`v-per-${i}`,c.sampleCnt>0?c.perChak.toFixed(1)+'개':'');
-    set(`v-pern-${i}`,c.perNak>0?c.perNak.toFixed(1)+'개':'');
-    set(`v-w-${i}`,c.weight?c.weight.toFixed(2)+'g':'');
-    /* 과중 계산 자동표시 — 품종별 공유 개당과중(c.weight) 사용 */
-    set(`v-w2-${i}`,c.weight>0?c.weight.toFixed(2)+' g / 개':'');
+    set(`v-proper-${i}`,c.proper?c.proper.toLocaleString():'');
+    set(`v-per-${i}`,c.sampleCnt>0?c.perChak.toFixed(1):'');
+    set(`v-pern-${i}`,c.perNak>0?c.perNak.toFixed(1):'');
+    set(`v-w-${i}`,c.weight?c.weight.toFixed(2):'');
     const w=$(`v-warn-${i}`);
     if(w){
       if(c.proper>0&&c.sampleCnt>c.proper){

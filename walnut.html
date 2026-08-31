@@ -1055,7 +1055,7 @@ function calc(){
   $('t-reg').value=R.totalReg?R.totalReg.toLocaleString():'';
   $('t-actual').value=R.totalActual?R.totalActual.toLocaleString():'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);
-  $('t-contract').value=hasReg?(R.contractChange?'유':'무'):'';
+  $('t-contract').value=hasReg?(R.contractChange?'여':'부'):'';
   $('t-contract').style.color=R.contractChange?'var(--red)':'var(--main)';
 
   R.rows.forEach((r,i)=>{
@@ -1421,7 +1421,7 @@ function buildCapture(){
       </tr></thead><tbody>${wRows}</tbody>
     </table>
 
-    ${secTitle(`5. 조사결과 <span style="font-size:11px;font-weight:700;color:${R.contractChange?'#c0392b':'#5B7E3F'}">(계약변경 : ${R.contractChange?'유':'무'})</span>`)}
+    ${secTitle(`5. 조사결과 <span style="font-size:11px;font-weight:700;color:${R.contractChange?'#c0392b':'#5B7E3F'}">(계약변경 : ${R.contractChange?'여':'부'})</span>`)}
     <table style="width:100%;border-collapse:collapse;table-layout:fixed">
       <tbody><tr style="font-size:11px">
         <td class="cap-td" style="background:#5B7E3F;color:#fff;font-weight:800;white-space:nowrap;width:10%">피해율</td>
