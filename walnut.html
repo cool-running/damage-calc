@@ -276,7 +276,7 @@ body.big-text .scell .ci{font-size:19px!important}
 
   <div class="section">
     <div class="sec-title">기본정보</div>
-    <div class="g4" style="margin-top:0">
+    <div class="g4" style="margin-top:0;grid-template-columns:1.6fr 1fr 1fr 1fr">
       <div class="field">
         <label>평년수확량</label><span class="unit-badge">kg</span>
         <input type="text" id="avg_yield" class="inp" inputmode="decimal" oninput="onComma(this)" onblur="calc()" autocomplete="off">
@@ -677,21 +677,21 @@ function renderVarieties(){
       <div class="vcard-head">
         <div class="vbadge">${i+1}</div>${typeBadge}
       </div>
-      <div class="g2" style="margin-bottom:8px">
+      <div class="g3" style="margin-bottom:8px">
         ${varNameHtml}
         <div class="field"><label>수령</label><span class="unit-badge">년</span>
           <input class="inp tree-field ${v.age!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.age}" oninput="onF(${i},'age',this)">
         </div>
+        <div class="field"><label style="color:var(--sub)">조사대상주</label>
+          <input class="auto" id="v-survey-${i}" readonly>
+        </div>
       </div>
-      <div class="g5" style="margin-bottom:8px">
+      <div class="g4" style="margin-bottom:8px">
         <div class="field"><label>가입주수</label>
           <input class="inp tree-field ${v.reg!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.reg}" oninput="onF(${i},'reg',this)">
         </div>
         <div class="field"><label>실제결과주</label>
           <input class="inp tree-field ${v.actual!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.actual}" oninput="onFsoft(${i},'actual',this)" onblur="onTreeBlur()">
-        </div>
-        <div class="field"><label style="color:var(--sub)">조사대상주</label>
-          <input class="auto" id="v-survey-${i}" readonly>
         </div>
         <div class="field"><label>고사주</label>
           <input class="inp tree-field ${v.dead!==''?'filled':''}" inputmode="numeric" value="${v.dead}" oninput="onFsoft(${i},'dead',this)" onblur="onTreeBlur()">
