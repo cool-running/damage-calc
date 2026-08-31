@@ -103,6 +103,9 @@ body.big-text .tinp{height:52px !important;line-height:48px !important;font-size
 .auto-strip .g2,.auto-strip .g3{margin-bottom:0}
 .tree-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:6px}
 .tree-head{display:flex;align-items:center;justify-content:space-between;margin:10px 0 0}
+.samp-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.samp-badge.samp-cur{background:#E3F2FD;color:#1565C0}
+.samp-badge.samp-proper{background:var(--main-l);color:var(--main-d)}
 .tree-btns{display:flex;align-items:center;gap:6px}
 .tree-mini-btn{width:30px;height:30px;border-radius:7px;background:transparent;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;border:1.5px solid var(--border)}
 .tree-mini-btn.plus{border-color:var(--accent);color:var(--main-d)}
@@ -586,9 +589,9 @@ function renderVarieties(){
     const properStrip=showFruit
       ?`<div class="auto-strip"><div class="g4" style="margin-bottom:0">
           <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
+          <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
           <div class="field"><label style="color:var(--sub)">주당착과<span class="mini-unit">개</span></label><input class="auto" id="v-per-${i}" readonly></div>
           <div class="field"><label style="color:var(--sub)">주당낙과<span class="mini-unit">개</span></label><input class="auto" id="v-pern-${i}" readonly></div>
-          <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
         </div></div>`
       :`<div class="auto-strip"><div class="field" style="margin:0"><label style="color:var(--sub)">조사대상주<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div></div>`;
 
@@ -616,9 +619,13 @@ function renderVarieties(){
       fruitHtml=`
       <div class="tree-head">
         <div class="subtitle" style="margin:0;font-weight:800">표본주별 <span style="color:var(--red)">착과수</span> (개/송이)</div>
-        <div class="tree-btns">
-          <button class="tree-mini-btn minus" onclick="delTree(${i})">－</button>
-          <button class="tree-mini-btn plus" onclick="addTree(${i})">＋</button>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span class="samp-badge samp-cur">표본 <b id="v-sampn-${i}">0</b></span>
+          <span class="samp-badge samp-proper">적정 <b id="v-propern-${i}">0</b></span>
+          <div class="tree-btns">
+            <button class="tree-mini-btn minus" onclick="delTree(${i})">－</button>
+            <button class="tree-mini-btn plus" onclick="addTree(${i})">＋</button>
+          </div>
         </div>
       </div>
       <div class="tree-grid" id="tree-grid-${i}">${chakHtml}</div>
@@ -628,14 +635,18 @@ function renderVarieties(){
 
       ${isWeightLeader(i)
       ? `<div class="subtitle" style="margin-top:10px">과중조사 <span style="font-size:10px;color:var(--hint);font-weight:400">품종별 20개↑, 농지 60개↑ · 소과(30mm이하)=무게×0.8 · 품종마다 조사</span></div>
-      <div class="g3" style="margin-bottom:0">
+      <div class="g4" style="margin-bottom:0">
         <div class="field"><label>표본과실수</label><span class="unit-badge">개</span><input class="inp wt-inp ${(v.fcnt||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.fcnt||''}" oninput="onCommaF(${i},'fcnt',this)" onkeydown="navKey(event,this)"></div>
         <div class="field"><label>정상 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${(v.wN||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.wN?Number(String(v.wN).replace(/,/g,'')).toLocaleString('ko-KR'):''}" oninput="onCommaF(${i},'wN',this)" onkeydown="navKey(event,this)"></div>
+        <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
         <div class="field"><label>소과 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${(v.wS||'')!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.wS?Number(String(v.wS).replace(/,/g,'')).toLocaleString('ko-KR'):''}" oninput="onCommaF(${i},'wS',this)" onkeydown="navKey(event,this)"></div>
       </div>`
       : `<div class="subtitle" style="margin-top:10px;display:flex;align-items:center;gap:6px">
         <span>과중조사</span>
         <span style="font-size:11px;color:var(--main-d);background:var(--main-l);padding:2px 8px;border-radius:8px;font-weight:700">${weightLeaderIndex(i)+1}번과 동일품종 · 과중 공유</span>
+      </div>
+      <div style="max-width:140px">
+        <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
       </div>`}
 
       <div class="dmg-toggle-row ${v.dmgOpen?'on':''}" onclick="toggleDmg(${i})">
@@ -678,16 +689,13 @@ function renderVarieties(){
       <div class="vcard-head">
         <div class="vbadge">${i+1}</div>${typeBadge}
       </div>
-      <div class="g4" style="margin-bottom:8px">
+      <div class="g3" style="margin-bottom:8px">
         <div class="field"><label>숙기</label>
           <select class="inp tree-field ${cat?'filled':''}" onchange="onCat(${i},this)">${sopts}</select>
         </div>
         ${varNameHtml}
         <div class="field"><label>수령</label><span class="unit-badge">년</span>
           <input class="inp tree-field ${v.age!==''?'filled':''}" ${dis} inputmode="numeric" value="${v.age}" oninput="onF(${i},'age',this)">
-        </div>
-        <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label>
-          <input class="auto" id="v-proper-${i}" readonly>
         </div>
       </div>
       <div class="g4" style="margin-bottom:8px">
@@ -1064,6 +1072,8 @@ function calc(){
     const c=r.calc,v=r.v;
     const set=(id,val)=>{const e=$(id);if(e)e.value=val;};
     set(`v-survey-${i}`,r.survey?r.survey.toLocaleString():'');
+    const sb=$(`v-sampn-${i}`); if(sb)sb.textContent=c.sampleCnt||0;
+    const pb=$(`v-propern-${i}`); if(pb)pb.textContent=c.proper||0;
     const nm=$(`v-name-${i}`);
     if(nm){
       const catL=v.cat&&CATS[v.cat]?CATS[v.cat].label:'';

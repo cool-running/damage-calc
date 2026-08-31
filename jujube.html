@@ -117,6 +117,9 @@ body.big-text .auto-strip .field label,body.big-text .g4 .field label,body.big-t
 .scell:focus-within{background:#dceeff;border:2px solid var(--blue)}
 .scell:focus-within .ci{color:var(--blue)}
 .tree-head{display:flex;align-items:center;justify-content:space-between;margin:10px 0 0}
+.samp-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.samp-badge.samp-cur{background:#E3F2FD;color:#1565C0}
+.samp-badge.samp-proper{background:var(--main-l);color:var(--main-d)}
 .fruit-block{position:relative}
 .tree-head-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .half-sw-group{display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -582,20 +585,12 @@ function renderVarieties(){
     // ── 조사대상주/적정표본/주당착과/피해구성률(+사과대추 개당과중) 통합 스트립 ──
     const perUnit=ap?'개':'g';
     const properStrip = showFruit
-      ? (ap
-        ? `<div class="auto-strip"><div class="g5" style="margin-bottom:0">
+      ? `<div class="auto-strip"><div class="g4" style="margin-bottom:0">
             <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
             <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
             <div class="field"><label style="color:var(--sub)">${perLabel}<span class="mini-unit">${perUnit}</span></label><input class="auto" id="v-per-${i}" readonly></div>
             <div class="field"><label style="color:var(--sub)">피해구성<span class="mini-unit">%</span></label><input class="auto" id="v-dmg-${i}" readonly></div>
-            <div class="field"><label style="color:var(--sub)">개당과중${prevAp?'(공유)':''}<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
           </div></div>`
-        : `<div class="auto-strip"><div class="g4" style="margin-bottom:0">
-            <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
-            <div class="field"><label style="color:var(--sub)">적정표본<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
-            <div class="field"><label style="color:var(--sub)">${perLabel}<span class="mini-unit">${perUnit}</span></label><input class="auto" id="v-per-${i}" readonly></div>
-            <div class="field"><label style="color:var(--sub)">피해구성<span class="mini-unit">%</span></label><input class="auto" id="v-dmg-${i}" readonly></div>
-          </div></div>`)
       : `<div class="auto-strip"><div class="g2" style="margin-bottom:0">
           <div class="field"><label style="color:var(--sub)">조사대상<span class="mini-unit">주</span></label><input class="auto" id="v-survey-${i}" readonly></div>
           <div class="field"><label style="color:var(--sub)">적정표본 (예상)<span class="mini-unit">주</span></label><input class="auto" id="v-proper-${i}" readonly></div>
@@ -614,6 +609,8 @@ function renderVarieties(){
       <div class="tree-head">
         <div class="subtitle" style="margin:0;font-weight:800">표본주별 <span style="color:var(--red)">${treeLabelKey}</span></div>
         <div class="tree-head-right">
+          <span class="samp-badge samp-cur">표본 <b id="v-sampn-${i}">0</b></span>
+          <span class="samp-badge samp-proper">적정 <b id="v-propern-${i}">0</b></span>
           ${ap?'':`<div class="half-sw-group">
             <label class="sw" onclick="event.stopPropagation()">
               <input type="checkbox" ${dis} ${v.half?'checked':''} onchange="onHalf(${i},this.checked)">
@@ -630,9 +627,16 @@ function renderVarieties(){
       <div class="tree-grid" id="tree-grid-${i}">${treeHtml}</div>
       <div class="warn" id="v-warn-${i}">⚠ 표본주가 적정표본수보다 부족합니다</div>
       ${ap&&!prevAp?`<div class="subtitle">과중조사 (품종 60개 이상)</div>
-        <div class="g2">
+        <div class="g3">
           <div class="field"><label>표본 과실수</label><span class="unit-badge">개</span><input class="inp wt-inp ${v.fcount!==''?'filled':''}" inputmode="numeric" enterkeyhint="next" value="${v.fcount}" oninput="onF(${i},'fcount',this)" onkeydown="navKey(event,this)"></div>
           <div class="field"><label>총 무게</label><span class="unit-badge">g</span><input class="inp wt-inp ${v.fweight!==''?'filled':''}" inputmode="decimal" enterkeyhint="next" value="${v.fweight}" oninput="onFWeight(${i},this)" onkeydown="navKey(event,this)"></div>
+          <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
+        </div>`
+      :ap&&prevAp?`<div class="subtitle" style="display:flex;align-items:center;gap:6px">
+          <span>과중조사</span><span style="font-size:11px;color:var(--main-d);background:var(--main-l);padding:2px 8px;border-radius:8px;font-weight:700">사과대추 ①번 품종 공유</span>
+        </div>
+        <div style="max-width:140px">
+          <div class="field"><label style="color:var(--sub)">개당과중<span class="mini-unit">g</span></label><input class="auto" id="v-w-${i}" readonly></div>
         </div>`
       :''}
       <div class="dmg-toggle-row ${v.dmgOpen?'on':''}" onclick="toggleDmg(${i})">
@@ -1067,6 +1071,8 @@ function calc(){
     const c=r.calc,v=r.v,ap=r.ap;
     const set=(id,val)=>{const e=$(id);if(e)e.value=val;};
     set(`v-survey-${i}`,r.survey?r.survey.toLocaleString():'');
+    const sb=$(`v-sampn-${i}`); if(sb)sb.textContent=c.sampleCnt||0;
+    const pb=$(`v-propern-${i}`); if(pb)pb.textContent=c.proper||0;
     const nm=$(`v-name-${i}`);
     if(nm){ const base=vBase(v); const ageT=(v.age!==''&&v.age!=null)?` ${v.age}년`:''; nm.textContent=(base||'품종 선택')+ageT; }
     const hs=$(`v-headsub-${i}`);
