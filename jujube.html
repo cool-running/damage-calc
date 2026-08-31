@@ -929,6 +929,7 @@ function computeAll(){
 
     r.calc={proper,F,N,per,dmg,ddmg,weight,yld,uninsLoss,sampleCnt:tv.length};
   });
+  const totalProper=rows.reduce((s,r)=>s+(r.calc.proper||0),0);
 
   totalApplied=r4(totalApplied);
   // 미보상감수량: 피해율 계산에는 반올림 전 원시값(소수점 유지) 사용 — 전산과 동일
@@ -939,7 +940,7 @@ function computeAll(){
   totalUninsLoss=Math.round(rawUninsLoss);                           // 화면 표시는 정수 kg 반올림(202)
   totalYield=Math.floor(totalYield);                                 // 화면 표시는 정수 kg 버림(96)
 
-  return {avgYield,uninsRate,rows,totalSurvey,sampN,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
+  return {avgYield,uninsRate,rows,totalSurvey,sampN,totalProper,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
 }
 
 /* ───────── 품종별 비교 요약표 ───────── */
@@ -974,7 +975,7 @@ function renderCompare(R){
     body+=`<tr><td class="rowlabel vlab">${label}</td><td>${regN}</td><td>${actN}</td><td>${surN}</td><td>${spN}</td><td class="intv">${ivN}</td></tr>`;
   });
   if(n>1){
-    body+=`<tr class="sumrow"><td class="rowlabel">합계</td><td>${R.totalReg?R.totalReg.toLocaleString():'-'}</td><td>${R.totalActual?R.totalActual.toLocaleString():'-'}</td><td>${R.totalSurvey?R.totalSurvey.toLocaleString():'-'}</td><td>${R.sampN?R.sampN+'주':'-'}</td><td>-</td></tr>`;
+    body+=`<tr class="sumrow"><td class="rowlabel">합계</td><td>${R.totalReg?R.totalReg.toLocaleString():'-'}</td><td>${R.totalActual?R.totalActual.toLocaleString():'-'}</td><td>${R.totalSurvey?R.totalSurvey.toLocaleString():'-'}</td><td>${R.totalProper?R.totalProper+'주':'-'}</td><td>-</td></tr>`;
   }
 
   tbl.innerHTML=cols+'<thead>'+head+'</thead><tbody>'+body+'</tbody>';
@@ -1055,7 +1056,7 @@ function renderSampleSummary(R){
 function calc(){
   const R=computeAll();
   $('t-survey').value=R.totalSurvey?R.totalSurvey.toLocaleString():'';
-  $('t-sampleN').value=R.sampN?R.sampN.toLocaleString():'';
+  $('t-sampleN').value=R.totalProper?R.totalProper.toLocaleString():'';
   $('t-reg').value=R.totalReg?R.totalReg.toLocaleString():'';
   $('t-actual').value=R.totalActual?R.totalActual.toLocaleString():'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);

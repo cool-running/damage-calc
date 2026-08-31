@@ -948,6 +948,7 @@ function computeAll(){
     if(proper>0&&tv.length>0&&tv.length<proper)anyShort=true;
     r.calc={proper,F,N,perChak,perNak,weight,dmg,ddmg,yld,uninsLoss,sampleCnt:tv.length};
   });
+  const totalProper=rows.reduce((s,r)=>s+(r.calc.proper||0),0);
 
   totalApplied=r4(totalApplied);
   totalYield=rdown4(totalYield);
@@ -956,7 +957,7 @@ function computeAll(){
   const _ratio=totalApplied>0?(totalApplied-totalYield-totalUninsLoss)/totalApplied:0;
   const rate=totalApplied>0?Math.ceil(Math.round(_ratio*1e6)/1e6*10000)/100:0;
 
-  return {avgYield,uninsRate,rows,totalSurvey,sampN,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
+  return {avgYield,uninsRate,rows,totalSurvey,sampN,totalProper,contractChange,totalApplied,totalYield,totalUninsLoss,rate,anyShort,totalReg,totalActual};
 }
 
 /* ───────── 품종별 비교 요약표 ───────── */
@@ -985,7 +986,7 @@ function renderCompare(R){
     body+=`<tr><td class="rowlabel vlab"><div class="vn">${nm}${ageT}</div></td><td>${regN}</td><td>${actN}</td><td>${surN}</td><td>${spN}</td><td class="intv">${ivN}</td></tr>`;
   });
   if(n>1){
-    body+=`<tr class="sumrow"><td class="rowlabel">합계</td><td>${R.totalReg?R.totalReg.toLocaleString():'-'}</td><td>${R.totalActual?R.totalActual.toLocaleString():'-'}</td><td>${R.totalSurvey?R.totalSurvey.toLocaleString():'-'}</td><td>${R.sampN?R.sampN+'주':'-'}</td><td>-</td></tr>`;
+    body+=`<tr class="sumrow"><td class="rowlabel">합계</td><td>${R.totalReg?R.totalReg.toLocaleString():'-'}</td><td>${R.totalActual?R.totalActual.toLocaleString():'-'}</td><td>${R.totalSurvey?R.totalSurvey.toLocaleString():'-'}</td><td>${R.totalProper?R.totalProper+'주':'-'}</td><td>-</td></tr>`;
   }
   tbl.innerHTML=cols+'<thead>'+head+'</thead><tbody>'+body+'</tbody>';
   const big=document.body.classList.contains('big-text');
@@ -1060,7 +1061,7 @@ function renderSampleSummary(R){
 function calc(){
   const R=computeAll();
   $('t-survey').value=R.totalSurvey?R.totalSurvey.toLocaleString():'';
-  $('t-sampleN').value=R.sampN?R.sampN+'주':'';
+  $('t-sampleN').value=R.totalProper?R.totalProper+'주':'';
   $('t-reg').value=R.totalReg?R.totalReg.toLocaleString()+'주':'';
   $('t-actual').value=R.totalActual?R.totalActual.toLocaleString()+'주':'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);
