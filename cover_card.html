@@ -214,7 +214,7 @@ input[type=range]{flex:1;accent-color:#E05A2B;}
   <div class="input-bar" id="memoInputBar" style="display:none;">
     <div class="input-group">
       <label class="input-lbl">📝 메모 내용</label>
-      <input type="text" id="memoInput" class="input-field" placeholder="예) OOO농가 피해사진" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"/>
+      <input type="text" id="memoInput" class="input-field" placeholder="예) 농지분할 3-1" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"/>
     </div>
   </div>
 
@@ -510,7 +510,7 @@ function openEdit(t){
     inp.value=dateText;inp.placeholder='예) 4월29일';inp.inputMode='text';
   }else if(t==='memo'){
     document.getElementById('editLabel').textContent='📝 메모 입력';
-    inp.value=memoText;inp.placeholder='예) OOO농가 피해사진';inp.inputMode='text';
+    inp.value=memoText;inp.placeholder='예) 농지분할 3-1';inp.inputMode='text';
   }else{
     document.getElementById('editLabel').textContent='🔢 번호 입력 ('+(mode==='field'?'1차 현장':'2차 조사서')+')';
     inp.value=currentNum();inp.placeholder='예) 3';inp.inputMode='numeric';
