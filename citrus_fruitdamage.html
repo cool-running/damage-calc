@@ -426,48 +426,70 @@ body.big-text .hist-btn{height:50px !important}
 
     <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">3. 피해과실수 표본조사</div>
     <table style="width:100%;border-collapse:collapse">
-      <thead><tr>
-        <th class="cap-th" style="white-space:nowrap">표본주</th>
-        <th class="cap-th" style="white-space:nowrap">품종/수령</th>
-        <th class="cap-th" style="white-space:nowrap">등급내</th>
-        <th class="cap-th" style="white-space:nowrap">등급외</th>
-        <th class="cap-th" style="white-space:nowrap">정상과실수</th>
-        <th class="cap-th" style="white-space:nowrap">과실수합계</th>
-      </tr></thead>
+      <thead>
+        <tr>
+          <th class="cap-th" rowspan="2" style="white-space:nowrap">표본주</th>
+          <th class="cap-th" rowspan="2" style="white-space:nowrap">품종/수령</th>
+          <th class="cap-th" colspan="4" style="white-space:nowrap">등급내 피해과실수(A)</th>
+          <th class="cap-th" colspan="4" style="white-space:nowrap">등급외 피해과실수(B)</th>
+          <th class="cap-th" rowspan="2" style="white-space:nowrap">정상<br>과실수(C)</th>
+          <th class="cap-th" rowspan="2" style="white-space:nowrap">과실수합계<br>(A+B+C)</th>
+        </tr>
+        <tr>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">30%형</th>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">50%형</th>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">80%형</th>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">100%형</th>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">30%형</th>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">50%형</th>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">80%형</th>
+          <th class="cap-th" style="white-space:nowrap;font-size:10.5px">100%형</th>
+        </tr>
+      </thead>
       <tbody id="cap-sample-table"></tbody>
       <tfoot><tr>
         <td colspan="2" class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016">합계</td>
-        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-ig">-</td>
-        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-og">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-ig30">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-ig50">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-ig80">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-ig100">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-og30">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-og50">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-og80">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-og100">-</td>
         <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-normal">-</td>
         <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-total">-</td>
       </tr></tfoot>
     </table>
 
-    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">4. 이전 수확전사고</div>
-    <table style="width:40%;border-collapse:collapse" id="cap-prior-box">
+    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">4. 과실손해 피해율</div>
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:8px">
       <thead><tr>
-        <th class="cap-th" style="white-space:nowrap">수확전사고<br>피해율</th>
-        <th class="cap-th" style="white-space:nowrap">수확전사고<br>미보상비율</th>
+        <th class="cap-th" style="white-space:nowrap">피해인정과실수</th>
+        <th class="cap-th" style="white-space:nowrap">등급내<br>피해과실수</th>
+        <th class="cap-th" style="white-space:nowrap">등급외<br>피해과실수</th>
+        <th class="cap-th" style="white-space:nowrap">기준과실수</th>
       </tr></thead>
       <tbody><tr>
-        <td class="cap-td" id="cap-prior-rate">-</td>
-        <td class="cap-td" id="cap-prior-unins">-</td>
+        <td class="cap-td" style="font-weight:700" id="cap-p-total">-</td>
+        <td class="cap-td" style="font-weight:700" id="cap-p-ig">-</td>
+        <td class="cap-td" style="font-weight:700" id="cap-p-og">-</td>
+        <td class="cap-td" style="font-weight:700" id="cap-p-base">-</td>
       </tr></tbody>
     </table>
-
-    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">5. 과실손해 피해율</div>
     <table style="width:100%;border-collapse:collapse;table-layout:fixed">
-      <tbody>
-        <tr style="font-size:11px">
-          <td class="cap-td" style="background:#5B7E3F;color:#fff;font-weight:800;white-space:nowrap">(금차)피해율</td>
-          <td class="cap-td" style="font-weight:800;color:#5B7E3F;font-size:14px;white-space:nowrap" id="cap-pct">-</td>
-          <td class="cap-td" style="background:#EEF2F0;color:#5B7E3F;font-weight:800;white-space:nowrap">(최종)피해율</td>
-          <td class="cap-td" style="font-weight:700;font-size:13px;white-space:nowrap" id="cap-final-pct">-</td>
-          <td class="cap-td" style="background:#EEF2F0;font-weight:700;white-space:nowrap">미보상비율</td>
-          <td class="cap-td" style="white-space:nowrap" id="cap-unins">-</td>
-        </tr>
-      </tbody>
+      <thead><tr>
+        <th class="cap-th" style="white-space:nowrap">과실손해<br>피해율</th>
+        <th class="cap-th" style="white-space:nowrap">최종 수확전<br>과실손해 피해율</th>
+        <th class="cap-th" style="white-space:nowrap">최종<br>과실손해 피해율</th>
+        <th class="cap-th" style="white-space:nowrap">미보상비율</th>
+      </tr></thead>
+      <tbody><tr>
+        <td class="cap-td" style="font-weight:800;color:#5B7E3F;font-size:14px" id="cap-pct">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:700" id="cap-prior-carry">-</td>
+        <td class="cap-td" style="font-weight:800;color:#5B7E3F;font-size:14px" id="cap-final-pct">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:700" id="cap-unins">-</td>
+      </tr></tbody>
     </table>
 
     <div style="margin-top:12px"></div>
@@ -1078,31 +1100,51 @@ function fillCaptureTemplate(){
   }
 
   let rowsHtml=''; let no=1;
-  let sumIG=0, sumOG=0, sumNormal=0, sumTotal=0, sumP=0;
+  let sumIg30=0,sumIg50=0,sumIg80=0,sumIg100=0,sumOg30=0,sumOg50=0,sumOg80=0,sumOg100=0;
+  let sumNormal=0, sumTotal=0, sumP=0, sumIgWeighted=0, sumOgWeighted=0;
   varieties.forEach((v,vi)=>{
     const validSamples = (v.samples||[]).filter(s=>hasSampleData(s));
     const name = v.name || `품종${vi+1}`;
     const label = v.age ? `${name} ${v.age}년` : name;
     validSamples.forEach((s)=>{
-      const ig = numSafe(s.ig30)+numSafe(s.ig50)+numSafe(s.ig80)+numSafe(s.ig100);
-      const og = numSafe(s.og30)+numSafe(s.og50)+numSafe(s.og80)+numSafe(s.og100);
       const total = sampleTotal(s);
-      sumIG+=ig; sumOG+=og; sumNormal+=numSafe(s.normal); sumTotal+=total; sumP+=sampleP(s);
+      sumIg30+=numSafe(s.ig30); sumIg50+=numSafe(s.ig50); sumIg80+=numSafe(s.ig80); sumIg100+=numSafe(s.ig100);
+      sumOg30+=numSafe(s.og30); sumOg50+=numSafe(s.og50); sumOg80+=numSafe(s.og80); sumOg100+=numSafe(s.og100);
+      sumNormal+=numSafe(s.normal); sumTotal+=total; sumP+=sampleP(s);
+      sumIgWeighted += numSafe(s.ig30)*0.3+numSafe(s.ig50)*0.5+numSafe(s.ig80)*0.8+numSafe(s.ig100)*1;
+      sumOgWeighted += numSafe(s.og30)*0.3+numSafe(s.og50)*0.5+numSafe(s.og80)*0.8+numSafe(s.og100)*1;
       rowsHtml+=`<tr>
         <td class="cap-td">${no++}</td>
         <td class="cap-td" style="background:#EEF2F0;font-weight:700;color:#2d5016">${label}</td>
-        <td class="cap-td">${ig.toLocaleString()}</td>
-        <td class="cap-td">${og.toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.ig30).toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.ig50).toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.ig80).toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.ig100).toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.og30).toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.og50).toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.og80).toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.og100).toLocaleString()}</td>
         <td class="cap-td">${numSafe(s.normal).toLocaleString()}</td>
         <td class="cap-td">${total.toLocaleString()}</td>
       </tr>`;
     });
   });
-  document.getElementById('cap-sample-table').innerHTML = rowsHtml || '<tr><td colspan="6" class="cap-td" style="color:#999">표본 데이터 없음</td></tr>';
-  document.getElementById('cap-foot-ig').textContent = sumTotal>0?sumIG.toLocaleString():'-';
-  document.getElementById('cap-foot-og').textContent = sumTotal>0?sumOG.toLocaleString():'-';
+  document.getElementById('cap-sample-table').innerHTML = rowsHtml || '<tr><td colspan="12" class="cap-td" style="color:#999">표본 데이터 없음</td></tr>';
+  document.getElementById('cap-foot-ig30').textContent = sumTotal>0?sumIg30.toLocaleString():'-';
+  document.getElementById('cap-foot-ig50').textContent = sumTotal>0?sumIg50.toLocaleString():'-';
+  document.getElementById('cap-foot-ig80').textContent = sumTotal>0?sumIg80.toLocaleString():'-';
+  document.getElementById('cap-foot-ig100').textContent = sumTotal>0?sumIg100.toLocaleString():'-';
+  document.getElementById('cap-foot-og30').textContent = sumTotal>0?sumOg30.toLocaleString():'-';
+  document.getElementById('cap-foot-og50').textContent = sumTotal>0?sumOg50.toLocaleString():'-';
+  document.getElementById('cap-foot-og80').textContent = sumTotal>0?sumOg80.toLocaleString():'-';
+  document.getElementById('cap-foot-og100').textContent = sumTotal>0?sumOg100.toLocaleString():'-';
   document.getElementById('cap-foot-normal').textContent = sumTotal>0?sumNormal.toLocaleString():'-';
   document.getElementById('cap-foot-total').textContent = sumTotal>0?sumTotal.toLocaleString():'-';
+
+  document.getElementById('cap-p-total').textContent = sumTotal>0?sumP.toFixed(2):'-';
+  document.getElementById('cap-p-ig').textContent = sumTotal>0?sumIgWeighted.toFixed(2):'-';
+  document.getElementById('cap-p-og').textContent = sumTotal>0?sumOgWeighted.toFixed(2):'-';
+  document.getElementById('cap-p-base').textContent = sumTotal>0?sumTotal.toLocaleString():'-';
 
   const uninsRate = Math.min(numSafe(document.getElementById('unins_rate').value)/100, 0.99);
   const priorRateRaw = numSafe(document.getElementById('prior_rate').value);
@@ -1110,8 +1152,8 @@ function fillCaptureTemplate(){
   const priorRate = priorRateRaw/100;
   const priorUnins = Math.min(priorUninsRaw/100, 0.99);
 
-  document.getElementById('cap-prior-rate').textContent = priorRateRaw?priorRateRaw+'%':'-';
-  document.getElementById('cap-prior-unins').textContent = priorUninsRaw?priorUninsRaw+'%':'-';
+  const aCarry = priorRate/(1-priorUnins);
+  document.getElementById('cap-prior-carry').textContent = isFinite(aCarry) ? roundUpPct(aCarry)+'%' : '0%';
 
   let finalDisp='- -', curDisp='- -';
   if(sumTotal>0){
