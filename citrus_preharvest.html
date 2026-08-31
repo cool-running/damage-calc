@@ -367,7 +367,7 @@ body.big-text .hist-btn{height:50px !important}
     </div>
 
     <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">1. 기본정보</div>
-    <table style="width:100%;border-collapse:collapse">
+    <table style="width:40%;border-collapse:collapse">
       <thead><tr>
         <th class="cap-th">가입면적</th>
         <th class="cap-th">가입주수</th>
@@ -1128,8 +1128,7 @@ function fillCaptureTemplate(){
   varieties.forEach((v,vi)=>{
     const validSamples = (v.samples||[]).filter(s=>s.damaged!=='' || s.normal!=='' || (multiSurveyMode && (s.prevDamaged!=='' || s.prevNormal!=='')));
     const name = v.name || `품종${vi+1}`;
-    const shortName = name==='기타(온주밀감)' ? '기타' : name;
-    const label = v.age ? `${shortName} ${v.age}년` : shortName;
+    const label = v.age ? `${name} ${v.age}년` : name;
     validSamples.forEach((s,si)=>{
       totalSum+=numSafe(s.total); damagedSum+=numSafe(s.damaged); normalSum+=numSafe(s.normal);
       prevDamagedSum+=numSafe(s.prevDamaged); prevNormalSum+=numSafe(s.prevNormal);
