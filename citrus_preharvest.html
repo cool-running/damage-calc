@@ -1139,22 +1139,23 @@ function fillCaptureTemplate(){
   varieties.forEach((v,vi)=>{
     const validSamples = (v.samples||[]).filter(s=>s.damaged!=='' || s.normal!=='' || (multiSurveyMode && (s.prevDamaged!=='' || s.prevNormal!=='')));
     const name = v.name || `품종${vi+1}`;
-    const label = v.age ? `${name} ${v.age}년` : name;
+    const shortName = name==='기타(온주밀감)' ? '기타' : name;
+    const label = v.age ? `${shortName} ${v.age}년` : shortName;
     validSamples.forEach((s,si)=>{
       totalSum+=numSafe(s.total); damagedSum+=numSafe(s.damaged); normalSum+=numSafe(s.normal);
       prevDamagedSum+=numSafe(s.prevDamaged); prevNormalSum+=numSafe(s.prevNormal);
       rowsHtml+=`<tr>
         <td style="padding:8px 3px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${no++}</td>
-        <td style="padding:8px 3px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:10.5px;color:#5B7E3F">${label}</td>`;
+        <td style="padding:8px 3px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:10.5px;color:#5B7E3F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0">${label}</td>`;
       if(multiSurveyMode){
         rowsHtml+=`
-        <td style="padding:7px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#FBF2DC;font-size:10.5px;color:#7a5c00">${numSafe(s.prevDamaged).toLocaleString()}</td>`;
+        <td style="padding:7px 1px;border-right:1px solid #C9A227;border-top:1px solid #eee;text-align:center;background:#FBF2DC;font-size:10.5px;color:#7a5c00">${numSafe(s.prevDamaged).toLocaleString()}</td>`;
       }
       rowsHtml+=`
         <td style="padding:8px 3px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.damaged).toLocaleString()}</td>`;
       if(multiSurveyMode){
         rowsHtml+=`
-        <td style="padding:7px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#FBF2DC;font-size:10.5px;color:#7a5c00">${numSafe(s.prevNormal).toLocaleString()}</td>`;
+        <td style="padding:7px 1px;border-right:1px solid #C9A227;border-top:1px solid #eee;text-align:center;background:#FBF2DC;font-size:10.5px;color:#7a5c00">${numSafe(s.prevNormal).toLocaleString()}</td>`;
       }
       rowsHtml+=`
         <td style="padding:8px 3px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:11px">${numSafe(s.normal).toLocaleString()}</td>
@@ -1180,9 +1181,9 @@ function fillCaptureTemplate(){
     </tr>`;
     document.getElementById('cap-sample-tfoot').innerHTML = `<tr>
       <td colspan="2" style="padding:8px 3px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">합계</td>
-      <td style="padding:7px 1px;background:#FBF2DC;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#7a5c00">${totalSum>0?prevDamagedSum.toLocaleString():'-'}</td>
+      <td style="padding:7px 1px;background:#FBF2DC;border-right:1px solid #C9A227;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#7a5c00">${totalSum>0?prevDamagedSum.toLocaleString():'-'}</td>
       <td style="padding:8px 3px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">${totalSum>0?damagedSum.toLocaleString():'-'}</td>
-      <td style="padding:7px 1px;background:#FBF2DC;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#7a5c00">${totalSum>0?prevNormalSum.toLocaleString():'-'}</td>
+      <td style="padding:7px 1px;background:#FBF2DC;border-right:1px solid #C9A227;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#7a5c00">${totalSum>0?prevNormalSum.toLocaleString():'-'}</td>
       <td style="padding:8px 3px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">${totalSum>0?normalSum.toLocaleString():'-'}</td>
       <td style="padding:8px 3px;background:#eef3e7;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:10px;color:#5B7E3F">${totalSum>0?totalSum.toLocaleString():'-'}</td>
     </tr>`;
