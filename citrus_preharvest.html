@@ -103,7 +103,7 @@ select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-w
 input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(127,173,82,0.25)}
 
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap}
 .datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
@@ -170,14 +170,14 @@ body.big-text .hist-btn{height:50px !important}
 .samp-tbl tbody td input{width:100%;height:32px;border:1.5px solid var(--binp);border-radius:6px;text-align:center;font-size:12px;background:white;-webkit-appearance:none;box-sizing:border-box;color:var(--text)}
 .samp-tbl tbody td input.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .samp-tbl tbody td input.auto-cell{border:0.5px solid var(--border);background:var(--auto);color:var(--sub);font-weight:600}
-.samp-tbl tfoot td{padding:7px 2px;background:#eef3e7;font-weight:800;font-size:11px;text-align:center;border-top:1.5px solid var(--blue2);color:var(--blue)}
+.samp-tbl tfoot td{padding:8px 2px;background:#eef3e7;font-weight:800;font-size:13px;text-align:center;border-top:1.5px solid var(--blue2);color:var(--blue)}
 .samp-tbl.multi thead th{font-size:9px;line-height:1.25;padding:6px 1px}
 .samp-tbl.multi tbody td{padding:2px 1px}
 .samp-tbl.multi tbody td.vname-cell span{font-size:9.5px;min-height:34px}
 .samp-tbl.multi tbody td input{height:34px;font-size:12.5px;font-weight:800;padding:0 1px}
 .samp-tbl.multi tbody td input.prev{background:#f5f2ea;border-color:#D9C79E;color:#8a6d2f}
 .samp-tbl.multi tbody td input.prev.filled{background:#FBF2DC;border-color:#C9A227;color:#7a5c00;font-weight:800}
-.samp-tbl.multi tfoot td{padding:7px 1px;font-size:10px}
+.samp-tbl.multi tfoot td{padding:8px 1px;font-size:11.5px}
 
 .guide{text-align:center;padding:16px 0;font-size:13px;color:var(--hint)}
 
@@ -371,7 +371,7 @@ body.big-text .hist-btn{height:50px !important}
           <colgroup><col style="width:25%"><col style="width:25%"></colgroup>
           <thead><tr>
             <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">가입면적</th>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">총실제결과주수</th>
+            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">가입주수</th>
           </tr></thead>
           <tbody><tr>
             <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-area">-</td>
@@ -391,6 +391,11 @@ body.big-text .hist-btn{height:50px !important}
             <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">적정표본주수</th>
           </tr></thead>
           <tbody id="cap-variety-table"></tbody>
+          <tfoot><tr>
+            <td colspan="2" style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11.5px;color:#5B7E3F">합계</td>
+            <td style="padding:6px 2px;background:#eef3e7;border-right:1px solid #d1d5db;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11.5px;color:#5B7E3F" id="cap-variety-foot-trees">-</td>
+            <td style="padding:6px 2px;background:#eef3e7;border-top:1.5px solid #7FAD52;text-align:center;font-weight:800;font-size:11.5px;color:#5B7E3F" id="cap-variety-foot-proper">-</td>
+          </tr></tfoot>
         </table>
       </div>
 
@@ -1120,6 +1125,14 @@ function fillCaptureTemplate(){
       <td style="padding:7px 2px;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.proper||'-'}</td>
     </tr>`;
   }).join('');
+  {
+    let treesFootSum=0, properFootSum=0;
+    varieties.forEach(v=>{ treesFootSum+=numSafe(v.trees); properFootSum+=numSafe(v.proper); });
+    const treesFootEl = document.getElementById('cap-variety-foot-trees');
+    const properFootEl = document.getElementById('cap-variety-foot-proper');
+    if(treesFootEl) treesFootEl.textContent = treesFootSum>0?treesFootSum.toLocaleString():'-';
+    if(properFootEl) properFootEl.textContent = properFootSum>0?properFootSum.toLocaleString():'-';
+  }
 
   let rowsHtml=''; let no=1;
   let totalSum=0,damagedSum=0,normalSum=0,prevDamagedSum=0,prevNormalSum=0;
