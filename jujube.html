@@ -296,7 +296,7 @@ body.big-text .scell .ci{font-size:19px!important}
       <div class="g3" style="margin-bottom:0">
         <div class="field"><label style="color:var(--sub)">조사대상주수</label><input class="auto" id="t-survey" readonly></div>
         <div class="field"><label style="color:var(--sub)">표본주수</label><input class="auto" id="t-sampleN" readonly></div>
-        <div class="field"><label style="color:var(--sub)">계약변경</label><input class="auto" id="t-contract" readonly></div>
+        <div class="field"><label style="color:var(--sub)">계약변경여부</label><input class="auto" id="t-contract" readonly></div>
       </div>
     </div>
   </div>
@@ -1054,8 +1054,8 @@ function calc(){
   $('t-reg').value=R.totalReg?R.totalReg.toLocaleString()+'주':'';
   $('t-actual').value=R.totalActual?R.totalActual.toLocaleString()+'주':'';
   const hasReg=R.rows.some(r=>r.reg>0&&r.actual>0);
-  $('t-contract').value=hasReg?(R.contractChange?'변경':'이상무'):'';
-  $('t-contract').style.color=R.contractChange?'var(--red)':'var(--main)';
+  $('t-contract').value=hasReg?(R.contractChange?'여':'부'):'';
+  $('t-contract').style.color=R.contractChange?'var(--red)':'var(--green)';
 
   R.rows.forEach((r,i)=>{
     const c=r.calc,v=r.v,ap=r.ap;
