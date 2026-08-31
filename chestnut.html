@@ -1160,6 +1160,7 @@ function toggleBigText(){
   const on=document.body.classList.contains('big-text');
   $('bigtext-btn').classList.toggle('on',on);
   $('bigtext-label').textContent=on?'원래대로':'크게';
+  try{localStorage.setItem('chestnut_bigtext',on?'1':'0');}catch(e){}
   calc();
 }
 
@@ -1501,6 +1502,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('btn-edit').classList.remove('active');$('btn-calc').classList.add('active');
     $('hdrState').className='hdr-state locked';$('hdrState').textContent='🔒 계산 완료';
   }
+  try{
+    if(localStorage.getItem('chestnut_bigtext')==='1'){
+      document.body.classList.add('big-text');
+      $('bigtext-btn').classList.add('on');
+      $('bigtext-label').textContent='원래대로';
+      calc();
+    }
+  }catch(e){}
   window.addEventListener('resize',()=>{try{calc();}catch(e){}});
   // ── 입력칸 포커스 ──
   // 모바일: 실제 선택영역을 만들면 안드로이드 잘라내기/복사 툴바가 뜨므로,
