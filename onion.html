@@ -176,6 +176,7 @@ body.big-text input.auto{
 body.big-text .field label{
   font-size:13px !important;
 }
+body.big-text .unit-hide-bigtext{display:none !important}
 body.big-text tbody td input{
   height:44px !important;
   font-size:16px !important;
@@ -435,31 +436,28 @@ tbody td input.filled:active{
           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('harvest_date').focus()}" autocomplete="off">
       </div>
     </div>
-    <!-- 자동계산 3+2 -->
-    <div style="background:#FBFAF6;border:0.5px solid var(--border);border-radius:12px;padding:10px 10px 6px;margin-top:8px">
-      <div class="g3" style="margin-bottom:0">
-        <div class="field">
-          <label style="color:#4a7aad">조사대상면적</label>
-          <input type="text" id="survey_area_disp" class="auto" readonly>
-        </div>
-        <div class="field">
-          <label style="color:#4a7aad">조사수확량</label>
-          <input type="text" id="area_err_disp" class="auto" readonly>
-        </div>
-        <div class="field">
-          <label style="color:#4a7aad">계약변경여부</label>
-          <input type="text" id="contract_yn_disp" class="auto" readonly>
-        </div>
+    <div class="g3">
+      <div class="field">
+        <label>조사대상면적 <span class="unit-hide-bigtext" style="font-weight:400;color:var(--hint);font-size:10px">㎡</span></label>
+        <input type="text" id="survey_area_disp" class="auto" readonly>
       </div>
-      <div class="g2">
-        <div class="field">
-          <label style="color:#4a7aad">㎡당 평년수확량</label>
-          <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
-        </div>
-        <div class="field">
-          <label style="color:#4a7aad">㎡당 조사수확량</label>
-          <input type="text" id="surv_unit_disp" class="auto" readonly placeholder="-">
-        </div>
+      <div class="field">
+        <label>조사수확량 <span class="unit-hide-bigtext" style="font-weight:400;color:var(--hint);font-size:10px">kg</span></label>
+        <input type="text" id="area_err_disp" class="auto" readonly>
+      </div>
+      <div class="field">
+        <label>계약변경여부</label>
+        <input type="text" id="contract_yn_disp" class="auto" readonly>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field">
+        <label>㎡당 평년수확량</label>
+        <input type="text" id="avg_unit_disp" class="auto" readonly placeholder="-">
+      </div>
+      <div class="field">
+        <label>㎡당 조사수확량</label>
+        <input type="text" id="surv_unit_disp" class="auto" readonly placeholder="-">
       </div>
     </div>
   </div>
@@ -1149,7 +1147,7 @@ function calc(){
   const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const areaErr=insArea>0?(areaErrNum*100).toFixed(2):'-';
-  document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString()+' ㎡':'';
+  document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString():'';
   document.getElementById('area_err_disp').value='';
 
   // 계약변경여부 표시
@@ -1251,7 +1249,7 @@ function calc(){
   document.getElementById('r-avg-unit').textContent=actArea>0?(effAvg/actArea).toFixed(4)+' kg/㎡':'-';
   document.getElementById('r-coeff').textContent={onion:'1.00(양파)',garlic_s:'0.72(난지형)',garlic_n:'0.70(한지형)'}[crop];
   document.getElementById('r-surv').textContent=totalYield.toLocaleString('ko-KR')+' kg';
-  document.getElementById('area_err_disp').value=totalYield.toLocaleString('ko-KR')+' kg';
+  document.getElementById('area_err_disp').value=totalYield.toLocaleString('ko-KR');
   document.getElementById('r-est').textContent=estYield.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
   document.getElementById('r-unins').textContent=uninsLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
   document.getElementById('r-loss').textContent=netLoss.toLocaleString('ko-KR',{maximumFractionDigits:1})+' kg';
@@ -1736,7 +1734,7 @@ function restoreAndRecalc(){
     const harvArea=parseFloat(document.getElementById('harv_area').value)||0;
     const surveyArea=Math.max(0,actArea-deadArea-otherArea-harvArea);
     const areaErr=insArea>0?((actArea-insArea)/insArea*100).toFixed(2):'-';
-    document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString()+' ㎡':'';
+    document.getElementById('survey_area_disp').value=surveyArea>0?surveyArea.toLocaleString():'';
     document.getElementById('area_err_disp').value='';
 
     if(samples.length>0){
