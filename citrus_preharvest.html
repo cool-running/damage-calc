@@ -95,7 +95,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 
-input.inp,select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+input.inp,select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center}
 select.inp{text-align-last:center;direction:ltr}
 input.inp::placeholder{color:var(--hint);text-align:center}
 input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
@@ -103,7 +103,7 @@ select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-w
 input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(127,173,82,0.25)}
 
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
@@ -123,7 +123,7 @@ body.big-text input.inp,body.big-text select.inp{height:50px !important;font-siz
 body.big-text input.auto{height:50px !important;font-size:17px !important;font-weight:600 !important}
 body.big-text .field label{font-size:13px !important}
 body.big-text .samp-tbl input{height:40px !important;font-size:15px !important;font-weight:700 !important}
-body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
 body.big-text .hist-btn{height:50px !important}
 
 
@@ -750,12 +750,24 @@ function recalcSampleCounts(){
   const tier = getAreaTier(area);
   let totalTrees = 0;
   varieties.forEach(v=>{ v.treesNum = numSafe(v.trees); totalTrees += v.treesNum; });
+
+  if(totalTrees>0 && tier>0){
+    // 최대잔여법(Hamilton apportionment): 품종별 배분 합계가 구간표본수(tier)를 초과하지 않도록 배분
+    const shares = varieties.map(v=>{
+      const exact = v.treesNum>0 ? tier * (v.treesNum/totalTrees) : 0;
+      return { v, floor: Math.floor(exact), remainder: exact - Math.floor(exact) };
+    });
+    const allocated = shares.reduce((sum,s)=>sum+s.floor,0);
+    let remaining = tier - allocated;
+    const order = shares.filter(s=>s.v.treesNum>0)
+      .sort((a,b)=> b.remainder - a.remainder || b.v.treesNum - a.v.treesNum);
+    for(let i=0;i<remaining && i<order.length;i++){ order[i].floor += 1; }
+    shares.forEach(s=>{ s.v.proper = s.v.treesNum>0 ? s.floor : 0; });
+  } else {
+    varieties.forEach(v=>{ v.proper = 0; });
+  }
+
   varieties.forEach(v=>{
-    if(totalTrees>0 && v.treesNum>0){
-      v.proper = Math.ceil(tier * (v.treesNum/totalTrees));
-    } else {
-      v.proper = 0;
-    }
     if(!v.samples) v.samples = [];
     if(!v.samplesManual){ resizeSamples(v, v.proper); }
   });
@@ -1009,8 +1021,7 @@ function calcTotals(){
   const finalPctEl = document.getElementById('result-final-pct');
 
   if(totalSum>0){
-    const curDenom = damagedSum+normalSum;
-    let curPct = curDenom>0 ? (damagedSum/curDenom)*(1-uninsRate) : 0;
+    let curPct = (damagedSum/totalSum)*(1-uninsRate);
     if(curPct<0) curPct=0;
 
     let finalPct = multiSurveyMode ? (prevDamagedSum+damagedSum)/totalSum*(1-uninsRate) : curPct;
@@ -1181,14 +1192,13 @@ function fillCaptureTemplate(){
   }
 
   const uninsRate = numSafe(document.getElementById('unins_rate').value);
-  const curDenom = damagedSum+normalSum;
-  let curPct = curDenom>0 ? (damagedSum/curDenom)*(1-uninsRate/100) : 0;
+  let curPct = totalSum>0 ? (damagedSum/totalSum)*(1-uninsRate/100) : 0;
   if(curPct<0) curPct=0;
   let finalPct = multiSurveyMode && totalSum>0 ? (prevDamagedSum+damagedSum)/totalSum*(1-uninsRate/100) : curPct;
   if(finalPct<0) finalPct=0;
 
-  document.getElementById('cap-final-pct').textContent = curDenom>0 ? roundUpPct(finalPct)+'%' : '- -';
-  document.getElementById('cap-pct').textContent = curDenom>0 ? roundUpPct(curPct)+'%' : '- -';
+  document.getElementById('cap-final-pct').textContent = totalSum>0 ? roundUpPct(finalPct)+'%' : '- -';
+  document.getElementById('cap-pct').textContent = totalSum>0 ? roundUpPct(curPct)+'%' : '- -';
   document.getElementById('cap-unins').textContent = uninsRate?uninsRate+'%':'0%';
 }
 
