@@ -86,7 +86,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 .field{display:flex;flex-direction:column;gap:3px;position:relative}
 .field label{font-size:11px;color:var(--sub);font-weight:500}
 
-input.inp,select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+input.inp,select.inp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;-webkit-appearance:none;transition:background 0.15s,border-color 0.15s;text-align:center}
 select.inp{text-align-last:center;direction:ltr}
 input.inp::placeholder{color:var(--hint);text-align:center}
 input.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
@@ -94,7 +94,7 @@ select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-w
 input.inp:focus,select.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(127,173,82,0.25)}
 
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
@@ -114,7 +114,7 @@ body.big-text input.inp,body.big-text select.inp{height:50px !important;font-siz
 body.big-text input.auto{height:50px !important;font-size:17px !important;font-weight:600 !important}
 body.big-text .field label{font-size:13px !important}
 body.big-text .dmg-input{height:38px !important;font-size:14px !important;font-weight:700 !important}
-body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.big-text .datewrap .date-disp{height:50px;font-size:16px;font-weight:800}
 body.big-text .hist-btn{height:50px !important}
 
 
@@ -152,6 +152,8 @@ body.big-text .hist-btn{height:50px !important}
 .mini-info strong{color:var(--text);font-size:12px}
 
 /* 과실 등급판정 카드 */
+.cap-th{background:var(--blue);color:#fff;font-size:12px;font-weight:700;padding:7px 4px;border:1px solid #cfd8e0;text-align:center}
+.cap-td{font-size:12px;padding:6px 4px;border:1px solid #cfd8e0;text-align:center;background:#fff;color:#111}
 .dmg-card{background:#fafaf8;border:1px solid var(--border);border-radius:10px;padding:9px;margin-bottom:8px}
 .dmg-card-head-top{display:flex;align-items:center;gap:6px;margin-bottom:8px}
 .dmg-no{width:18px;height:18px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
@@ -364,118 +366,111 @@ body.big-text .hist-btn{height:50px !important}
 
   <!-- 결과 -->
   <div class="result-box pending" id="result-section">
-    <div style="display:flex;align-items:center;padding:14px 0">
-      <div style="padding-right:12px;flex-shrink:0">
-        <span style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:500;letter-spacing:0.04em">최종<br>피해율</span>
+    <div style="display:flex;align-items:center;padding:13px 6px">
+      <div style="flex:1;text-align:center;min-width:0">
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:3px;white-space:nowrap">금차피해율</div>
+        <div id="result-pct" style="font-size:19px;font-weight:800;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</div>
       </div>
-      <div style="width:1px;height:34px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
-      <div style="padding:0 12px;flex:1;min-width:0">
-        <span id="result-pct" style="font-size:26px;font-weight:700;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</span>
+      <div style="width:1px;height:32px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
+      <div style="flex:1;text-align:center;min-width:0">
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:3px;white-space:nowrap">최종피해율</div>
+        <div id="result-final-pct" style="font-size:19px;font-weight:800;color:#FFE9C7;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</div>
       </div>
-      <div style="width:1px;height:34px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
-      <div style="padding-left:12px;flex-shrink:0">
+      <div style="width:1px;height:32px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
+      <div style="padding-left:10px;flex-shrink:0">
         <button class="save-btn" onclick="saveImage()"><span style="font-size:14px">📷</span><span>갤러리 저장</span></button>
       </div>
     </div>
-    <div id="cur-rate-disp" style="text-align:center;font-size:11px;color:rgba(255,255,255,0.75);padding-bottom:10px;margin-top:-6px"></div>
   </div>
 
 
 </div>
 
 <!-- 갤러리 저장용 캡처 템플릿 -->
-<div id="capture-template" style="position:fixed;left:-99999px;top:0;width:430px;min-height:600px;background:#f3f4f6;padding:0;z-index:-1">
-  <div style="min-height:600px;background:linear-gradient(180deg,#2f4a1f 0%,#5B7E3F 10%,#f3f4f6 10%,#f3f4f6 100%);padding:0 16px 24px;box-sizing:border-box">
-    <div style="height:26px"></div>
-    <div style="display:flex;align-items:baseline;gap:10px;color:#fff;margin-bottom:14px;white-space:nowrap">
-      <span id="cap-date-disp" style="font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:0.3px;line-height:1"></span>
-      <span id="cap-contractor-farmno-disp" style="font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:0.3px;line-height:1"></span>
-      <span style="font-size:13px;font-weight:700;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;line-height:1">🍊 감귤 과실손해조사 결과</span>
+<div id="capture-template" style="position:fixed;left:-99999px;top:0;width:680px;background:#fff;padding:0;z-index:-1">
+  <div style="background:#fff;padding:20px;font-family:-apple-system,'Noto Sans KR',sans-serif;width:100%;box-sizing:border-box">
+
+    <div style="background:#5B7E3F;color:#fff;border-radius:12px;padding:11px 14px;display:flex;align-items:baseline;gap:10px;white-space:nowrap">
+      <span id="cap-date-disp" style="font-size:12.5px;font-weight:700;flex-shrink:0"></span>
+      <span id="cap-contractor-farmno-disp" style="font-size:12.5px;font-weight:700;flex-shrink:0;letter-spacing:0.4px"></span>
+      <span style="font-size:13.5px;font-weight:800;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis">🍊 감귤 과실손해조사 결과</span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
 
-      <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
-        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">1. 기본정보</div>
-        <table style="width:50%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:25%"><col style="width:25%"></colgroup>
-          <thead><tr>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">가입면적</th>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:11px;font-weight:700;text-align:center">총실제결과주수</th>
-          </tr></thead>
-          <tbody><tr>
-            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-area">-</td>
-            <td style="padding:7px 4px;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-trees">-</td>
-          </tr></tbody>
-        </table>
-      </div>
+    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">1. 기본정보</div>
+    <table style="width:40%;border-collapse:collapse">
+      <thead><tr>
+        <th class="cap-th">가입면적</th>
+        <th class="cap-th">가입주수</th>
+      </tr></thead>
+      <tbody><tr>
+        <td class="cap-td" id="cap-area">-</td>
+        <td class="cap-td" id="cap-trees">-</td>
+      </tr></tbody>
+    </table>
 
-      <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
-        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">2. 나무조사</div>
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
-          <thead><tr>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">품종</th>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">수령</th>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">실제결과주수</th>
-            <th style="padding:7px 2px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:10.5px;font-weight:700;text-align:center">적정표본주수</th>
-          </tr></thead>
-          <tbody id="cap-variety-table"></tbody>
-        </table>
-      </div>
+    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">2. 나무조사</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th class="cap-th">품종</th>
+        <th class="cap-th">수령</th>
+        <th class="cap-th">실제결과주수</th>
+        <th class="cap-th">적정표본주수</th>
+      </tr></thead>
+      <tbody id="cap-variety-table"></tbody>
+      <tfoot><tr>
+        <td colspan="2" class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016">합계</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-variety-foot-trees">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-variety-foot-proper">-</td>
+      </tr></tfoot>
+    </table>
 
-      <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
-        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">3. 피해과실수 표본조사</div>
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:9%"><col style="width:23%"><col style="width:17%"><col style="width:17%"><col style="width:17%"><col style="width:17%"></colgroup>
-          <thead><tr>
-            <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">표본주</th>
-            <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">품종/수령</th>
-            <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">등급내</th>
-            <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">등급외</th>
-            <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">정상<br>과실수</th>
-            <th style="padding:6px 1px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">합계</th>
-          </tr></thead>
-          <tbody id="cap-sample-table"></tbody>
-        </table>
-      </div>
+    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">3. 피해과실수 표본조사</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th class="cap-th" style="white-space:nowrap">표본주</th>
+        <th class="cap-th" style="white-space:nowrap">품종/수령</th>
+        <th class="cap-th" style="white-space:nowrap">등급내</th>
+        <th class="cap-th" style="white-space:nowrap">등급외</th>
+        <th class="cap-th" style="white-space:nowrap">정상과실수</th>
+        <th class="cap-th" style="white-space:nowrap">과실수합계</th>
+      </tr></thead>
+      <tbody id="cap-sample-table"></tbody>
+      <tfoot><tr>
+        <td colspan="2" class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016">합계</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-ig">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-og">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-normal">-</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:800;color:#2d5016" id="cap-foot-total">-</td>
+      </tr></tfoot>
+    </table>
 
-      <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)" id="cap-prior-box">
-        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">4. 이전 수확전사고</div>
-        <table style="width:50%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:25%"><col style="width:25%"></colgroup>
-          <thead><tr>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">수확전사고<br>피해율</th>
-            <th style="padding:7px 4px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">수확전사고<br>미보상비율</th>
-          </tr></thead>
-          <tbody><tr>
-            <td style="padding:7px 4px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-prior-rate">-</td>
-            <td style="padding:7px 4px;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-prior-unins">-</td>
-          </tr></tbody>
-        </table>
-      </div>
+    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">4. 이전 수확전사고</div>
+    <table style="width:40%;border-collapse:collapse" id="cap-prior-box">
+      <thead><tr>
+        <th class="cap-th" style="white-space:nowrap">수확전사고<br>피해율</th>
+        <th class="cap-th" style="white-space:nowrap">수확전사고<br>미보상비율</th>
+      </tr></thead>
+      <tbody><tr>
+        <td class="cap-td" id="cap-prior-rate">-</td>
+        <td class="cap-td" id="cap-prior-unins">-</td>
+      </tr></tbody>
+    </table>
 
-      <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.05)">
-        <div style="font-size:15px;font-weight:900;color:#111;margin-bottom:10px">5. 과실손해 피해율</div>
-        <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid #d1d5db;table-layout:fixed">
-          <colgroup><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
-          <thead><tr>
-            <th style="padding:7px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">최종<br>피해율</th>
-            <th style="padding:7px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">금차<br>피해율</th>
-            <th style="padding:7px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">미보상<br>비율</th>
-            <th style="padding:7px 1px;background:#5B7E3F;color:#fff;border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">피해인정<br>과실수</th>
-            <th style="padding:7px 1px;background:#5B7E3F;color:#fff;border-bottom:1px solid #d1d5db;font-size:9.5px;font-weight:700;text-align:center">과실수<br>합계</th>
-          </tr></thead>
-          <tbody><tr>
-            <td style="padding:7px 1px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-pct">-</td>
-            <td style="padding:7px 1px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:11px" id="cap-cur-pct">-</td>
-            <td style="padding:7px 1px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-unins">-</td>
-            <td style="padding:7px 1px;border-right:1px solid #d1d5db;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-p">-</td>
-            <td style="padding:7px 1px;text-align:center;background:#fff;font-weight:700;font-size:12px" id="cap-total">-</td>
-          </tr></tbody>
-        </table>
-      </div>
+    <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">5. 과실손해 피해율</div>
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed">
+      <tbody>
+        <tr style="font-size:11px">
+          <td class="cap-td" style="background:#5B7E3F;color:#fff;font-weight:800;white-space:nowrap">(금차)피해율</td>
+          <td class="cap-td" style="font-weight:800;color:#5B7E3F;font-size:14px;white-space:nowrap" id="cap-pct">-</td>
+          <td class="cap-td" style="background:#EEF2F0;color:#5B7E3F;font-weight:800;white-space:nowrap">(최종)피해율</td>
+          <td class="cap-td" style="font-weight:700;font-size:13px;white-space:nowrap" id="cap-final-pct">-</td>
+          <td class="cap-td" style="background:#EEF2F0;font-weight:700;white-space:nowrap">미보상비율</td>
+          <td class="cap-td" style="white-space:nowrap" id="cap-unins">-</td>
+        </tr>
+      </tbody>
+    </table>
 
-    </div>
+    <div style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -972,7 +967,7 @@ function calcTotals(){
 
   const resultBox = document.getElementById('result-section');
   const pctEl = document.getElementById('result-pct');
-  const curRateEl = document.getElementById('cur-rate-disp');
+  const finalPctEl = document.getElementById('result-final-pct');
 
   if(sumTotal>0){
     let curRate = (sumP/sumTotal)*(1-uninsRate);
@@ -983,12 +978,12 @@ function calcTotals(){
     if(finalRate<0) finalRate=0;
     if(!isFinite(finalRate)) finalRate=curRate;
 
-    pctEl.textContent = roundUpPct(finalRate)+'%';
-    if(curRateEl) curRateEl.textContent = '금차 과실손해피해율 '+roundUpPct(curRate)+'%';
+    pctEl.textContent = roundUpPct(curRate)+'%';
+    if(finalPctEl) finalPctEl.textContent = roundUpPct(finalRate)+'%';
     resultBox.classList.remove('pending');
   } else {
     pctEl.textContent = '- -';
-    if(curRateEl) curRateEl.textContent = '';
+    if(finalPctEl) finalPctEl.textContent = '- -';
     resultBox.classList.add('pending');
   }
 }
@@ -1067,12 +1062,20 @@ function fillCaptureTemplate(){
   document.getElementById('cap-variety-table').innerHTML = varieties.map((v,vi)=>{
     const name = v.name || `품종${vi+1}`;
     return `<tr>
-      <td style="padding:7px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${name}</td>
-      <td style="padding:7px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.age?v.age+'년':'-'}</td>
-      <td style="padding:7px 2px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.trees||'-'}</td>
-      <td style="padding:7px 2px;border-top:1px solid #eee;text-align:center;background:#fff;font-weight:700;font-size:11.5px">${v.proper||'-'}</td>
+      <td class="cap-td">${name}</td>
+      <td class="cap-td">${v.age?v.age+'년':'-'}</td>
+      <td class="cap-td">${v.trees||'-'}</td>
+      <td class="cap-td">${v.proper||'-'}</td>
     </tr>`;
   }).join('');
+  {
+    let treesFootSum=0, properFootSum=0;
+    varieties.forEach(v=>{ treesFootSum+=numSafe(v.trees); properFootSum+=numSafe(v.proper); });
+    const treesFootEl = document.getElementById('cap-variety-foot-trees');
+    const properFootEl = document.getElementById('cap-variety-foot-proper');
+    if(treesFootEl) treesFootEl.textContent = treesFootSum>0?treesFootSum.toLocaleString():'-';
+    if(properFootEl) properFootEl.textContent = properFootSum>0?properFootSum.toLocaleString():'-';
+  }
 
   let rowsHtml=''; let no=1;
   let sumIG=0, sumOG=0, sumNormal=0, sumTotal=0, sumP=0;
@@ -1086,16 +1089,20 @@ function fillCaptureTemplate(){
       const total = sampleTotal(s);
       sumIG+=ig; sumOG+=og; sumNormal+=numSafe(s.normal); sumTotal+=total; sumP+=sampleP(s);
       rowsHtml+=`<tr>
-        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${no++}</td>
-        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#f5f8f1;font-weight:700;font-size:9.5px;color:#5B7E3F">${label}</td>
-        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${ig.toLocaleString()}</td>
-        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${og.toLocaleString()}</td>
-        <td style="padding:6px 1px;border-right:1px solid #d1d5db;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${numSafe(s.normal).toLocaleString()}</td>
-        <td style="padding:6px 1px;border-top:1px solid #eee;text-align:center;background:#fff;font-size:10.5px">${total.toLocaleString()}</td>
+        <td class="cap-td">${no++}</td>
+        <td class="cap-td" style="background:#EEF2F0;font-weight:700;color:#2d5016">${label}</td>
+        <td class="cap-td">${ig.toLocaleString()}</td>
+        <td class="cap-td">${og.toLocaleString()}</td>
+        <td class="cap-td">${numSafe(s.normal).toLocaleString()}</td>
+        <td class="cap-td">${total.toLocaleString()}</td>
       </tr>`;
     });
   });
-  document.getElementById('cap-sample-table').innerHTML = rowsHtml || '<tr><td colspan="6" style="padding:10px;text-align:center;color:#999;font-size:11px">표본 데이터 없음</td></tr>';
+  document.getElementById('cap-sample-table').innerHTML = rowsHtml || '<tr><td colspan="6" class="cap-td" style="color:#999">표본 데이터 없음</td></tr>';
+  document.getElementById('cap-foot-ig').textContent = sumTotal>0?sumIG.toLocaleString():'-';
+  document.getElementById('cap-foot-og').textContent = sumTotal>0?sumOG.toLocaleString():'-';
+  document.getElementById('cap-foot-normal').textContent = sumTotal>0?sumNormal.toLocaleString():'-';
+  document.getElementById('cap-foot-total').textContent = sumTotal>0?sumTotal.toLocaleString():'-';
 
   const uninsRate = Math.min(numSafe(document.getElementById('unins_rate').value)/100, 0.99);
   const priorRateRaw = numSafe(document.getElementById('prior_rate').value);
@@ -1106,7 +1113,7 @@ function fillCaptureTemplate(){
   document.getElementById('cap-prior-rate').textContent = priorRateRaw?priorRateRaw+'%':'-';
   document.getElementById('cap-prior-unins').textContent = priorUninsRaw?priorUninsRaw+'%':'-';
 
-  let finalDisp='- -', curDisp='-';
+  let finalDisp='- -', curDisp='- -';
   if(sumTotal>0){
     let curRate = (sumP/sumTotal)*(1-uninsRate);
     if(curRate<0) curRate=0;
@@ -1117,11 +1124,9 @@ function fillCaptureTemplate(){
     finalDisp = roundUpPct(finalRate)+'%';
     curDisp = roundUpPct(curRate)+'%';
   }
-  document.getElementById('cap-pct').textContent = finalDisp;
-  document.getElementById('cap-cur-pct').textContent = curDisp;
+  document.getElementById('cap-pct').textContent = curDisp;
+  document.getElementById('cap-final-pct').textContent = finalDisp;
   document.getElementById('cap-unins').textContent = (uninsRate*100)?((uninsRate*100).toFixed(0)+'%'):'0%';
-  document.getElementById('cap-p').textContent = sumTotal>0?sumP.toFixed(2):'-';
-  document.getElementById('cap-total').textContent = sumTotal>0?sumTotal.toLocaleString():'-';
 }
 
 // ── 이미지 캐시 저장 (당일 미리보기용, index.html 저장목록 연동) ──
@@ -1333,10 +1338,27 @@ function getNavList(){
 document.addEventListener('keydown', function(e){
   if(e.key !== 'Enter') return;
   const el = e.target;
+  if(getNavList().indexOf(el) === -1) return;
+  e.preventDefault();
+  handleEnterAdvance(el);
+});
+document.addEventListener('input', function(e){
+  // 일부 안드로이드 숫자 키패드는 keydown 대신 insertLineBreak으로만 엔터를 알림
+  if(e.inputType !== 'insertLineBreak') return;
+  const el = e.target;
+  if(!el || !el.matches) return;
+  if(getNavList().indexOf(el) === -1) return;
+  handleEnterAdvance(el);
+});
+let _lastEnterNavTime = 0;
+function handleEnterAdvance(el){
+  const now = Date.now();
+  if(now - _lastEnterNavTime < 150) return; // 중복 트리거 방지(디바운스)
+  _lastEnterNavTime = now;
+
   const list = getNavList();
   const idx = list.indexOf(el);
   if(idx === -1) return;
-  e.preventDefault();
   const varietyRow = el.closest('.variety-row');
   const varietyRowIdx = varietyRow ? Array.from(document.querySelectorAll('.variety-row')).indexOf(varietyRow) : -1;
   el.blur();
@@ -1356,7 +1378,7 @@ document.addEventListener('keydown', function(e){
       setTimeout(()=>plusBtn.classList.remove('nudge'), 1200);
     }
   }
-});
+}
 
 function init(){
   const loaded = loadState();
