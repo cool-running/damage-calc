@@ -234,7 +234,7 @@ select.inp.filled{background:#e8faf3;border-color:var(--green);color:#000;font-w
 input.inp.filled:focus,select.inp.filled:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,0.2);background:#dceeff;color:#185FA5}
 
 .datewrap{position:relative;width:100%}
-.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.datewrap .date-disp{height:40px;border:1.5px solid var(--binp);border-radius:var(--rs);padding:0 8px;font-size:14px;background:white;color:var(--text);width:100%;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap}
 .datewrap.filled .date-disp{background:#e8faf3;border-color:var(--green);color:#000;font-weight:700}
 .datewrap .date-disp.ph{color:var(--hint);font-weight:400}
 .datewrap input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;margin:0;padding:0;cursor:pointer;z-index:2}
@@ -251,6 +251,7 @@ body.big-text input.inp,body.big-text select.inp{height:50px !important;font-siz
 body.big-text input.auto{height:46px !important;font-size:16px !important;font-weight:700 !important}
 body.big-text .field label{font-size:12.5px !important}
 body.big-text .unit-hide-bigtext{display:none !important}
+body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
 
 /* 품종 설정 */
 
