@@ -1137,10 +1137,24 @@ function setCalcMode(silent){
   if(!varieties.some(v=>pkey(v)))miss.push('품종');
   if(!varieties.some(v=>v.trees.some(t=>t!=='')))miss.push('표본 착과조사');
   if(miss.length){showToast('미입력: '+miss.join(', '));return;}
-  _locked=true;_expandAll=false;lockInputs(true);
+  // 착과수는 입력됐는데 낙과수가 빈칸인 칸 → 자동으로 0 채움(입력 누락으로 평균에서 빠지는 것 방지)
+  let autoFilled=0;
+  varieties.forEach(v=>{
+    if(!v.naks)v.naks=[];
+    v.trees.forEach((t,ti)=>{
+      if(t!==''){
+        while(v.naks.length<=ti)v.naks.push('');
+        if(v.naks[ti]===''){ v.naks[ti]='0'; autoFilled++; }
+      }
+    });
+  });
+  _locked=true;_expandAll=false;
   $('btn-edit').classList.remove('active');$('btn-calc').classList.add('active');
   $('hdrState').className='hdr-state locked';$('hdrState').textContent='🔒 계산 완료';
+  if(autoFilled>0){ renderVarieties(); }
+  lockInputs(true);
   calc();saveToHistory();
+  if(autoFilled>0) showToast(`낙과수 미입력 ${autoFilled}칸을 0으로 자동 입력했습니다`);
   $('result-section').scrollIntoView({behavior:'smooth',block:'center'});
 }
 function setEditMode(silent){
