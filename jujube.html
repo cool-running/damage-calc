@@ -617,7 +617,7 @@ function renderVarieties(){
       fruitHtml=`
       <div class="fruit-block">
       <div class="tree-head">
-        <div class="subtitle" style="margin:0;font-weight:800">표본주별 <span style="color:var(--red)">${treeLabelKey}</span></div>
+        <div class="subtitle" style="margin:0;font-weight:800">표본주별 <span style="color:var(--red)">${treeLabelKey}</span> <span style="font-size:11px;font-weight:800"><span class="db" id="v-sampcur2-${i}" style="color:#1565C0">0</span><span class="ds" style="color:var(--hint);font-weight:400">/</span><span class="dg" id="v-proper2-${i}" style="color:var(--main-d)">0</span></span></div>
         <div class="tree-head-right">
           ${ap?'':`<div class="half-sw-group">
             <label class="sw" onclick="event.stopPropagation()">
@@ -939,10 +939,10 @@ function computeAll(){
     totalApplied+=F; totalYield+=yld; totalUninsLoss+=uninsLoss;
     if(proper>0&&tv.length>0&&tv.length<proper)anyShort=true;
 
-    r.calc={proper,F,N,per,dmg,ddmg,weight,yld,uninsLoss,sampleCnt:tv.length};
+    r.calc={proper,F,N,per,dmg,ddmg,weight,yld,uninsLoss,sampleCnt:tv.length,boxCount:v.trees.length};
   });
   const totalProper=rows.reduce((s,r)=>s+(r.calc.proper||0),0);
-  const totalSampleCnt=rows.reduce((s,r)=>s+(r.calc.sampleCnt||0),0);
+  const totalSampleCnt=rows.reduce((s,r)=>s+(r.calc.boxCount||0),0);
 
   totalApplied=r4(totalApplied);
   // 미보상감수량: 피해율 계산에는 반올림 전 원시값(소수점 유지) 사용 — 전산과 동일
@@ -1089,7 +1089,9 @@ function calc(){
       hs.textContent=det;
     }
     {const e=$(`v-proper-${i}`); if(e)e.textContent=c.proper?c.proper.toLocaleString():'-';}
-    {const e=$(`v-sampcur-${i}`); if(e)e.textContent=c.sampleCnt?c.sampleCnt.toLocaleString():'0';}
+    {const e=$(`v-sampcur-${i}`); if(e)e.textContent=c.boxCount?c.boxCount.toLocaleString():'0';}
+    {const e=$(`v-proper2-${i}`); if(e)e.textContent=c.proper?c.proper.toLocaleString():'0';}
+    {const e=$(`v-sampcur2-${i}`); if(e)e.textContent=c.boxCount?c.boxCount.toLocaleString():'0';}
     set(`v-per-${i}`,c.sampleCnt>0?fmt(c.per):'');
     set(`v-dmg-${i}`,(parseFloat(v.normal)||parseFloat(v.p50)||parseFloat(v.p80)||parseFloat(v.p100))?(c.dmg*100).toFixed(1):'');
     if(ap)set(`v-w-${i}`,c.weight?fmt(c.weight):'');
