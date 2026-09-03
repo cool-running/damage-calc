@@ -379,8 +379,7 @@ body.big-text .hist-btn{height:50px !important}
     </table>
 
     <div style="font-size:14px;font-weight:800;color:#2d5016;margin:16px 0 6px;border-left:4px solid #5B7E3F;padding-left:8px">2. 나무조사</div>
-    <table style="width:100%;border-collapse:collapse;table-layout:fixed">
-      <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
+    <table style="border-collapse:collapse">
       <thead><tr>
         <th class="cap-th">품종</th>
         <th class="cap-th">수령</th>
@@ -746,21 +745,13 @@ function recalcSampleCounts(){
   let totalTrees = 0;
   varieties.forEach(v=>{ v.treesNum = numSafe(v.trees); totalTrees += v.treesNum; });
 
-  if(totalTrees>0 && tier>0){
-    // 최대잔여법(Hamilton apportionment): 품종별 배분 합계가 구간표본수(tier)를 초과하지 않도록 배분
-    const shares = varieties.map(v=>{
-      const exact = v.treesNum>0 ? tier * (v.treesNum/totalTrees) : 0;
-      return { v, floor: Math.floor(exact), remainder: exact - Math.floor(exact) };
-    });
-    const allocated = shares.reduce((sum,s)=>sum+s.floor,0);
-    let remaining = tier - allocated;
-    const order = shares.filter(s=>s.v.treesNum>0)
-      .sort((a,b)=> b.remainder - a.remainder || b.v.treesNum - a.v.treesNum);
-    for(let i=0;i<remaining && i<order.length;i++){ order[i].floor += 1; }
-    shares.forEach(s=>{ s.v.proper = s.v.treesNum>0 ? s.floor : 0; });
-  } else {
-    varieties.forEach(v=>{ v.proper = 0; });
-  }
+  varieties.forEach(v=>{
+    if(totalTrees>0 && v.treesNum>0){
+      v.proper = Math.ceil(tier * (v.treesNum/totalTrees));
+    } else {
+      v.proper = 0;
+    }
+  });
 
   varieties.forEach(v=>{
     if(!v.samples) v.samples = [];
