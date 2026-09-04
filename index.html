@@ -361,6 +361,14 @@ function switchTab(i){
 }
 
 // ── 페이지 이동 ──────────────────────────────────
+// 계산기 페이지 → 카테고리 탭 인덱스 (0:밭작물 1:과수 2:논작물)
+const PAGE_CATEGORY={
+  garlic:0, onion:0, bean:0, sweetpotato:0, red_bean:0, tea:0,
+  potato:0, radish:0, minipumpkin:0, pepper:0, radishcost:0, corn:0,
+  apple:1, apple_multi:1, sunburn:1, jujube:1, walnut:1, chestnut:1,
+  citrus_preharvest:1, citrus_fruitdamage:1, fruit:1,
+  rice:2, wheat_barley_oat:2, wheat:2, barley:2, oat:2
+};
 function go(page){
   const map={
     garlic:'./garlic.html', onion:'./onion.html', bean:'./bean.html',
@@ -377,8 +385,28 @@ function go(page){
     barley:'./barley.html',
     oat:'./oat.html'
   };
-  if(map[page]) location.href=map[page];
+  if(map[page]){
+    try{ localStorage.setItem('last_calc_page', page); }catch(e){}
+    location.href=map[page];
+  }
 }
+
+// ── 마지막 사용 계산기 카테고리로 자동 이동 ──────────
+function initLastTab(){
+  try{
+    const lp = localStorage.getItem('last_calc_page');
+    if(lp===null || lp===undefined) return;
+    const idx = PAGE_CATEGORY[lp];
+    if(idx===undefined || idx===_curTab) return;
+    const slider = document.getElementById('tab-slider');
+    if(!slider) return;
+    slider.style.transition = 'none';      // 첫 진입 시 슬라이드 애니메이션 없이 바로 표시
+    switchTab(idx);
+    void slider.offsetWidth;               // 강제 리플로우 후 트랜지션 복원
+    slider.style.transition = 'transform 0.32s cubic-bezier(0.4,0,0.2,1)';
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded', initLastTab);
 
 // ── 저장목록 ──────────────────────────────────────
 let currentFilter='all';
