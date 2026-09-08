@@ -289,7 +289,7 @@ body.big-text .scell .ci{font-size:19px!important}
 
   <div class="section">
     <div class="sec-title">기본정보</div>
-    <div class="g4" style="margin-top:0;grid-template-columns:1.6fr 1fr 1fr 1fr">
+    <div class="g4" style="margin-top:0;grid-template-columns:1.3fr 1.3fr 1fr 1fr">
       <div class="field">
         <label>평년수확량</label><span class="unit-badge">kg</span>
         <input type="text" id="avg_yield" class="inp" inputmode="decimal" oninput="onComma(this)" onblur="calc()" autocomplete="off">
@@ -614,6 +614,7 @@ function renderVarieties(){
       v.trees.forEach((t,ti)=>{
         treeHtml+=`<div class="scell-outer"><div class="snum">${offset+ti+1}</div><div class="scell ${t!==''?'has':''}"><input class="ci" inputmode="decimal" enterkeyhint="next" value="${t}" oninput="onTreeC(${i},${ti},this)" onkeydown="navKey(event,this)"></div></div>`;
       });
+
       fruitHtml=`
       <div class="fruit-block">
       <div class="tree-head">
@@ -917,7 +918,7 @@ function computeAll(){
     const Zper=r.reg>0?r4(N/r.reg):(r.actual>0?r4(F/r.actual):0);  // 주당평년(미보상주 환산); 신규품종은 재산정 주당
 
     let tv=v.trees.map(t=>parseFloat(String(t).replace(/,/g,''))).filter(x=>!isNaN(x));
-    if(!r.ap && v.half) tv = tv.map(x=>x*2);   // 절반 수확 조사 시 ×2
+    if(!r.ap && v.half) tv = tv.map(x=>x*2);   // 절반 수확 조사 시 ×2 (재래만 해당)
     const per=tv.length?r4(tv.reduce((a,b)=>a+b,0)/tv.length):0;
     const nm=pf(v.normal),d5=pf(v.p50),d8=pf(v.p80),d10=pf(v.p100);
     const denom=nm+d5+d8+d10, dmg=denom>0?(d5*0.5+d8*0.8+d10)/denom:0;
@@ -928,8 +929,8 @@ function computeAll(){
 
     // 주당착과량(g):
     //  - 재래종: 표본 착과량(g) 평균을 정수 g로 반올림
-    //  - 사과대추: 공식·전산·현지조사서 방식 그대로 "주별 인정착과량 = round(착과수 × 개당과중)"을
-    //             먼저 구한 뒤 그 평균(소수점 유지)을 사용. (출력 보고서의 주별 인정착과량과도 일치)
+    //  - 사과대추: 표본주별 "착과수 × 개당과중"을 각각 반올림한 뒤 그 평균
+    //             (현장 조사서·전산 실측 검증 결과 이 방식이 정확히 일치함)
     const perG=r.ap
       ? (tv.length?tv.reduce((a,b)=>a+Math.round(b*weight),0)/tv.length:0)
       : Math.round(per);
@@ -1364,13 +1365,12 @@ function buildCapture(){
         <td class="cap-td">${vType(v)}</td>
         <td class="cap-td">${v.age||'-'}</td>
         <td class="cap-td" style="background:#EEF2F0">${cnt.toLocaleString()}</td>
-        <td class="cap-td" style="background:#EEF2F0">-</td>
         <td class="cap-td" style="background:#EEF2F0">${recogN.toLocaleString()}</td>
         <td class="cap-td" style="background:#EEF2F0">${c.weight?fmtN(c.weight):'-'}</td>
         <td class="cap-td" style="background:#EEF2F0">${recogW.toLocaleString()}</td></tr>`;
     });
   });
-  if(!apRows)apRows=`<tr><td class="cap-td" colspan="8" style="color:#999">해당 없음</td></tr>`;
+  if(!apRows)apRows=`<tr><td class="cap-td" colspan="6" style="color:#999">해당 없음</td></tr>`;
 
   // ── 4. 사과대추 과중조사 ──
   let wRows='';
@@ -1423,7 +1423,6 @@ function buildCapture(){
       <thead><tr>
         <th class="cap-th" style="white-space:nowrap;font-size:10.5px">표본주번호</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">품종</th><th class="cap-th" style="white-space:nowrap;font-size:10.5px">수령</th>
         <th class="cap-th" style="white-space:nowrap;font-size:10.5px">착과수</th>
-        <th class="cap-th" style="white-space:nowrap;font-size:10.5px">낙과수</th>
         <th class="cap-th" style="white-space:nowrap;font-size:10.5px">인정착과수</th>
         <th class="cap-th" style="white-space:nowrap;font-size:10.5px">개당과중(g)</th>
         <th class="cap-th" style="white-space:nowrap;font-size:10.5px">인정착과량(g)</th>
