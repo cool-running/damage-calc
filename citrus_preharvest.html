@@ -1273,7 +1273,7 @@ function fmtHistDateCompact(dateStr){
   const parts = String(dateStr).split(/[-T ]/);
   if(parts.length<3) return dateStr;
   const [y,m,d] = parts;
-  return `${y}.${m}.${d}`;
+  return `${y}년 ${Number(m)}월 ${Number(d)}일`;
 }
 function openHistoryModal(){
   const list = document.getElementById('history-list');
@@ -1292,8 +1292,8 @@ function openHistoryModal(){
         <div class="tags">
           <span>📐 ${r.ins_area||'-'} ㎡</span>
           <span>📊 ${r.pct!=null?r.pct+'%':'-'}</span>
-          <span style="white-space:nowrap;letter-spacing:normal">🗓 ${fmtHistDateCompact(r.survey_date)}</span>
         </div>
+        <div style="font-size:11.5px;color:#999;margin-top:4px">조사일자 ${fmtHistDateCompact(r.survey_date)}</div>
         <div class="acts">
           <button class="hist-del" onclick="event.stopPropagation();deleteHistoryRecord(${idx})">삭제</button>
           <button class="hist-load" onclick="event.stopPropagation();loadHistoryRecord(${idx})">불러오기</button>
