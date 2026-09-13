@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   --red:#e24b4a;--green:#1D9E75;--orange:#E8860A;
   --r:12px;--rs:8px;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-user-select:none;user-select:none}
 input,textarea,select{-webkit-user-select:text;user-select:text}
 
@@ -1267,9 +1267,8 @@ function openHistoryModal(){
           <span class="farm">${farmPart}</span>
         </div>
         <div class="tags">
-          <span>📐 ${r.ins_area||'-'} ㎡</span>
           <span>📊 ${r.pct!=null?r.pct+'%':'-'}</span>
-          <span>🗓 ${fmtHistDateCompact(r.survey_date)}</span>
+          <span style="white-space:nowrap">🗓 ${fmtHistDateCompact(r.survey_date)}</span>
         </div>
         <div class="acts">
           <button class="hist-del" onclick="event.stopPropagation();deleteHistoryRecord(${idx})">삭제</button>
