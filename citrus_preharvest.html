@@ -1228,6 +1228,7 @@ async function saveImage(){
       const _farmNo = (document.getElementById('farm_no')?.value||'').trim();
       const _survDate = document.getElementById('survey_date')?.value||'';
       const _pct = document.getElementById('result-pct')?.textContent||'-';
+      const _insArea = document.getElementById('ins_area')?.value||'';
       const _rec = {
         id: Date.now(),
         crop: '감귤(수확전)',
@@ -1236,6 +1237,7 @@ async function saveImage(){
         farmNo: _farmNo,
         contractorName: document.getElementById('contractor_name')?.value||'',
         surveyDate: _survDate,
+        insArea: _insArea,
         pct: _pct,
         filename: `감귤수확전손해_${stamp}.png`,
         savedAt: (()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');})()
@@ -1264,6 +1266,13 @@ function toggleBigText(){
 }
 
 // ── 이전 기록 ──────────────────────────────────────
+function fmtHistDateCompact(dateStr){
+  if(!dateStr) return '-';
+  const parts = String(dateStr).split(/[-T ]/);
+  if(parts.length<3) return dateStr;
+  const [y,m,d] = parts;
+  return `${y.slice(2)}.${m}.${d}`;
+}
 function openHistoryModal(){
   const list = document.getElementById('history-list');
   let records = [];
@@ -1273,16 +1282,15 @@ function openHistoryModal(){
   } else {
     list.innerHTML = records.slice().reverse().map((r,i)=>{
       const idx = records.length-1-i;
+      const farmPart = r.contractor_name ? `${r.contractor_name}${r.farm_no?` (${r.farm_no})`:''}` : (r.farm_no?`농지 ${r.farm_no}`:'농지번호 미입력');
       return `<div class="hist-item" onclick="loadHistoryRecord(${idx})">
         <div class="top">
-          <span class="farm">${r.farm_no?('농지 '+r.farm_no):'농지번호 미입력'}</span>
-          <span class="time">${r.saved_at||''}</span>
+          <span class="farm">${farmPart}</span>
         </div>
         <div class="tags">
-          <span>🍊 ${r.contractor_name||'-'}</span>
           <span>📐 ${r.ins_area||'-'} ㎡</span>
           <span>📊 ${r.pct!=null?r.pct+'%':'-'}</span>
-          <span>🗓 ${r.survey_date||'-'}</span>
+          <span>🗓 ${fmtHistDateCompact(r.survey_date)}</span>
         </div>
         <div class="acts">
           <button class="hist-del" onclick="event.stopPropagation();deleteHistoryRecord(${idx})">삭제</button>
