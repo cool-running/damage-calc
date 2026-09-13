@@ -1272,7 +1272,7 @@ function fmtHistDateCompact(dateStr){
   const parts = String(dateStr).split(/[-T ]/);
   if(parts.length<3) return dateStr;
   const [y,m,d] = parts;
-  return `${y.slice(2)}.${m}.${d}`;
+  return `${y}.${m}.${d}`;
 }
 function openHistoryModal(){
   const list = document.getElementById('history-list');
