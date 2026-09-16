@@ -172,6 +172,10 @@ body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-
 .grade-row6{display:grid;grid-template-columns:0.85fr 0.85fr 0.85fr 0.9fr 1.05fr 1.3fr;gap:5px;align-items:end}
 .grade-row6 .grade-cell label{font-size:9.5px;height:12px;line-height:12px}
 .grade-row6 .grade-cell input{height:38px;font-size:12.5px;padding:0 1px;text-align:center}
+.grade-block-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:9px}
+.grade-row4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;align-items:end}
+.grade-row4 .grade-cell label{font-size:9.5px;height:12px;line-height:12px}
+.grade-row4 .grade-cell input{height:38px;font-size:12.5px;padding:0 1px;text-align:center}
 .tree-row3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .tree-row3+.tree-row3,.tree-row3+.tree-row2,.tree-row2+.tree-row3{margin-top:6px}
 .tree-row2{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
@@ -1069,10 +1073,15 @@ function buildGradeGroups(saved){
   keys.forEach(function(key){
     var v=prev[key]||{};
     html+='<div class="grade-block" data-key="'+esc(key)+'">'+
-      (multi?'<div class="grade-key">'+esc(key)+'</div>':'')+
-      '<div class="grade-row6">'+
+      '<div class="grade-block-head">'+
+        (multi?'<div class="grade-key" style="margin-bottom:0">'+esc(key)+'</div>':'<div></div>')+
+        '<div style="display:flex;gap:5px;flex-shrink:0">'+
+          '<div class="auto ratioBox" style="width:70px;height:38px;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--blue)">0.00%</div>'+
+          '<div class="auto sumBox" style="width:76px;height:38px;font-size:12.5px;font-weight:700;white-space:nowrap;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--sub)">합계 0개</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="grade-row4">'+
         gradeCell('정상','g0',v.g0)+gradeCell('50%형','g50',v.g50)+gradeCell('80%형','g80',v.g80)+gradeCell('100%형','g100',v.g100,true)+
-        gradeAutoCell('합계','sumBox')+gradeAutoCell('구성비율','ratioBox','0.00')+
       '</div>'+
     '</div>';
   });
@@ -1087,8 +1096,8 @@ function updateGrade(){
         g80=parseFloat(b.querySelector('.g80').value)||0, g100=parseFloat(b.querySelector('.g100').value)||0;
     var sum=g0+g50+g80+g100;
     var ratio=sum>0?(g50*0.5+g80*0.8+g100*1)/sum*100:0;
-    var sb=b.querySelector('.sumBox'); if(sb) sb.value=fmt(sum);
-    var rb=b.querySelector('.ratioBox'); if(rb) rb.value=ratio.toFixed(2);
+    var sb=b.querySelector('.sumBox'); if(sb) sb.textContent='합계 '+fmt(sum)+'개';
+    var rb=b.querySelector('.ratioBox'); if(rb) rb.textContent=ratio.toFixed(2)+'%';
   });
 }
 
@@ -1524,15 +1533,26 @@ function buildCapture(){
     tbl('<colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>'+
       '<thead><tr><th style="'+nTH+'">적과후착과수6%</th><th style="'+nTH+'">금차낙과피해과실수</th><th style="'+nTH+'">전차인정피해율</th><th style="'+nTHl+'">금차인정피해과실수</th></tr></thead>'+
       '<tbody><tr><td style="'+nTD+'">'+fmt(L.sixPct)+' 개</td><td style="'+nTD+'">'+fmt(L.fallDamage)+' 개</td><td style="'+nTD+'">'+(L.prevRate||0).toFixed(2)+' %</td><td style="'+nTGl+'">'+fmt(L.admitCnt)+' 개</td></tr></tbody>')+
-    '<div style="margin-top:14px;background:#185FA5;border-radius:12px;padding:16px 18px;display:flex;align-items:center">'+
-      '<div style="flex:1;text-align:center">'+
-        '<div style="font-size:14px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:5px">적착대비 피해율</div>'+
-        '<div style="font-size:30px;color:#FFD0D0;font-weight:900">'+(L.afterCnt>0?(L.admitCnt/L.afterCnt*100):0).toFixed(2)+' %</div>'+
+    '<div style="margin-top:14px;background:#185FA5;border-radius:12px;padding:16px 18px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
+        '<span style="font-size:15px;font-weight:800;color:#fff;background:rgba(255,255,255,0.18);padding:6px 14px;border-radius:9px">'+(L.covered?'부책(인정)':'면책')+'</span>'+
+        '<span style="font-size:14px;color:#fff;opacity:0.9;font-weight:600">피해율 <b style="font-size:21px;color:#FFD0D0;font-weight:900">'+(L.afterCnt>0?(L.fallDamage/L.afterCnt*100):0).toFixed(2)+' %</b></span>'+
       '</div>'+
-      '<div style="width:1px;align-self:stretch;background:rgba(255,255,255,0.3);margin:0 10px"></div>'+
-      '<div style="flex:1;text-align:center">'+
-        '<div style="font-size:14px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:5px">낙과 인정피해과실수</div>'+
-        '<div style="font-size:30px;color:#fff;font-weight:900">'+fmt(L.admitCnt)+' 개</div>'+
+      '<div style="display:flex;align-items:center">'+
+        '<div style="flex:1;text-align:center">'+
+          '<div style="font-size:12.5px;color:#fff;opacity:0.8;font-weight:600;margin-bottom:5px">금차낙과피해과실수</div>'+
+          '<div style="font-size:22px;color:#fff;font-weight:900">'+fmt(L.fallDamage)+' 개</div>'+
+        '</div>'+
+        '<div style="color:rgba(255,255,255,0.5);font-size:16px;padding:0 4px">→</div>'+
+        '<div style="flex:1;text-align:center">'+
+          '<div style="font-size:12.5px;color:#fff;opacity:0.8;font-weight:600;margin-bottom:5px">전차인정피해율</div>'+
+          '<div style="font-size:22px;color:#fff;font-weight:900">'+(L.prevRate||0).toFixed(2)+' %</div>'+
+        '</div>'+
+        '<div style="color:rgba(255,255,255,0.5);font-size:16px;padding:0 4px">→</div>'+
+        '<div style="flex:1.1;text-align:center">'+
+          '<div style="font-size:12.5px;color:#fff;opacity:0.8;font-weight:600;margin-bottom:5px">인정과실수</div>'+
+          '<div style="font-size:24px;color:#FFD700;font-weight:900">'+fmt(L.admitCnt)+' 개</div>'+
+        '</div>'+
       '</div>'+
     '</div>');
 
