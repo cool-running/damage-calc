@@ -176,6 +176,9 @@ body.big-text #product{font-size:15px !important;letter-spacing:-0.03em;padding-
 .grade-row4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;align-items:end}
 .grade-row4 .grade-cell label{font-size:9.5px;height:12px;line-height:12px}
 .grade-row4 .grade-cell input{height:38px;font-size:12.5px;padding:0 1px;text-align:center}
+.grade-row5{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:end}
+.grade-row5 .grade-cell label{font-size:9px;height:12px;line-height:12px}
+.grade-row5 .grade-cell input{height:38px;font-size:11.5px;padding:0 1px;text-align:center}
 .tree-row3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .tree-row3+.tree-row3,.tree-row3+.tree-row2,.tree-row2+.tree-row3{margin-top:6px}
 .tree-row2{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
@@ -476,7 +479,6 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
   <!-- 결과 -->
   <div class="result-box pending" id="resultBox" style="padding:12px">
     <div style="display:flex;align-items:center;gap:2px">
-      <span id="rbCovered" style="font-size:13px;font-weight:800;color:#fff;background:rgba(255,255,255,0.16);padding:5px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0">- -</span>
       <div style="flex:1;min-width:0;text-align:center">
         <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all">피해율</div>
         <div id="mRate" style="font-size:16px;font-weight:900;color:#FFD0D0;letter-spacing:-0.02em;white-space:nowrap">- -</div>
@@ -1047,7 +1049,7 @@ function refreshPrevUI(){
 function currentGradeValues(){
   var o={};
   document.querySelectorAll('#gradeGroups .grade-block').forEach(function(b){
-    o[b.dataset.key]={ g0:b.querySelector('.g0').value, g50:b.querySelector('.g50').value, g80:b.querySelector('.g80').value, g100:b.querySelector('.g100').value };
+    o[b.dataset.key]={ g0:b.querySelector('.g0').value, g30:b.querySelector('.g30').value, g50:b.querySelector('.g50').value, g80:b.querySelector('.g80').value, g100:b.querySelector('.g100').value };
   });
   return o;
 }
@@ -1082,8 +1084,8 @@ function buildGradeGroups(saved){
           '</div>'+
         '</div>'
       :'')+
-      '<div class="grade-row4">'+
-        gradeCell('정상','g0',v.g0)+gradeCell('50%형','g50',v.g50)+gradeCell('80%형','g80',v.g80)+gradeCell('100%형','g100',v.g100,true)+
+      '<div class="grade-row5">'+
+        gradeCell('정상','g0',v.g0)+gradeCell('30%형','g30',v.g30)+gradeCell('50%형','g50',v.g50)+gradeCell('80%형','g80',v.g80)+gradeCell('100%형','g100',v.g100,true)+
       '</div>'+
     '</div>';
   });
@@ -1095,10 +1097,10 @@ function buildGradeGroups(saved){
 function updateGrade(){
   var multi = document.querySelectorAll('#gradeGroups .grade-block').length>1;
   document.querySelectorAll('#gradeGroups .grade-block').forEach(function(b){
-    var g0=parseFloat(b.querySelector('.g0').value)||0, g50=parseFloat(b.querySelector('.g50').value)||0,
+    var g0=parseFloat(b.querySelector('.g0').value)||0, g30=parseFloat(b.querySelector('.g30').value)||0, g50=parseFloat(b.querySelector('.g50').value)||0,
         g80=parseFloat(b.querySelector('.g80').value)||0, g100=parseFloat(b.querySelector('.g100').value)||0;
-    var sum=g0+g50+g80+g100;
-    var ratio=sum>0?(g50*0.5+g80*0.8+g100*1)/sum*100:0;
+    var sum=g0+g30+g50+g80+g100;
+    var ratio=sum>0?(g30*0.3+g50*0.5+g80*0.8+g100*1)/sum*100:0;
     var target = multi ? b : document.getElementById('gradeHeadStat');
     var sb=target&&target.querySelector('.sumBox'); if(sb) sb.textContent='합계 '+fmt(sum)+'개';
     var rb=target&&target.querySelector('.ratioBox'); if(rb) rb.textContent=ratio.toFixed(2)+'%';
@@ -1120,11 +1122,11 @@ function computeAll(){
 
   var blocks=document.querySelectorAll('#gradeGroups .grade-block');
   function readBlock(el){
-    if(!el) return {g0:0,g50:0,g80:0,g100:0};
-    return { g0:parseFloat(el.querySelector('.g0').value)||0, g50:parseFloat(el.querySelector('.g50').value)||0,
+    if(!el) return {g0:0,g30:0,g50:0,g80:0,g100:0};
+    return { g0:parseFloat(el.querySelector('.g0').value)||0, g30:parseFloat(el.querySelector('.g30').value)||0, g50:parseFloat(el.querySelector('.g50').value)||0,
       g80:parseFloat(el.querySelector('.g80').value)||0, g100:parseFloat(el.querySelector('.g100').value)||0 };
   }
-  function ratioOf(v){ var s=v.g0+v.g50+v.g80+v.g100; return s>0?(v.g50*0.5+v.g80*0.8+v.g100*1)/s*100:0; }
+  function ratioOf(v){ var s=v.g0+v.g30+v.g50+v.g80+v.g100; return s>0?(v.g30*0.3+v.g50*0.5+v.g80*0.8+v.g100*1)/s*100:0; }
 
   if(census){
     var totalFall=num('totalFall');
@@ -1137,7 +1139,7 @@ function computeAll(){
     var admitCnt=covered?Math.round(fallDamage*admitRate/100):0;
     R.ready=true; R.fallSum=totalFall; R.fallDamage=fallDamage; R.dmgRatio=dmgRatio; R.covered=covered;
     R.admitRate=admitRate; R.admitCnt=admitCnt; R.multi=false;
-    R.groups=[{key:'전체',count:0,fall:totalFall,target:target,fallDamage:fallDamage,dmgRatio:dmgRatio,admitRate:admitRate,admitCnt:admitCnt,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100}];
+    R.groups=[{key:'전체',count:0,fall:totalFall,target:target,fallDamage:fallDamage,dmgRatio:dmgRatio,admitRate:admitRate,admitCnt:admitCnt,g0:v.g0,g30:v.g30,g50:v.g50,g80:v.g80,g100:v.g100}];
     return R;
   }
 
@@ -1159,7 +1161,7 @@ function computeAll(){
     var v=readBlock(blocks[gi]);
     var dmgRatio=ratioOf(v);
     var admitRate=Math.max(0,dmgRatio-prevRate);
-    groups.push({key:key,count:gc,fall:gf,target:gT,realTree:tg.realTree,fallDamage:gFD,dmgRatio:dmgRatio,admitRate:admitRate,g0:v.g0,g50:v.g50,g80:v.g80,g100:v.g100});
+    groups.push({key:key,count:gc,fall:gf,target:gT,realTree:tg.realTree,fallDamage:gFD,dmgRatio:dmgRatio,admitRate:admitRate,g0:v.g0,g30:v.g30,g50:v.g50,g80:v.g80,g100:v.g100});
   });
   /* 표본조사 품종과 나무조사 품종이 텍스트로 정확히 일치하는 것만 매칭되므로,
      매칭된 그룹의 합으로 조사대상주수·실제결과주수를 다시 계산해 헤더 표시와 실제 계산을 일치시킴 */
@@ -1188,7 +1190,7 @@ function liveUpdate(){
   var R=computeAll();
   var fd=document.getElementById('autoFallDmg'), ar=document.getElementById('autoAdmitRate'), ac=document.getElementById('autoAdmitCnt');
   var box=document.getElementById('resultBox'), mR=document.getElementById('mRate');
-  var rc=document.getElementById('rbCovered'), rfd=document.getElementById('rbFallDmg');
+  var rfd=document.getElementById('rbFallDmg');
   if(R.ready){
     if(fd) fd.value=fmt(R.fallDamage);
     if(ar) ar.value=R.admitRate.toFixed(2);
@@ -1196,13 +1198,11 @@ function liveUpdate(){
     /* 피해율은 부책/면책을 가르는 기준(적과후착과수 대비 금차낙과피해과실수, 전차인정피해율 차감 전) 그대로 표시 */
     var rawRate=R.afterCnt>0?(R.fallDamage/R.afterCnt*100):0;
     if(mR) mR.textContent=rawRate.toFixed(2)+'%';
-    if(rc){ rc.textContent=R.covered?'부책':'면책'; rc.style.background=R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)'; }
     if(rfd) rfd.textContent=fmt(R.fallDamage)+' 개';
     if(box) box.classList.remove('pending');
   }else{
     if(fd) fd.value='-'; if(ar) ar.value='-'; if(ac) ac.value='-';
     if(mR) mR.textContent='- -';
-    if(rc) rc.textContent='- -';
     if(rfd) rfd.textContent='-';
     if(box) box.classList.add('pending');
   }
@@ -1290,7 +1290,6 @@ function doReset(){
   try {
       var resBox = document.getElementById('resultBox'); if(resBox) resBox.className='result-box pending';
       var mrate = document.getElementById('mRate'); if(mrate) mrate.textContent='- -';
-      var rc0 = document.getElementById('rbCovered'); if(rc0){ rc0.textContent='- -'; rc0.style.background='rgba(255,255,255,0.16)'; }
       var rfd0 = document.getElementById('rbFallDmg'); if(rfd0) rfd0.textContent='-';
       var sbtn = document.getElementById('saveBtn'); if(sbtn) sbtn.disabled=true;
       LAST=null;
@@ -1396,8 +1395,6 @@ function calc(silent){
   var rawRate=afterCnt>0?(R.fallDamage/afterCnt*100):0;
   var pctOfAfter=rawRate;
   document.getElementById('mRate').textContent=rawRate.toFixed(2)+'%';
-  document.getElementById('rbCovered').textContent = R.covered?'부책':'면책';
-  document.getElementById('rbCovered').style.background = R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)';
   document.getElementById('rbFallDmg').textContent = fmt(R.fallDamage)+' 개';
 
   /* 나무조사 3행 자동칸 + 피해구성 합계/비율 */
@@ -1498,18 +1495,18 @@ function buildCapture(){
       '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">금차<br>품종별착과수</th><th style="'+nTH+'">표본<br>낙과수계</th><th style="'+nTH+'">조사<br>표본주수</th><th style="'+nTH+'">조사<br>대상주수</th><th style="'+nTH+'">품종별<br>낙과수</th><th style="'+nTHl+'">피해<br>구성비율</th></tr></thead><tbody>'+t2+'</tbody>'));
 
   // 3) 과실피해구성비율 — 숙기/품종별 각각 산정
-  var t3='', sg0=0,sg50=0,sg80=0,sg100=0;
+  var t3='', sg0=0,sg30=0,sg50=0,sg80=0,sg100=0;
   groups.forEach(function(gr){
-    sg0+=gr.g0; sg50+=gr.g50; sg80+=gr.g80; sg100+=gr.g100;
-    var gsum=gr.g0+gr.g50+gr.g80+gr.g100;
-    t3+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.g0)+'</td><td style="'+nTD+'">'+fmt(gr.g50)+'</td><td style="'+nTD+'">'+fmt(gr.g80)+'</td><td style="'+nTD+'">'+fmt(gr.g100)+'</td><td style="'+nTD+'">'+fmt(gsum)+'</td><td style="'+nTDl+'">'+gr.dmgRatio.toFixed(2)+'</td></tr>';
+    sg0+=gr.g0; sg30+=gr.g30; sg50+=gr.g50; sg80+=gr.g80; sg100+=gr.g100;
+    var gsum=gr.g0+gr.g30+gr.g50+gr.g80+gr.g100;
+    t3+='<tr><td style="'+nTD+'">'+gr.key+'</td><td style="'+nTD+'">'+fmt(gr.g0)+'</td><td style="'+nTD+'">'+fmt(gr.g30)+'</td><td style="'+nTD+'">'+fmt(gr.g50)+'</td><td style="'+nTD+'">'+fmt(gr.g80)+'</td><td style="'+nTD+'">'+fmt(gr.g100)+'</td><td style="'+nTD+'">'+fmt(gsum)+'</td><td style="'+nTDl+'">'+gr.dmgRatio.toFixed(2)+'</td></tr>';
   });
-  var totalGSum=sg0+sg50+sg80+sg100;
-  var totalGRatio=totalGSum>0?(sg50*0.5+sg80*0.8+sg100*1)/totalGSum*100:0;
-  if(multi) t3+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(sg0)+'</td><td style="'+nTG+'">'+fmt(sg50)+'</td><td style="'+nTG+'">'+fmt(sg80)+'</td><td style="'+nTG+'">'+fmt(sg100)+'</td><td style="'+nTG+'">'+fmt(totalGSum)+'</td><td style="'+nTGl+'">'+totalGRatio.toFixed(2)+'</td></tr>';
+  var totalGSum=sg0+sg30+sg50+sg80+sg100;
+  var totalGRatio=totalGSum>0?(sg30*0.3+sg50*0.5+sg80*0.8+sg100*1)/totalGSum*100:0;
+  if(multi) t3+='<tr><td style="'+nTG+'">합계</td><td style="'+nTG+'">'+fmt(sg0)+'</td><td style="'+nTG+'">'+fmt(sg30)+'</td><td style="'+nTG+'">'+fmt(sg50)+'</td><td style="'+nTG+'">'+fmt(sg80)+'</td><td style="'+nTG+'">'+fmt(sg100)+'</td><td style="'+nTG+'">'+fmt(totalGSum)+'</td><td style="'+nTGl+'">'+totalGRatio.toFixed(2)+'</td></tr>';
   var c3=card('과실피해구성비율',
-    tbl('<colgroup><col style="width:22%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:13%"><col style="width:13%"><col style="width:16%"></colgroup>'+
-      '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">정상</th><th style="'+nTH+'">50%</th><th style="'+nTH+'">80%</th><th style="'+nTH+'">100%</th><th style="'+nTH+'">합계</th><th style="'+nTHl+'">피해구성비율(%)</th></tr></thead><tbody>'+t3+'</tbody>'));
+    tbl('<colgroup><col style="width:19%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:12%"><col style="width:23%"></colgroup>'+
+      '<thead><tr><th style="'+nTH+'">숙기/품종</th><th style="'+nTH+'">정상</th><th style="'+nTH+'">30%</th><th style="'+nTH+'">50%</th><th style="'+nTH+'">80%</th><th style="'+nTH+'">100%</th><th style="'+nTH+'">합계</th><th style="'+nTHl+'">피해구성비율(%)</th></tr></thead><tbody>'+t3+'</tbody>'));
 
   // 3b) 품종별 인정결과 (품종 2종 이상일 때만 표시)
   var c3b='';
@@ -1529,26 +1526,15 @@ function buildCapture(){
     tbl('<colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>'+
       '<thead><tr><th style="'+nTH+'">적과후착과수6%</th><th style="'+nTH+'">금차낙과피해과실수</th><th style="'+nTH+'">전차인정피해율</th><th style="'+nTHl+'">금차인정피해과실수</th></tr></thead>'+
       '<tbody><tr><td style="'+nTD+'">'+fmt(L.sixPct)+' 개</td><td style="'+nTD+'">'+fmt(L.fallDamage)+' 개</td><td style="'+nTD+'">'+(L.prevRate||0).toFixed(2)+' %</td><td style="'+nTGl+'">'+fmt(L.admitCnt)+' 개</td></tr></tbody>')+
-    '<div style="margin-top:14px;background:#185FA5;border-radius:12px;padding:16px 18px">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
-        '<span style="font-size:15px;font-weight:800;color:#fff;background:rgba(255,255,255,0.18);padding:6px 14px;border-radius:9px">'+(L.covered?'부책(인정)':'면책')+'</span>'+
-        '<span style="font-size:14px;color:#fff;opacity:0.9;font-weight:600">피해율 <b style="font-size:21px;color:#FFD0D0;font-weight:900">'+(L.afterCnt>0?(L.fallDamage/L.afterCnt*100):0).toFixed(2)+' %</b></span>'+
+    '<div style="margin-top:14px;background:#185FA5;border-radius:12px;padding:16px 18px;display:flex;align-items:center">'+
+      '<div style="flex:1;text-align:center">'+
+        '<div style="font-size:14px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:5px">피해율</div>'+
+        '<div style="font-size:28px;color:#FFD0D0;font-weight:900">'+(L.afterCnt>0?(L.fallDamage/L.afterCnt*100):0).toFixed(2)+' %</div>'+
       '</div>'+
-      '<div style="display:flex;align-items:center">'+
-        '<div style="flex:1;text-align:center">'+
-          '<div style="font-size:12.5px;color:#fff;opacity:0.8;font-weight:600;margin-bottom:5px">금차낙과피해과실수</div>'+
-          '<div style="font-size:22px;color:#fff;font-weight:900">'+fmt(L.fallDamage)+' 개</div>'+
-        '</div>'+
-        '<div style="color:rgba(255,255,255,0.5);font-size:16px;padding:0 4px">→</div>'+
-        '<div style="flex:1;text-align:center">'+
-          '<div style="font-size:12.5px;color:#fff;opacity:0.8;font-weight:600;margin-bottom:5px">전차인정피해율</div>'+
-          '<div style="font-size:22px;color:#fff;font-weight:900">'+(L.prevRate||0).toFixed(2)+' %</div>'+
-        '</div>'+
-        '<div style="color:rgba(255,255,255,0.5);font-size:16px;padding:0 4px">→</div>'+
-        '<div style="flex:1.1;text-align:center">'+
-          '<div style="font-size:12.5px;color:#fff;opacity:0.8;font-weight:600;margin-bottom:5px">인정과실수</div>'+
-          '<div style="font-size:24px;color:#FFD700;font-weight:900">'+fmt(L.admitCnt)+' 개</div>'+
-        '</div>'+
+      '<div style="width:1px;align-self:stretch;background:rgba(255,255,255,0.3);margin:0 10px"></div>'+
+      '<div style="flex:1;text-align:center">'+
+        '<div style="font-size:14px;color:#fff;opacity:0.85;font-weight:600;margin-bottom:5px">금차피해과실수</div>'+
+        '<div style="font-size:28px;color:#fff;font-weight:900">'+fmt(L.fallDamage)+' 개</div>'+
       '</div>'+
     '</div>');
 
