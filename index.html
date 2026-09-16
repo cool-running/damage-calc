@@ -229,6 +229,13 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-desc">수확량 조사</div>
     </div>
   </div>
+  <div class="crop-grid">
+    <div class="crop-card done" onclick="go('carrot')">
+      <div class="crop-icon">🥕</div>
+      <div class="crop-name">가을·월동당근</div>
+      <div class="crop-desc">수확량 조사</div>
+    </div>
+  </div>
   <!-- 밭작물 카드가 12개(6행)를 넘어가면, 바로 위 crop-grid 닫는 태그 다음 줄에
        crop-grid 클래스를 가진 div를 새 카드들과 함께 하나 더 추가하면 됩니다.
        탭이 세로로 스크롤되면서 2페이지로 자연스럽게 이어집니다 (JS 수정 불필요). -->
@@ -369,7 +376,7 @@ function switchTab(i){
 // 계산기 페이지 → 카테고리 탭 인덱스 (0:밭작물 1:과수 2:논작물)
 const PAGE_CATEGORY={
   garlic:0, onion:0, bean:0, sweetpotato:0, red_bean:0, tea:0,
-  potato:0, radish:0, minipumpkin:0, pepper:0, radishcost:0, corn:0,
+  potato:0, radish:0, minipumpkin:0, pepper:0, radishcost:0, corn:0, carrot:0,
   apple:1, apple_multi:1, sunburn:1, jujube:1, walnut:1, chestnut:1,
   citrus_preharvest:1, citrus_fruitdamage:1, fruit:1, fruitdamage:1,
   rice:2, wheat_barley_oat:2, wheat:2, barley:2, oat:2
@@ -379,7 +386,7 @@ function go(page){
     garlic:'./garlic.html', onion:'./onion.html', bean:'./bean.html',
     sweetpotato:'./sweetpotato.html', red_bean:'./red_bean.html', tea:'./tea.html',
     potato:'./potato.html', radish:'./radish.html', minipumpkin:'./minipumpkin.html', pepper:'./pepper.html', radishcost:'./radishcost.html',
-    corn:'./corn.html',
+    corn:'./corn.html', carrot:'./carrot.html',
     apple:'./apple.html', apple_multi:'./apple_multi.html', sunburn:'./sunburn.html',
     jujube:'./jujube.html',
     walnut:'./walnut.html', chestnut:'./chestnut.html',
