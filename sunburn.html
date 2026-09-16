@@ -461,7 +461,10 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 
   <!-- 낙과 피해구성조사 (숙기/품종별 자동 분리) -->
   <div class="section">
-    <div class="sec-title">📊 낙과 피해구성조사</div>
+    <div class="sec-title" style="justify-content:space-between">
+      <span>📊 낙과 피해구성조사</span>
+      <span id="gradeHeadStat" style="display:flex;gap:5px"></span>
+    </div>
     <div id="gradeGroups"></div>
   </div>
 
@@ -472,18 +475,20 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 
   <!-- 결과 -->
   <div class="result-box pending" id="resultBox" style="padding:12px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
-      <span id="rbCovered" style="font-size:13px;font-weight:800;color:#fff;background:rgba(255,255,255,0.16);padding:5px 12px;border-radius:8px;white-space:nowrap">- -</span>
-      <span style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;text-align:right">피해율 <b id="mRate" style="font-size:18px;font-weight:900;color:#FFD0D0;letter-spacing:-0.02em">- -</b></span>
+    <div style="display:flex;align-items:center;gap:2px;margin-bottom:11px">
+      <span id="rbCovered" style="font-size:13px;font-weight:800;color:#fff;background:rgba(255,255,255,0.16);padding:5px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0">- -</span>
+      <div style="flex:1;min-width:0;text-align:center">
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all">피해율</div>
+        <div id="mRate" style="font-size:16px;font-weight:900;color:#FFD0D0;letter-spacing:-0.02em;white-space:nowrap">- -</div>
+      </div>
+      <div style="flex:1;min-width:0;text-align:center">
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all">금차피해과실수</div>
+        <div id="rbFallDmg" style="font-size:16px;font-weight:900;color:#fff;white-space:nowrap">-</div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:2px">
       <div style="flex:1;min-width:0;text-align:center">
-        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">금차낙과피해과실수</div>
-        <div id="rbFallDmg" style="font-size:15px;font-weight:800;color:#fff;white-space:nowrap">-</div>
-      </div>
-      <div style="color:rgba(255,255,255,0.45);font-size:13px;flex-shrink:0;padding:0 1px">→</div>
-      <div style="flex:1;min-width:0;text-align:center">
-        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">전차인정피해율</div>
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">인정피해율</div>
         <div id="rbPrevRate" style="font-size:15px;font-weight:800;color:#fff;white-space:nowrap">-</div>
       </div>
       <div style="color:rgba(255,255,255,0.45);font-size:13px;flex-shrink:0;padding:0 1px">→</div>
@@ -1069,17 +1074,23 @@ function buildGradeGroups(saved){
   if(isCensus()){ keys=['전체']; }
   else{ var g=getGroups(); keys = g.order.length? g.order.slice() : ['미입력']; }
   var multi=keys.length>1;
+  var headStat=document.getElementById('gradeHeadStat');
+  if(headStat) headStat.innerHTML = multi ? '' :
+    '<div class="auto ratioBox" style="width:70px;height:32px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--blue)">0.00%</div>'+
+    '<div class="auto sumBox" style="width:76px;height:32px;font-size:12px;font-weight:700;white-space:nowrap;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--sub)">합계 0개</div>';
   var html='';
   keys.forEach(function(key){
     var v=prev[key]||{};
     html+='<div class="grade-block" data-key="'+esc(key)+'">'+
-      '<div class="grade-block-head">'+
-        (multi?'<div class="grade-key" style="margin-bottom:0">'+esc(key)+'</div>':'<div></div>')+
-        '<div style="display:flex;gap:5px;flex-shrink:0">'+
-          '<div class="auto ratioBox" style="width:70px;height:38px;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--blue)">0.00%</div>'+
-          '<div class="auto sumBox" style="width:76px;height:38px;font-size:12.5px;font-weight:700;white-space:nowrap;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--sub)">합계 0개</div>'+
-        '</div>'+
-      '</div>'+
+      (multi?
+        '<div class="grade-block-head">'+
+          '<div class="grade-key" style="margin-bottom:0">'+esc(key)+'</div>'+
+          '<div style="display:flex;gap:5px;flex-shrink:0">'+
+            '<div class="auto ratioBox" style="width:70px;height:38px;font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--blue)">0.00%</div>'+
+            '<div class="auto sumBox" style="width:76px;height:38px;font-size:12.5px;font-weight:700;white-space:nowrap;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--sub)">합계 0개</div>'+
+          '</div>'+
+        '</div>'
+      :'')+
       '<div class="grade-row4">'+
         gradeCell('정상','g0',v.g0)+gradeCell('50%형','g50',v.g50)+gradeCell('80%형','g80',v.g80)+gradeCell('100%형','g100',v.g100,true)+
       '</div>'+
@@ -1089,15 +1100,17 @@ function buildGradeGroups(saved){
   document.querySelectorAll('#gradeGroups .inp').forEach(mark);
   updateGrade();
 }
-/* 합계·피해구성비율 실시간 갱신 (블록별) */
+/* 합계·피해구성비율 실시간 갱신 (블록별, 품종 1개면 섹션 제목 줄의 배지로 표시) */
 function updateGrade(){
+  var multi = document.querySelectorAll('#gradeGroups .grade-block').length>1;
   document.querySelectorAll('#gradeGroups .grade-block').forEach(function(b){
     var g0=parseFloat(b.querySelector('.g0').value)||0, g50=parseFloat(b.querySelector('.g50').value)||0,
         g80=parseFloat(b.querySelector('.g80').value)||0, g100=parseFloat(b.querySelector('.g100').value)||0;
     var sum=g0+g50+g80+g100;
     var ratio=sum>0?(g50*0.5+g80*0.8+g100*1)/sum*100:0;
-    var sb=b.querySelector('.sumBox'); if(sb) sb.textContent='합계 '+fmt(sum)+'개';
-    var rb=b.querySelector('.ratioBox'); if(rb) rb.textContent=ratio.toFixed(2)+'%';
+    var target = multi ? b : document.getElementById('gradeHeadStat');
+    var sb=target&&target.querySelector('.sumBox'); if(sb) sb.textContent='합계 '+fmt(sum)+'개';
+    var rb=target&&target.querySelector('.ratioBox'); if(rb) rb.textContent=ratio.toFixed(2)+'%';
   });
 }
 
@@ -1192,9 +1205,9 @@ function liveUpdate(){
     /* 피해율은 부책/면책을 가르는 기준(적과후착과수 대비 금차낙과피해과실수, 전차인정피해율 차감 전) 그대로 표시 */
     var rawRate=R.afterCnt>0?(R.fallDamage/R.afterCnt*100):0;
     if(mR) mR.textContent=rawRate.toFixed(2)+'%';
-    if(rc){ rc.textContent=R.covered?'부책(인정)':'면책'; rc.style.background=R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)'; }
+    if(rc){ rc.textContent=R.covered?'부책':'면책'; rc.style.background=R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)'; }
     if(rfd) rfd.textContent=fmt(R.fallDamage)+' 개';
-    if(rpr) rpr.textContent=(R.prevRate||0).toFixed(2)+' %';
+    if(rpr) rpr.textContent=(R.admitRate||0).toFixed(2)+' %';
     if(rH) rH.innerHTML=fmt(R.admitCnt)+' <small>개</small>';
     if(box) box.classList.remove('pending');
   }else{
@@ -1399,10 +1412,10 @@ function calc(silent){
   var pctOfAfter=rawRate;
   document.getElementById('rbHero').innerHTML = R.covered ? (fmt(R.admitCnt)+' <small>개</small>') : ('0 <small>개</small>');
   document.getElementById('mRate').textContent=rawRate.toFixed(2)+'%';
-  document.getElementById('rbCovered').textContent = R.covered?'부책(인정)':'면책';
+  document.getElementById('rbCovered').textContent = R.covered?'부책':'면책';
   document.getElementById('rbCovered').style.background = R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)';
   document.getElementById('rbFallDmg').textContent = fmt(R.fallDamage)+' 개';
-  document.getElementById('rbPrevRate').textContent = (R.prevRate||0).toFixed(2)+' %';
+  document.getElementById('rbPrevRate').textContent = (R.admitRate||0).toFixed(2)+' %';
 
   /* 나무조사 3행 자동칸 + 피해구성 합계/비율 */
   document.getElementById('autoFallDmg').value=fmt(R.fallDamage);
