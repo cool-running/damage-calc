@@ -467,22 +467,28 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
   </div>
 
   <!-- 결과 -->
-  <div class="result-box pending" id="resultBox" style="padding:0 12px">
-    <div style="display:flex;align-items:center;padding:13px 0;gap:2px">
-      <div style="padding:0 6px;flex:1;min-width:0;text-align:center">
-        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:500;line-height:1.2;word-break:keep-all;min-height:25px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">적착대비 피해율</div>
-        <div id="mRate" style="font-size:21px;font-weight:800;color:#FFD0D0;letter-spacing:-0.02em;line-height:1;white-space:nowrap">- -</div>
+  <div class="result-box pending" id="resultBox" style="padding:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+      <span id="rbCovered" style="font-size:13px;font-weight:800;color:#fff;background:rgba(255,255,255,0.16);padding:5px 12px;border-radius:8px;white-space:nowrap">- -</span>
+      <span style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;text-align:right">피해율 <b id="mRate" style="font-size:18px;font-weight:900;color:#FFD0D0;letter-spacing:-0.02em">- -</b></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:2px">
+      <div style="flex:1;min-width:0;text-align:center">
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">금차낙과피해과실수</div>
+        <div id="rbFallDmg" style="font-size:15px;font-weight:800;color:#fff;white-space:nowrap">-</div>
       </div>
-      <div style="width:1px;height:40px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
-      <div style="padding:0 6px;flex:1;min-width:0;text-align:center">
-        <div style="font-size:10.5px;color:rgba(255,255,255,0.75);font-weight:500;line-height:1.2;word-break:keep-all;min-height:25px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">금차 인정피해과실수</div>
-        <div id="rbHero" style="font-size:21px;font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1;white-space:nowrap">—</div>
+      <div style="color:rgba(255,255,255,0.45);font-size:13px;flex-shrink:0;padding:0 1px">→</div>
+      <div style="flex:1;min-width:0;text-align:center">
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">전차인정피해율</div>
+        <div id="rbPrevRate" style="font-size:15px;font-weight:800;color:#fff;white-space:nowrap">-</div>
       </div>
-      <div style="width:1px;height:40px;background:rgba(255,255,255,0.28);flex-shrink:0"></div>
-      <div style="padding-left:6px;flex-shrink:0">
-        <button class="save-btn" id="saveBtn" onclick="saveImage()" disabled><span style="font-size:14px">📷</span><span>갤러리 저장</span></button>
+      <div style="color:rgba(255,255,255,0.45);font-size:13px;flex-shrink:0;padding:0 1px">→</div>
+      <div style="flex:1.15;min-width:0;text-align:center">
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">인정과실수</div>
+        <div id="rbHero" style="font-size:17px;font-weight:900;color:#FFD700;white-space:nowrap">—</div>
       </div>
     </div>
+    <button class="save-btn" id="saveBtn" onclick="saveImage()" disabled style="width:100%;margin-top:12px"><span style="font-size:14px">📷</span><span>갤러리 저장</span></button>
   </div>
 
 </div>
@@ -936,7 +942,7 @@ function doSampAdd(){
 
 /* 품목별 품종 목록 (목록에 없으면 '직접입력' 선택 후 입력) */
 var PUMJONG={
-  '사과':['부사(후지)','홍로','쓰가루','아오리','감홍','양광','시나노골드','아리수','홍옥','미야비'],
+  '사과':['부사(후지)','홍로','쓰가루','감홍','양광','시나노골드','아리수','홍옥','미야비'],
   '배':['신고','원황','화산','추황배','황금배','만풍배','신화'],
   '단감':['부유','차랑','태추','서촌조생','로망'],
   '떫은감':['대봉','청도반시','둥시','상주둥시','갑주백목','고종시']
@@ -1169,17 +1175,25 @@ function liveUpdate(){
   var R=computeAll();
   var fd=document.getElementById('autoFallDmg'), ar=document.getElementById('autoAdmitRate'), ac=document.getElementById('autoAdmitCnt');
   var box=document.getElementById('resultBox'), mR=document.getElementById('mRate'), rH=document.getElementById('rbHero');
+  var rc=document.getElementById('rbCovered'), rfd=document.getElementById('rbFallDmg'), rpr=document.getElementById('rbPrevRate');
   if(R.ready){
     if(fd) fd.value=fmt(R.fallDamage);
     if(ar) ar.value=R.admitRate.toFixed(2);
     if(ac) ac.value=fmt(R.admitCnt);
-    var pctOfAfter=R.afterCnt>0?(R.admitCnt/R.afterCnt*100):0;
-    if(mR) mR.textContent=pctOfAfter.toFixed(2)+'%';
+    /* 피해율은 부책/면책을 가르는 기준(적과후착과수 대비 금차낙과피해과실수, 전차인정피해율 차감 전) 그대로 표시 */
+    var rawRate=R.afterCnt>0?(R.fallDamage/R.afterCnt*100):0;
+    if(mR) mR.textContent=rawRate.toFixed(2)+'%';
+    if(rc){ rc.textContent=R.covered?'부책(인정)':'면책'; rc.style.background=R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)'; }
+    if(rfd) rfd.textContent=fmt(R.fallDamage)+' 개';
+    if(rpr) rpr.textContent=(R.prevRate||0).toFixed(2)+' %';
     if(rH) rH.innerHTML=fmt(R.admitCnt)+' <small>개</small>';
     if(box) box.classList.remove('pending');
   }else{
     if(fd) fd.value='-'; if(ar) ar.value='-'; if(ac) ac.value='-';
     if(mR) mR.textContent='- -';
+    if(rc) rc.textContent='- -';
+    if(rfd) rfd.textContent='-';
+    if(rpr) rpr.textContent='-';
     if(rH) rH.innerHTML='—';
     if(box) box.classList.add('pending');
   }
@@ -1268,6 +1282,9 @@ function doReset(){
       var resBox = document.getElementById('resultBox'); if(resBox) resBox.className='result-box pending';
       var hero = document.getElementById('rbHero'); if(hero) hero.textContent='—';
       var mrate = document.getElementById('mRate'); if(mrate) mrate.textContent='- -';
+      var rc0 = document.getElementById('rbCovered'); if(rc0){ rc0.textContent='- -'; rc0.style.background='rgba(255,255,255,0.16)'; }
+      var rfd0 = document.getElementById('rbFallDmg'); if(rfd0) rfd0.textContent='-';
+      var rpr0 = document.getElementById('rbPrevRate'); if(rpr0) rpr0.textContent='-';
       var sbtn = document.getElementById('saveBtn'); if(sbtn) sbtn.disabled=true;
       LAST=null;
   } catch(e){ console.error(e); }
@@ -1369,9 +1386,14 @@ function calc(silent){
 
   var box=document.getElementById('resultBox');
   box.classList.remove('pending');
-  var pctOfAfter=afterCnt>0?(R.admitCnt/afterCnt*100):0;
+  var rawRate=afterCnt>0?(R.fallDamage/afterCnt*100):0;
+  var pctOfAfter=rawRate;
   document.getElementById('rbHero').innerHTML = R.covered ? (fmt(R.admitCnt)+' <small>개</small>') : ('0 <small>개</small>');
-  document.getElementById('mRate').textContent=pctOfAfter.toFixed(2)+'%';
+  document.getElementById('mRate').textContent=rawRate.toFixed(2)+'%';
+  document.getElementById('rbCovered').textContent = R.covered?'부책(인정)':'면책';
+  document.getElementById('rbCovered').style.background = R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)';
+  document.getElementById('rbFallDmg').textContent = fmt(R.fallDamage)+' 개';
+  document.getElementById('rbPrevRate').textContent = (R.prevRate||0).toFixed(2)+' %';
 
   /* 나무조사 3행 자동칸 + 피해구성 합계/비율 */
   document.getElementById('autoFallDmg').value=fmt(R.fallDamage);
