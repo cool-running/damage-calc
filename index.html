@@ -277,6 +277,11 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;background:var(--bg);co
       <div class="crop-name">감귤(온주밀감류)</div>
       <div class="crop-desc">과실손해조사</div>
     </div>
+    <div class="crop-card done" onclick="go('fruitdamage')">
+      <div class="crop-icon">🍎🍂</div>
+      <div class="crop-name">착과·낙과피해조사</div>
+      <div class="crop-desc">사과·배·단감·떫은감</div>
+    </div>
   </div>
 </div>
 
@@ -366,7 +371,7 @@ const PAGE_CATEGORY={
   garlic:0, onion:0, bean:0, sweetpotato:0, red_bean:0, tea:0,
   potato:0, radish:0, minipumpkin:0, pepper:0, radishcost:0, corn:0,
   apple:1, apple_multi:1, sunburn:1, jujube:1, walnut:1, chestnut:1,
-  citrus_preharvest:1, citrus_fruitdamage:1, fruit:1,
+  citrus_preharvest:1, citrus_fruitdamage:1, fruit:1, fruitdamage:1,
   rice:2, wheat_barley_oat:2, wheat:2, barley:2, oat:2
 };
 function go(page){
@@ -379,7 +384,7 @@ function go(page){
     jujube:'./jujube.html',
     walnut:'./walnut.html', chestnut:'./chestnut.html',
     citrus_preharvest:'./citrus_preharvest.html', citrus_fruitdamage:'./citrus_fruitdamage.html',
-    fruit:'./fruit.html', rice:'./rice.html',
+    fruit:'./fruit.html', fruitdamage:'./fruitdamage.html', rice:'./rice.html',
     wheat_barley_oat:'./wheat_barley_oat.html',
     wheat:'./wheat.html',
     barley:'./barley.html',
@@ -411,6 +416,7 @@ document.addEventListener('DOMContentLoaded', initLastTab);
 // ── 저장목록 ──────────────────────────────────────
 let currentFilter='all';
 const CROP_ICONS={
+  '과수4종':'🍎',
   '고추':'🌶️',
   '마늘':'🧄','양파':'🧅','콩':'🫘','고구마':'🍠','팥':'🫘','감자':'🥔',
   '벼':'🌾','밀':'🍞','보리':'🌿','귀리':'🥣','옥수수':'🌽',
