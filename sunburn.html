@@ -475,7 +475,7 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
 
   <!-- 결과 -->
   <div class="result-box pending" id="resultBox" style="padding:12px">
-    <div style="display:flex;align-items:center;gap:2px;margin-bottom:11px">
+    <div style="display:flex;align-items:center;gap:2px">
       <span id="rbCovered" style="font-size:13px;font-weight:800;color:#fff;background:rgba(255,255,255,0.16);padding:5px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0">- -</span>
       <div style="flex:1;min-width:0;text-align:center">
         <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all">피해율</div>
@@ -484,17 +484,6 @@ body.big-text .seg-btn{height:48px !important;font-size:15px !important}
       <div style="flex:1;min-width:0;text-align:center">
         <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all">금차피해과실수</div>
         <div id="rbFallDmg" style="font-size:16px;font-weight:900;color:#fff;white-space:nowrap">-</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:2px">
-      <div style="flex:1;min-width:0;text-align:center">
-        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">인정피해율</div>
-        <div id="rbPrevRate" style="font-size:15px;font-weight:800;color:#fff;white-space:nowrap">-</div>
-      </div>
-      <div style="color:rgba(255,255,255,0.45);font-size:13px;flex-shrink:0;padding:0 1px">→</div>
-      <div style="flex:1.15;min-width:0;text-align:center">
-        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);font-weight:500;word-break:keep-all;line-height:1.25;min-height:23px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:3px">인정과실수</div>
-        <div id="rbHero" style="font-size:17px;font-weight:900;color:#FFD700;white-space:nowrap">—</div>
       </div>
     </div>
     <button class="save-btn" id="saveBtn" onclick="saveImage()" disabled style="width:100%;margin-top:12px"><span style="font-size:14px">📷</span><span>갤러리 저장</span></button>
@@ -1196,8 +1185,8 @@ function liveUpdate(){
   updateGrade(); updateTreeGroups(); updatePrev();
   var R=computeAll();
   var fd=document.getElementById('autoFallDmg'), ar=document.getElementById('autoAdmitRate'), ac=document.getElementById('autoAdmitCnt');
-  var box=document.getElementById('resultBox'), mR=document.getElementById('mRate'), rH=document.getElementById('rbHero');
-  var rc=document.getElementById('rbCovered'), rfd=document.getElementById('rbFallDmg'), rpr=document.getElementById('rbPrevRate');
+  var box=document.getElementById('resultBox'), mR=document.getElementById('mRate');
+  var rc=document.getElementById('rbCovered'), rfd=document.getElementById('rbFallDmg');
   if(R.ready){
     if(fd) fd.value=fmt(R.fallDamage);
     if(ar) ar.value=R.admitRate.toFixed(2);
@@ -1207,16 +1196,12 @@ function liveUpdate(){
     if(mR) mR.textContent=rawRate.toFixed(2)+'%';
     if(rc){ rc.textContent=R.covered?'부책':'면책'; rc.style.background=R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)'; }
     if(rfd) rfd.textContent=fmt(R.fallDamage)+' 개';
-    if(rpr) rpr.textContent=(R.admitRate||0).toFixed(2)+' %';
-    if(rH) rH.innerHTML=fmt(R.admitCnt)+' <small>개</small>';
     if(box) box.classList.remove('pending');
   }else{
     if(fd) fd.value='-'; if(ar) ar.value='-'; if(ac) ac.value='-';
     if(mR) mR.textContent='- -';
     if(rc) rc.textContent='- -';
     if(rfd) rfd.textContent='-';
-    if(rpr) rpr.textContent='-';
-    if(rH) rH.innerHTML='—';
     if(box) box.classList.add('pending');
   }
 }
@@ -1302,11 +1287,9 @@ function doReset(){
   
   try {
       var resBox = document.getElementById('resultBox'); if(resBox) resBox.className='result-box pending';
-      var hero = document.getElementById('rbHero'); if(hero) hero.textContent='—';
       var mrate = document.getElementById('mRate'); if(mrate) mrate.textContent='- -';
       var rc0 = document.getElementById('rbCovered'); if(rc0){ rc0.textContent='- -'; rc0.style.background='rgba(255,255,255,0.16)'; }
       var rfd0 = document.getElementById('rbFallDmg'); if(rfd0) rfd0.textContent='-';
-      var rpr0 = document.getElementById('rbPrevRate'); if(rpr0) rpr0.textContent='-';
       var sbtn = document.getElementById('saveBtn'); if(sbtn) sbtn.disabled=true;
       LAST=null;
   } catch(e){ console.error(e); }
@@ -1410,12 +1393,10 @@ function calc(silent){
   box.classList.remove('pending');
   var rawRate=afterCnt>0?(R.fallDamage/afterCnt*100):0;
   var pctOfAfter=rawRate;
-  document.getElementById('rbHero').innerHTML = R.covered ? (fmt(R.admitCnt)+' <small>개</small>') : ('0 <small>개</small>');
   document.getElementById('mRate').textContent=rawRate.toFixed(2)+'%';
   document.getElementById('rbCovered').textContent = R.covered?'부책':'면책';
   document.getElementById('rbCovered').style.background = R.covered?'rgba(255,255,255,0.16)':'rgba(0,0,0,0.18)';
   document.getElementById('rbFallDmg').textContent = fmt(R.fallDamage)+' 개';
-  document.getElementById('rbPrevRate').textContent = (R.admitRate||0).toFixed(2)+' %';
 
   /* 나무조사 3행 자동칸 + 피해구성 합계/비율 */
   document.getElementById('autoFallDmg').value=fmt(R.fallDamage);
