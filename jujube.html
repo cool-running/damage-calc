@@ -405,17 +405,6 @@ body.big-text .scell .ci{font-size:19px!important}
   </div>
 </div>
 
-<div class="modal-bg" id="overwriteModal" style="display:none">
-  <div class="modal" style="max-width:300px">
-    <div style="font-size:15px;font-weight:800;color:var(--main-d);margin-bottom:8px">기존 기록 덮어쓰기</div>
-    <div style="font-size:13px;color:#555;margin-bottom:18px;line-height:1.5"><b id="ow-farm-name"></b> 기록이 이미 있습니다.<br>덮어쓰겠습니까?</div>
-    <div style="display:flex;gap:8px">
-      <button style="flex:1;height:40px;border:1.5px solid #ddd;border-radius:8px;background:white;color:#555;font-size:14px;font-weight:600;cursor:pointer" onclick="cancelOverwrite()">취소</button>
-      <button style="flex:1;height:40px;border:none;border-radius:8px;background:var(--main);color:white;font-size:14px;font-weight:700;cursor:pointer" onclick="confirmOverwrite()">덮어쓰기</button>
-    </div>
-  </div>
-</div>
-
 <div id="capture-template" style="position:fixed;left:-99999px;top:0;width:680px;background:#fff;padding:0;z-index:-1"></div>
 
 <div class="modal-bg" id="treeDelModal">
@@ -1225,7 +1214,6 @@ function loadState(){
 }
 
 /* ───────── 이력 ───────── */
-let _pendingRec=null,_pendingEi=-1;
 function _varType(v){if(!v.cat)return null;if('DEFGH'.includes(v.cat))return '사과대추';let g=v.group||'';if(g==='jc')g='bj';return g==='jr'?'재래':'복조';}
 function _doSaveHistory(rec,ei){
   let recs=[];try{recs=JSON.parse(localStorage.getItem('jujube_history')||'[]');}catch(e){}
@@ -1244,17 +1232,8 @@ function saveToHistory(){
     saved_at:new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\s/g,'')};
   let recs=[];try{recs=JSON.parse(localStorage.getItem('jujube_history')||'[]');}catch(e){}
   const ei=farm?recs.findIndex(r=>r.farm===farm):-1;
-  if(ei>=0){
-    // 같은 농지번호 — 덮어쓰기 팝업
-    _pendingRec=rec;_pendingEi=ei;
-    $('ow-farm-name').textContent=farm?'농지 '+farm:'(번호 없음)';
-    $('overwriteModal').style.display='flex';
-  } else {
-    _doSaveHistory(rec,-1);
-  }
+  _doSaveHistory(rec,ei);   // 같은 농지번호가 있어도 묻지 않고 바로 덮어쓰기
 }
-function confirmOverwrite(){$('overwriteModal').style.display='none';if(_pendingRec)_doSaveHistory(_pendingRec,_pendingEi);_pendingRec=null;_pendingEi=-1;}
-function cancelOverwrite(){$('overwriteModal').style.display='none';_pendingRec=null;_pendingEi=-1;}
 function openHistoryModal(){
   let recs=[];try{recs=JSON.parse(localStorage.getItem('jujube_history')||'[]');}catch(e){}
   const list=$('history-list');
