@@ -663,8 +663,10 @@ function correctWalk(rawLL, ringsLL, medAcc){
   const match=diff<=WALK_MATCH_PCT && okRaw && okFit && okBias;
   // 팜맵 일치: 한 필지면 팜맵 경계, 여러 필지면 합친 외곽(길 포함)
   // 불일치: 경계에 붙이지 않고 '위치 쏠림만 보정한 걸은 모양' 그대로 (보정이 면적을 바꾸지 않게)
-  const shape = match ? (rings.length===1 ? rings[0] : full) : moved;
-  const measA = match ? baseA : movedA;
+  // 통과: 경계 가까이 걸은 곳(4m 이내, GPS 오차 수준)만 경계에 맞추고, 그보다 벗어나 걸은 곳은 걸은 대로 반영
+  // 불통과: 경계에 맞추지 않고 위치 쏠림만 보정한 걸은 모양 그대로
+  const shape = match ? snapped : moved;
+  const measA = match ? corrA : movedA;
   return {rawA,corrA,farmA,baseA,gapA:Math.max(0,baseA-farmA),diff,match,n:rings.length,movedA,rawDiff,fit,bias,okRaw,okFit,okBias,measA,shift:Math.hypot(sh.ox,sh.oy),
     result:shape.map(q=>fromM(q,ref))};
 }
