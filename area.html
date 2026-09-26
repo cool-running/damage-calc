@@ -161,6 +161,8 @@ if(typeof kakao==='undefined'){
 
 let map=null, geocoder=null, myMarker=null;
 let mode='parcel'; // 'parcel' = 지적도 자동측정, 'farmmap' = 팜맵(실경작지) 자동측정, 'manual' = 수동측정(점 찍기)
+const ZOOM_AUTO=1, ZOOM_MANUAL=3; // 지적도·팜맵은 최대 확대(1), 수동측정은 3
+function viewLevel(){ return mode==='manual' ? ZOOM_MANUAL : ZOOM_AUTO; }
 const FARMMAP_URL='https://farmmap.jinnykim61.workers.dev/'; // Cloudflare Worker 중계 (공공데이터포털 팜맵)
 const VWORLD_KEY='11A78BAB-C75E-3C35-A0D1-172138B3A5EA';
 let points=[];          // [{lat,lng}]
@@ -172,7 +174,7 @@ kakao.maps.load(function(){
   geocoder = new kakao.maps.services.Geocoder();
 
   map = new kakao.maps.Map(document.getElementById('map'), {
-    center: new kakao.maps.LatLng(37.5665, 126.9780), level: 3,
+    center: new kakao.maps.LatLng(37.5665, 126.9780), level: ZOOM_AUTO,
     mapTypeId: kakao.maps.MapTypeId.HYBRID,
     tileAnimation: false
   });
@@ -280,7 +282,7 @@ function closeAddrList(){
 function goToAddr(r){
   const lat=parseFloat(r.y), lng=parseFloat(r.x);
   const p=new kakao.maps.LatLng(lat,lng);
-  map.setCenter(p); map.setLevel(3);
+  map.setCenter(p); map.setLevel(viewLevel());
   if(mode==='parcel'){
     fetchParcelWhole(lat,lng);
   } else if(mode==='farmmap'){
@@ -602,7 +604,7 @@ function locateMe(){
     pos=>{
       curLat=pos.coords.latitude; curLng=pos.coords.longitude; curAcc=Math.round(pos.coords.accuracy);
       const p=new kakao.maps.LatLng(curLat,curLng);
-      map.setCenter(p); map.setLevel(3);
+      map.setCenter(p); map.setLevel(viewLevel());
       if(!myMarker){
         myMarker=new kakao.maps.CustomOverlay({
           position:p,
