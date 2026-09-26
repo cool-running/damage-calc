@@ -46,12 +46,17 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .mbtn.on{background:var(--blue);border-color:var(--blue);color:#fff;}
 .mbtn:active{opacity:.85;}
 
-#map{position:fixed;top:calc(var(--top-h) + var(--search-h) + var(--mode-h));left:0;right:0;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px));z-index:1;background:#e5e5e5;-webkit-touch-callout:none;}
+#mapWrap{position:fixed;top:calc(var(--top-h) + var(--search-h) + var(--mode-h));left:0;right:0;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px));z-index:1;background:#e5e5e5;overflow:hidden;-webkit-touch-callout:none;}
+#map{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:50% 50%;-webkit-touch-callout:none;}
 #map img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none;}
 
 
 .myloc-btn{position:fixed;left:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);width:44px;height:44px;border-radius:50%;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;}
 .myloc-btn:active{opacity:.7;}
+.mag-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:44px;min-width:64px;padding:0 12px;border-radius:22px;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:14px;font-weight:800;color:var(--blue);font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;justify-content:center;gap:4px;z-index:150;}
+.mag-btn.show{display:flex;}
+.mag-btn.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+.mag-btn:active{opacity:.7;}
 
 .panel{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));height:var(--panel-h);background:#fff;border-top:0.5px solid var(--border);padding:12px 16px;z-index:50;overflow:hidden;}
 .result-row{display:flex;align-items:baseline;gap:8px;}
@@ -109,7 +114,8 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   <button class="mbtn" id="modeManualBtn" onclick="setAreaMode('manual')">✏️ 수동측정</button>
 </div>
 
-<div id="map"></div>
+<div id="mapWrap"><div id="map"></div></div>
+<button class="mag-btn" id="magBtn" onclick="cycleMag()">🔍 ×1</button>
 
 <button class="myloc-btn" onclick="locateMe()">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round">
@@ -184,6 +190,7 @@ kakao.maps.load(function(){
   kakao.maps.event.addListener(map, 'click', function(e){
     const _al=document.getElementById('addrList');
     if(_al && _al.classList.contains('show')){ closeAddrList(); return; }
+    if(magK>1) return; // 돋보기 확대 중에는 아래 직접 계산한 좌표로 처리
     const la=e.latLng.getLat(), ln=e.latLng.getLng();
     if(mode==='manual') addPoint(la, ln);
     else if(mode==='farmmap'){ if(!selectCachedFarm(la, ln)) fetchFarmmap(la, ln); }
@@ -336,6 +343,8 @@ function setAreaMode(m){
   document.getElementById('undoBtn').style.display = m==='manual' ? '' : 'none';
   clearAll();
   if(m==='farmmap') scheduleNearbyFarm(); else hideNearbyFarm();
+  if(m!=='manual') setMag(1);
+  document.getElementById('magBtn').classList.toggle('show', m==='manual');
 }
 
 function addrPlaceholderFor(m){
@@ -512,7 +521,7 @@ async function loadNearbyFarm(){
     if(!ids){
       const r=await fetch(`${FARMMAP_URL}?mode=area&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}&radius=${radius}&rows=500`);
       const d=await r.json();
-      if(!d.ok) return;
+      if(!d.ok){ showToast('🌾 주변 농지 조회 실패: '+(d.error||'알 수 없음')); return; }
       ids=[...new Set((d.items||[]).map(x=>x.id).filter(Boolean))];
       farmCellCache[cell]=ids; saveFarmStore();
     }
@@ -522,7 +531,8 @@ async function loadNearbyFarm(){
       if(mode!=='farmmap') break;
       const r=await fetch(`${FARMMAP_URL}?mode=ids&ids=${need.slice(i,i+40).join(',')}`);
       const d=await r.json();
-      if(d.ok) (d.items||[]).forEach(it=>{
+      if(!d.ok){ showToast('🌾 농지 경계 조회 실패: '+(d.error||'알 수 없음')+' — 워커 업데이트 확인'); break; }
+      (d.items||[]).forEach(it=>{
         if(it.rings&&it.rings.length){
           farmCache[it.id]={id:it.id,use:it.use,lnm:it.lnm,year:it.year,img:it.img,rings:it.rings};
           drawFarmPoly(farmCache[it.id]);
@@ -537,6 +547,49 @@ async function loadNearbyFarm(){
     _nearbyBusy=false;
   }
 }
+
+/* ── 수동측정 돋보기 ──
+   카카오 지도는 레벨1보다 더 확대가 안 되므로, 지도 화면 자체를 2~4배로 키워서 보여줌(화질은 떨어짐)
+   확대 중 탭 위치는 화면 배율을 되돌려 계산한 뒤 지도 좌표로 변환 */
+let magK=1;
+const MAG_STEPS=[1,2,3,4];
+function setMag(k){
+  magK=k;
+  const el=document.getElementById('map');
+  el.style.transform = k>1 ? `scale(${k})` : '';
+  const b=document.getElementById('magBtn');
+  if(b){ b.textContent='🔍 ×'+k; b.classList.toggle('on',k>1); }
+}
+function cycleMag(){
+  if(magK===1 && map.getLevel()>1){ map.setLevel(1); } // 먼저 지도 최대 확대
+  const i=MAG_STEPS.indexOf(magK);
+  const k=MAG_STEPS[(i+1)%MAG_STEPS.length];
+  setMag(k);
+  if(k>1) showToast('🔍 '+k+'배 확대 — 탭하면 핀이 찍혀요');
+}
+(function(){
+  const wrap=document.getElementById('mapWrap');
+  const active=new Map(); let tap=null;
+  wrap.addEventListener('pointerdown',e=>{
+    active.set(e.pointerId,true);
+    tap = active.size===1 ? {x:e.clientX,y:e.clientY,t:Date.now(),id:e.pointerId} : null;
+  },{passive:true});
+  const end=e=>{
+    active.delete(e.pointerId);
+    if(e.type!=='pointerup' || !tap || tap.id!==e.pointerId) { if(active.size===0) tap=null; return; }
+    const moved=Math.hypot(e.clientX-tap.x,e.clientY-tap.y), dt=Date.now()-tap.t;
+    tap=null;
+    if(magK===1 || mode!=='manual' || moved>10 || dt>600) return;
+    const al=document.getElementById('addrList');
+    if(al && al.classList.contains('show')){ closeAddrList(); return; }
+    const r=document.getElementById('map').getBoundingClientRect(); // 확대된 크기 기준
+    const x=(e.clientX-r.left)/magK, y=(e.clientY-r.top)/magK;       // 원래 지도 화면 좌표
+    const ll=map.getProjection().coordsFromContainerPoint(new kakao.maps.Point(x,y));
+    addPoint(ll.getLat(), ll.getLng());
+  };
+  wrap.addEventListener('pointerup',end,{passive:true});
+  wrap.addEventListener('pointercancel',end,{passive:true});
+})();
 
 function redrawShape(){
   if(polyline){ polyline.setMap(null); polyline=null; }
