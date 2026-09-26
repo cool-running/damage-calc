@@ -402,7 +402,7 @@ function draw(){
   if(cardType==='memo'){
     const font=curWeight+' '+seqSz+'px '+curFont;
     const maxW=W*0.84;
-    const lines=wrapText(memoText||'메모를 입력하세요', font, maxW);
+    const lines=wrapText(memoText||'메모를\n입력하세요', font, maxW);
     const lineH=Math.round(seqSz*1.28);
     const totalH=lineH*lines.length;
     const startY=ty-totalH/2+lineH/2;
