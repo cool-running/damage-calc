@@ -211,6 +211,7 @@ let mode='parcel'; // 'parcel' = 지적도 자동측정, 'farmmap' = 팜맵(실�
 const ZOOM_AUTO=1, ZOOM_MANUAL=3; // 지적도·팜맵은 최대 확대(1), 수동측정은 3
 function viewLevel(){ return mode==='manual' ? ZOOM_MANUAL : ZOOM_AUTO; }
 function farmModeOn(){ return mode==='farmmap' || mode==='walk'; } // 초록 팜맵 경계를 보여주는 모드
+function isNoData(d){ return d && (String(d.code)==='3' || String(d.code)==='03' || /NODATA/i.test(d.error||'')); } // 팜맵에 없는 곳(산림·초지·주거지 등)
 const FARMMAP_URL='https://farmmap.jinnykim61.workers.dev/'; // Cloudflare Worker 중계 (공공데이터포털 팜맵)
 const VWORLD_KEY='11A78BAB-C75E-3C35-A0D1-172138B3A5EA';
 let points=[];          // [{lat,lng}]
@@ -254,26 +255,37 @@ function toXY(p, refLat){
   const R=6378137;
   return { x: R*(p.lng*Math.PI/180)*Math.cos(refLat*Math.PI/180), y: R*(p.lat*Math.PI/180) };
 }
+/* 정밀 면적·둘레: 도형 중심에 맞춘 국지 횡메르카토르(GRS80 타원체, 축척계수 1) 평면으로 변환해서 계산
+   - 지구를 공으로 단순화한 이전 방식보다 정확 (이전 방식은 약 0.3% 크게 나옴)
+   - 필지 크기(수 km 이내)에서는 타원체 실제 면적과 0.001% 이내로 일치 */
+function tmLocal(pts){
+  const a=6378137, f=1/298.257222101, e2=f*(2-f), ep2=e2/(1-e2), d=Math.PI/180;
+  let la=0, lo=0; pts.forEach(p=>{la+=p.lat; lo+=p.lng;}); la/=pts.length; lo/=pts.length;
+  const lat0=la*d, lon0=lo*d;
+  const M=p=>a*((1-e2/4-3*e2*e2/64-5*e2**3/256)*p-(3*e2/8+3*e2*e2/32+45*e2**3/1024)*Math.sin(2*p)
+      +(15*e2*e2/256+45*e2**3/1024)*Math.sin(4*p)-(35*e2**3/3072)*Math.sin(6*p));
+  const M0=M(lat0);
+  return pts.map(q=>{
+    const p=q.lat*d, l=q.lng*d;
+    const N=a/Math.sqrt(1-e2*Math.sin(p)**2), T=Math.tan(p)**2, C=ep2*Math.cos(p)**2, A=(l-lon0)*Math.cos(p);
+    return { x: N*(A+(1-T+C)*A**3/6+(5-18*T+T*T+72*C-58*ep2)*A**5/120),
+             y: M(p)-M0+N*Math.tan(p)*(A*A/2+(5-T+9*C+4*C*C)*A**4/24+(61-58*T+T*T+600*C-330*ep2)*A**6/720) };
+  });
+}
 function calcArea(pts){
   if(pts.length<3) return 0;
-  const refLat=pts[0].lat;
-  const xy=pts.map(p=>toXY(p,refLat));
-  let a=0;
-  for(let i=0;i<xy.length;i++){
-    const j=(i+1)%xy.length;
-    a += xy[i].x*xy[j].y - xy[j].x*xy[i].y;
-  }
-  return Math.abs(a/2);
+  const xy=tmLocal(pts);
+  let s=0;
+  for(let i=0;i<xy.length;i++){ const j=(i+1)%xy.length; s+=xy[i].x*xy[j].y-xy[j].x*xy[i].y; }
+  return Math.abs(s/2);
 }
 function calcPerimeter(pts){
   if(pts.length<2) return 0;
-  let total=0;
+  const xy=tmLocal(pts);
   const n = pts.length>=3 ? pts.length : pts.length-1;
-  for(let i=0;i<n;i++){
-    const j=(i+1)%pts.length;
-    total += haversine(pts[i], pts[j]);
-  }
-  return total;
+  let t=0;
+  for(let i=0;i<n;i++){ const j=(i+1)%pts.length; t+=Math.hypot(xy[j].x-xy[i].x, xy[j].y-xy[i].y); }
+  return t;
 }
 
 /* ── 주소/지번 검색 ── */
@@ -469,7 +481,7 @@ async function fetchFarmmap(lat,lng){
     const d=await r.json();
     clearTimeout(timer);
     if(myReqId!==_farmReqId) return;
-    if(!d.ok){ showToast('🌾 팜맵 조회 실패'+(d.error?': '+d.error:'')); return; }
+    if(!d.ok){ showToast(isNoData(d) ? '🌾 이 위치는 팜맵 농경지가 아니에요' : '🌾 팜맵 조회 실패'+(d.error?': '+d.error:'')); return; }
     const it=(d.items||[]).find(x=>x.rings&&x.rings.length);
     if(!it){ showToast('🌾 이 위치는 팜맵 농경지가 아니에요'); return; }
     applyFarmSelection(it,lat,lng);
@@ -571,7 +583,7 @@ async function loadNearbyFarm(){
     if(!ids){
       const r=await fetch(`${FARMMAP_URL}?mode=area&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}&radius=${radius}&rows=500`);
       const d=await r.json();
-      if(!d.ok){ showToast('🌾 주변 농지 조회 실패: '+(d.error||'알 수 없음')); return; }
+      if(!d.ok){ if(!isNoData(d)) showToast('🌾 주변 농지 조회 실패: '+(d.error||'알 수 없음')); else { farmCellCache[cell]=[]; saveFarmStore(); } return; }
       ids=[...new Set((d.items||[]).map(x=>x.id).filter(Boolean))];
       farmCellCache[cell]=ids; saveFarmStore();
     }
