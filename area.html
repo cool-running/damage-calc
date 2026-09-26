@@ -240,8 +240,8 @@ kakao.maps.load(function(){
   updateGestureMode();
   kakao.maps.event.addListener(map, 'idle', scheduleNearbyFarm);
 
-  locateMe();
-  setTimeout(restoreWalk, 300);
+  const restored=restoreWalk();
+  locateMe(restored);
 });
 
 /* ── 좌표 계산 (구면 근사, 소규모 필지에 충분히 정확) ── */
@@ -401,8 +401,9 @@ function setAreaMode(m){
   document.getElementById('walkEndBtn').style.display = 'none';
   if(walk.on) stopWalkRecording();
   document.getElementById('undoBtn').style.display = m==='manual' ? '' : 'none';
-  clearAll();
+  clearAll(true);
   if(farmModeOn()) scheduleNearbyFarm(); else hideNearbyFarm();
+  if(m==='walk' && !_restoringWalk) restoreWalkDone(); // 저장된 실측 결과가 있으면 다시 표시
 
 }
 
@@ -414,7 +415,8 @@ function addrPlaceholderFor(m){
     : '핀을 선택하면서 면적을 측정할 수 있어요\n(3개 이상 찍으면 면적이 계산돼요)';
 }
 
-function clearAll(){
+function clearAll(fromModeSwitch){
+  if(!fromModeSwitch) clearSavedDone();
   points=[];
   vertexOverlays.forEach(d=>d.setMap(null)); vertexOverlays=[];
   if(polyline){ polyline.setMap(null); polyline=null; }
@@ -481,9 +483,9 @@ async function fetchFarmmap(lat,lng){
     const d=await r.json();
     clearTimeout(timer);
     if(myReqId!==_farmReqId) return;
-    if(!d.ok){ showToast(isNoData(d) ? '🌾 이 위치는 팜맵 농경지가 아니에요' : '🌾 팜맵 조회 실패'+(d.error?': '+d.error:'')); return; }
+    if(!d.ok){ showToast(isNoData(d) ? '🌾 이 위치에는 팜맵 정보가 없어요' : '🌾 팜맵 조회 실패'+(d.error?': '+d.error:'')); return; }
     const it=(d.items||[]).find(x=>x.rings&&x.rings.length);
-    if(!it){ showToast('🌾 이 위치는 팜맵 농경지가 아니에요'); return; }
+    if(!it){ showToast('🌾 이 위치에는 팜맵 정보가 없어요'); return; }
     applyFarmSelection(it,lat,lng);
     cacheFarmItem(it);
   }catch(e){
@@ -800,28 +802,49 @@ function fetchLots(){
    → 보정 면적이 팜맵 ±5% 이내면 팜맵 경계 채택, 아니면(일부 경작 등) 보정된 실측 모양 사용 */
 const WALK_MAX_ACC=20;   // 이보다 오차 큰 위치는 버림(m)
 const WALK_MIN_STEP=1.5; // 이보다 가까운 점은 건너뜀(m)
-let walk={on:false,paused:false,autoPaused:false,watchId:null,pts:[],accs:[],line:null,rawLine:null,wake:null};
-const WALK_STORE_KEY='area_walk_v1'; // 사진 찍으러 카메라 갔다가 앱이 새로 열려도 기록을 이어가도록 저장
+let walk={on:false,paused:false,autoPaused:false,watchId:null,pts:[],accs:[],line:null,fill:null,rawLine:null,startMk:null,wake:null};
+const WALK_STORE_KEY='area_walk_v1';
+const WALK_DONE_KEY='area_walk_done_v1'; // 끝낸 실측 결과 (초기화 전까지 유지) // 사진 찍으러 카메라 갔다가 앱이 새로 열려도 기록을 이어가도록 저장
 function walkInfo(txt){
   const el=document.getElementById('walkInfo');
   el.style.display = txt ? '' : 'none'; el.textContent = txt||'';
 }
 function clearWalkDrawing(){
   if(walk.line){ walk.line.setMap(null); walk.line=null; }
+  if(walk.fill){ walk.fill.setMap(null); walk.fill=null; }
+  if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; }
   if(walk.rawLine){ walk.rawLine.setMap(null); walk.rawLine=null; }
   walkInfo('');
 }
 function saveWalk(){ try{ localStorage.setItem(WALK_STORE_KEY, JSON.stringify({t:Date.now(),pts:walk.pts,accs:walk.accs})); }catch(e){} }
 function clearSavedWalk(){ try{ localStorage.removeItem(WALK_STORE_KEY); }catch(e){} }
+function clearSavedDone(){ try{ localStorage.removeItem(WALK_DONE_KEY); }catch(e){} }
 function walkDist(){ let d=0; for(let i=1;i<walk.pts.length;i++) d+=haversine(walk.pts[i-1],walk.pts[i]); return d; }
 function walkStatus(prefix,extra){
   const a = walk.pts.length>=3 ? calcArea(walk.pts) : 0;
   walkInfo(`${prefix} · 점 ${walk.pts.length}개 · ${fmtNum(walkDist(),0)}m`+(extra||'')+(a?` · 현재 ${fmtNum(a,0)}㎡`:''));
 }
+// 시작점: 걷는 동안은 작은 초록 삼각형, 끝나면 시작·끝 표시(초록 테두리 + 빨간 점)
+function drawStartMark(done){
+  if(!walk.pts.length) return;
+  if(walk.startMk){ if(walk.startMk._done===!!done) return; walk.startMk.setMap(null); walk.startMk=null; }
+  const p=walk.pts[0];
+  const html = done
+    ? '<div class="keep-size" style="width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #2E7D32;box-shadow:0 1px 4px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;"><div style="width:6px;height:6px;border-radius:50%;background:#E53935;"></div></div>'
+    : '<div class="keep-size" style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #2E7D32;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 1px 2px rgba(0,0,0,.5));"></div>';
+  walk.startMk=new kakao.maps.CustomOverlay({map, position:new kakao.maps.LatLng(p.lat,p.lng), zIndex:6, yAnchor:0.5, xAnchor:0.5, content:html});
+  walk.startMk._done=!!done;
+}
 function drawWalkLine(){
   const path=walk.pts.map(q=>new kakao.maps.LatLng(q.lat,q.lng));
   if(walk.line) walk.line.setPath(path);
   else if(path.length) walk.line=new kakao.maps.Polyline({map,path,strokeWeight:3,strokeColor:'#FF9800',strokeOpacity:0.95,zIndex:4});
+  // 걸은 선 안쪽을 연한 주황으로 (점 3개부터)
+  if(path.length>=3){
+    if(walk.fill) walk.fill.setPath(path);
+    else walk.fill=new kakao.maps.Polygon({map,path,strokeWeight:0,strokeOpacity:0,fillColor:'#FFB74D',fillOpacity:0.3,zIndex:2});
+  }
+  drawStartMark();
 }
 function updateWalkButtons(){
   const b=document.getElementById('walkBtn'), e=document.getElementById('walkEndBtn');
@@ -850,7 +873,7 @@ async function startWalk(){
   if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
   points=[]; redrawShape(); updateInfoPanel(); clearWalkDrawing();
   walk.pts=[]; walk.accs=[]; walk.on=true; walk.paused=false; walk.autoPaused=false;
-  clearSavedWalk();
+  clearSavedWalk(); clearSavedDone();
   updateWalkButtons();
   document.getElementById('addrVal').textContent='경계를 따라 걷는 중...\n사진 찍을 땐 ⏸ 일시정지, 다 돌면 ■ 끝내기';
   walkInfo('GPS 신호 기다리는 중...');
@@ -905,7 +928,7 @@ document.addEventListener('visibilitychange',()=>{
 // 앱이 다시 열렸을 때 저장된 실측 기록 이어가기 (6시간 이내)
 function restoreWalk(){
   let sv=null; try{ sv=JSON.parse(localStorage.getItem(WALK_STORE_KEY)||'null'); }catch(e){}
-  if(!sv || !sv.pts || !sv.pts.length || Date.now()-sv.t>6*3600000){ clearSavedWalk(); return; }
+  if(!sv || !sv.pts || !sv.pts.length || Date.now()-sv.t>6*3600000){ clearSavedWalk(); return restoreWalkDone(); }
   setAreaMode('walk');
   walk.pts=sv.pts; walk.accs=sv.accs||[]; walk.on=true; walk.paused=true; walk.autoPaused=true;
   drawWalkLine(); updateWalkButtons(); saveWalk();
@@ -914,6 +937,24 @@ function restoreWalk(){
   const l=walk.pts[walk.pts.length-1];
   map.setCenter(new kakao.maps.LatLng(l.lat,l.lng));
   showToast('🚶 이전 실측 기록을 이어서 할 수 있어요');
+  return true;
+}
+// 끝낸 실측 결과 복원 (다른 메뉴 다녀와도 그대로)
+let _restoringWalk=false;
+function restoreWalkDone(){
+  let sv=null; try{ sv=JSON.parse(localStorage.getItem(WALK_DONE_KEY)||'null'); }catch(e){}
+  if(!sv || !sv.result || sv.result.length<3) return false;
+  _restoringWalk=true; setAreaMode('walk'); _restoringWalk=false;
+  walk.pts=sv.raw||[];
+  drawStartMark(true);
+  if(walk.pts.length>=3) walk.rawLine=new kakao.maps.Polyline({map,path:walk.pts.concat([walk.pts[0]]).map(q=>new kakao.maps.LatLng(q.lat,q.lng)),
+    strokeWeight:3,strokeColor:'#FF9800',strokeOpacity:0.9,strokeStyle:'shortdash',zIndex:4});
+  points=sv.result; redrawShape(); updateInfoPanel();
+  const b=new kakao.maps.LatLngBounds(); points.forEach(q=>b.extend(new kakao.maps.LatLng(q.lat,q.lng)));
+  map.setBounds(b);
+  if(sv.c) updateAddress(sv.c.lat,sv.c.lng);
+  showToast('🚶 이전 실측 결과 — 새로 재려면 🗑 초기화');
+  return true;
 }
 // 걸은 범위 주변 팜맵 필지를 모두 확보(없으면 반경 조회 → ID별 경계 조회)
 async function ensureFarmsAround(lat,lng,radius){
@@ -941,13 +982,16 @@ function getFarmAt(lat,lng){
       return it||null;
     }).catch(()=>null);
 }
-async function finishWalk(){
+window.finishWalk=function(){ return finishWalkImpl(); };
+async function finishWalkImpl(){
   stopWalkRecording();
   clearSavedWalk();
   const raw=walk.pts.slice();
   if(raw.length<3){ showToast('🚶 기록된 점이 부족해요 (3개 이상 필요)'); walkInfo(''); document.getElementById('addrVal').textContent=addrPlaceholderFor(mode); return; }
   // 걸은 선(닫힌 모양)을 주황 점선으로 남겨둠
   if(walk.line){ walk.line.setMap(null); walk.line=null; }
+  if(walk.fill){ walk.fill.setMap(null); walk.fill=null; }
+  drawStartMark(true);
   walk.rawLine=new kakao.maps.Polyline({map,path:raw.concat([raw[0]]).map(q=>new kakao.maps.LatLng(q.lat,q.lng)),
     strokeWeight:3,strokeColor:'#FF9800',strokeOpacity:0.9,strokeStyle:'shortdash',zIndex:4});
   const c=geoRef(raw);
@@ -976,6 +1020,7 @@ async function finishWalk(){
   redrawShape(); updateInfoPanel();
   walkInfo('');
   updateAddress(c.lat,c.lng);
+  try{ localStorage.setItem(WALK_DONE_KEY, JSON.stringify({t:Date.now(), raw, result, c})); }catch(e){}
   showToast('🚶 실측 완료');
 }
 
@@ -1146,7 +1191,7 @@ function updateAddress(lat,lng,extra){
 }
 
 /* ── 현위치 ── */
-function locateMe(){
+function locateMe(keepView){
   if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
   document.getElementById('gpsBadge').className='gps-badge';
   document.getElementById('gpsBadge').textContent='위치 확인 중...';
@@ -1154,7 +1199,7 @@ function locateMe(){
     pos=>{
       curLat=pos.coords.latitude; curLng=pos.coords.longitude; curAcc=Math.round(pos.coords.accuracy);
       const p=new kakao.maps.LatLng(curLat,curLng);
-      setMag(1); map.setCenter(p); map.setLevel(viewLevel());
+      if(keepView!==true){ setMag(1); map.setCenter(p); map.setLevel(viewLevel()); }
       if(!myMarker){
         myMarker=new kakao.maps.CustomOverlay({
           position:p,
