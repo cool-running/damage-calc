@@ -651,14 +651,18 @@ function nearestOnRing(p,ri){
 function nearestOnRings(p,ris){ let best=null; ris.forEach((ri,k)=>{ const n=nearestOnRing(p,ri); if(!best||n.d<best.d){ n.k=k; best=n; } }); return best; }
 function alignCost(pts,ris,ox,oy){ let c=0; for(const p of pts){ c+=Math.min(8, nearestOnRings({x:p.x+ox,y:p.y+oy},ris).d); } return c/pts.length; }
 function alignShift(pts,ris,maxShift){
-  let best={ox:0,oy:0,c:alignCost(pts,ris,0,0)};
-  for(let ox=-maxShift;ox<=maxShift;ox+=1) for(let oy=-maxShift;oy<=maxShift;oy+=1){
+  // 속도: 점은 최대 80개만 골라 쓰고, 2m → 0.5m → 0.125m 간격으로 좁혀가며 찾음
+  const st=Math.max(1,Math.ceil(pts.length/80)), P=pts.filter((_,i)=>i%st===0);
+  let best={ox:0,oy:0,c:alignCost(P,ris,0,0)};
+  for(let ox=-maxShift;ox<=maxShift;ox+=2) for(let oy=-maxShift;oy<=maxShift;oy+=2){
     if(ox*ox+oy*oy>maxShift*maxShift) continue;
-    const c=alignCost(pts,ris,ox,oy); if(c<best.c) best={ox,oy,c};
+    const c=alignCost(P,ris,ox,oy); if(c<best.c) best={ox,oy,c};
   }
-  const cx=best.ox, cy=best.oy;
-  for(let ox=cx-1;ox<=cx+1;ox+=0.25) for(let oy=cy-1;oy<=cy+1;oy+=0.25){
-    const c=alignCost(pts,ris,ox,oy); if(c<best.c) best={ox,oy,c};
+  for(const [span,step] of [[2,0.5],[0.5,0.125]]){
+    const cx=best.ox, cy=best.oy;
+    for(let ox=cx-span;ox<=cx+span+1e-9;ox+=step) for(let oy=cy-span;oy<=cy+span+1e-9;oy+=step){
+      const c=alignCost(P,ris,ox,oy); if(c<best.c) best={ox,oy,c};
+    }
   }
   return best;
 }
@@ -802,7 +806,13 @@ function fetchLots(){
    → 보정 면적이 팜맵 ±5% 이내면 팜맵 경계 채택, 아니면(일부 경작 등) 보정된 실측 모양 사용 */
 const WALK_MAX_ACC=20;   // 이보다 오차 큰 위치는 버림(m)
 const WALK_MIN_STEP=1.5; // 이보다 가까운 점은 건너뜀(m)
-let walk={on:false,paused:false,autoPaused:false,watchId:null,pts:[],accs:[],line:null,fill:null,rawLine:null,startMk:null,wake:null};
+let walk={on:false,paused:false,autoPaused:false,watchId:null,pts:[],accs:[],line:null,fill:null,rawLine:null,startMk:null,wake:null,pref:[],prefBusy:null};
+const withTimeout=(p,ms)=>Promise.race([p,new Promise(r=>setTimeout(r,ms))]);
+// 걷는 동안 지나가는 곳의 팜맵을 미리 받아둠 → 끝내기 누르면 기다리지 않고 바로 계산
+function prefetchFarms(p){
+  if(walk.prefBusy || walk.pref.some(c=>haversine(c,p)<120)) return;
+  walk.prefBusy=ensureFarmsAround(p.lat,p.lng,200).then(()=>{ walk.pref.push(p); }).finally(()=>{ walk.prefBusy=null; });
+}
 const WALK_STORE_KEY='area_walk_v1';
 const WALK_DONE_KEY='area_walk_done_v1'; // 끝낸 실측 결과 (초기화 전까지 유지) // 사진 찍으러 카메라 갔다가 앱이 새로 열려도 기록을 이어가도록 저장
 function walkInfo(txt){
@@ -872,7 +882,7 @@ function toggleWalk(){
 async function startWalk(){
   if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
   points=[]; redrawShape(); updateInfoPanel(); clearWalkDrawing();
-  walk.pts=[]; walk.accs=[]; walk.on=true; walk.paused=false; walk.autoPaused=false;
+  walk.pts=[]; walk.accs=[]; walk.pref=[]; walk.on=true; walk.paused=false; walk.autoPaused=false;
   clearSavedWalk(); clearSavedDone();
   updateWalkButtons();
   document.getElementById('addrVal').textContent='경계를 따라 걷는 중...\n사진 찍을 땐 ⏸ 일시정지, 다 돌면 ■ 끝내기';
@@ -911,6 +921,7 @@ function onWalkPos(pos){
   const last=walk.pts[walk.pts.length-1];
   if(last && haversine(last,p)<WALK_MIN_STEP) return;
   walk.pts.push(p); walk.accs.push(acc);
+  prefetchFarms(p);
   drawWalkLine();
   saveWalk();
   walkStatus('기록 중',` · ±${acc}m`);
@@ -999,8 +1010,12 @@ async function finishWalkImpl(){
   walkInfo('면적 계산 중...');
   // 걸은 범위(가장 먼 점 + 여유 20m) 안의 팜맵 필지 확보
   let far=0; raw.forEach(q=>{ far=Math.max(far,haversine(c,q)); });
-  await ensureFarmsAround(c.lat,c.lng,far+20);
-  await getFarmAt(c.lat,c.lng);
+  if(walk.prefBusy) await withTimeout(walk.prefBusy, 3000);
+  const covered = raw.every(q=>walk.pref.some(pc=>haversine(pc,q)<=170));
+  if(!covered){
+    await withTimeout(ensureFarmsAround(c.lat,c.lng,far+20), 5000);
+    await withTimeout(getFarmAt(c.lat,c.lng), 3000);
+  }
   const cands=[], used=[];
   Object.values(farmCache).forEach(it=>{
     it.rings.forEach(rg=>{
@@ -1193,31 +1208,33 @@ function updateAddress(lat,lng,extra){
 /* ── 현위치 ── */
 function locateMe(keepView){
   if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
-  document.getElementById('gpsBadge').className='gps-badge';
-  document.getElementById('gpsBadge').textContent='위치 확인 중...';
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      curLat=pos.coords.latitude; curLng=pos.coords.longitude; curAcc=Math.round(pos.coords.accuracy);
-      const p=new kakao.maps.LatLng(curLat,curLng);
-      if(keepView!==true){ setMag(1); map.setCenter(p); map.setLevel(viewLevel()); }
-      if(!myMarker){
-        myMarker=new kakao.maps.CustomOverlay({
-          position:p,
-          content:'<div class="keep-size" style="width:10px;height:10px;border-radius:50%;background:#2196F3;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);"></div>',
-          zIndex:4
-        });
-        myMarker.setMap(map);
-      } else { myMarker.setPosition(p); }
-      const label = curAcc<10?'좋음':curAcc<30?'보통':'낮음';
-      document.getElementById('gpsBadge').className='gps-badge ok';
-      document.getElementById('gpsBadge').textContent='±'+curAcc+'m '+label;
-    },
-    err=>{
-      document.getElementById('gpsBadge').className='gps-badge err';
-      document.getElementById('gpsBadge').textContent=err.code===1?'위치 권한 거부':err.code===2?'GPS 없음':'시간 초과';
-    },
-    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
-  );
+  const badge=document.getElementById('gpsBadge');
+  badge.className='gps-badge'; badge.textContent='위치 확인 중...';
+  let moved=false, gotPrecise=false;
+  const apply=(pos,precise)=>{
+    curLat=pos.coords.latitude; curLng=pos.coords.longitude; curAcc=Math.round(pos.coords.accuracy);
+    const p=new kakao.maps.LatLng(curLat,curLng);
+    // 화면은 처음 한 번만 옮김 (정밀 위치가 크게 다를 때만 다시 옮김)
+    if(keepView!==true && (!moved || (precise && haversine({lat:map.getCenter().getLat(),lng:map.getCenter().getLng()},{lat:curLat,lng:curLng})>15))){
+      setMag(1); map.setCenter(p); if(!moved) map.setLevel(viewLevel()); moved=true;
+    }
+    if(!myMarker){
+      myMarker=new kakao.maps.CustomOverlay({position:p,zIndex:4,
+        content:'<div class="keep-size" style="width:10px;height:10px;border-radius:50%;background:#2196F3;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);"></div>'});
+      myMarker.setMap(map);
+    } else myMarker.setPosition(p);
+    const label = curAcc<10?'좋음':curAcc<30?'보통':'낮음';
+    badge.className='gps-badge ok';
+    badge.textContent = precise ? '±'+curAcc+'m '+label : '±'+curAcc+'m 확인 중';
+  };
+  // 1) 빠른 위치: 최근 2분 안에 잡힌 위치나 기지국 위치로 즉시 표시
+  navigator.geolocation.getCurrentPosition(pos=>{ if(!gotPrecise) apply(pos,false); }, ()=>{},
+    {enableHighAccuracy:false,timeout:3000,maximumAge:120000});
+  // 2) 정밀 위치: GPS로 정확한 위치를 잡으면 갱신
+  navigator.geolocation.getCurrentPosition(pos=>{ gotPrecise=true; apply(pos,true); },
+    err=>{ if(!moved){ badge.className='gps-badge err';
+      badge.textContent=err.code===1?'위치 권한 거부':err.code===2?'GPS 없음':'시간 초과'; } },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0});
 }
 
 function showToast(msg){
