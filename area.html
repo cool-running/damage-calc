@@ -53,10 +53,6 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 
 .myloc-btn{position:fixed;left:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);width:44px;height:44px;border-radius:50%;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;}
 .myloc-btn:active{opacity:.7;}
-.mag-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:44px;min-width:64px;padding:0 12px;border-radius:22px;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:14px;font-weight:800;color:var(--blue);font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;justify-content:center;gap:4px;z-index:150;}
-.mag-btn.show{display:flex;}
-.mag-btn.on{background:var(--blue);color:#fff;border-color:var(--blue);}
-.mag-btn:active{opacity:.7;}
 
 .panel{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));height:var(--panel-h);background:#fff;border-top:0.5px solid var(--border);padding:12px 16px;z-index:50;overflow:hidden;}
 .result-row{display:flex;align-items:baseline;gap:8px;}
@@ -115,7 +111,6 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 </div>
 
 <div id="mapWrap"><div id="map"></div></div>
-<button class="mag-btn" id="magBtn" onclick="cycleMag()">🔍 ×1</button>
 
 <button class="myloc-btn" onclick="locateMe()">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round">
@@ -190,12 +185,11 @@ kakao.maps.load(function(){
   kakao.maps.event.addListener(map, 'click', function(e){
     const _al=document.getElementById('addrList');
     if(_al && _al.classList.contains('show')){ closeAddrList(); return; }
-    if(magK>1) return; // 돋보기 확대 중에는 아래 직접 계산한 좌표로 처리
-    const la=e.latLng.getLat(), ln=e.latLng.getLng();
-    if(mode==='manual') addPoint(la, ln);
-    else if(mode==='farmmap'){ if(!selectCachedFarm(la, ln)) fetchFarmmap(la, ln); }
-    else fetchParcelWhole(la, ln);
+    if(magK>1) return; // 초과 확대 중에는 아래 직접 계산한 좌표로 처리
+    handleMapTap(e.latLng.getLat(), e.latLng.getLng());
   });
+  kakao.maps.event.addListener(map, 'zoom_changed', updateGestureMode);
+  updateGestureMode();
   kakao.maps.event.addListener(map, 'idle', scheduleNearbyFarm);
 
   locateMe();
@@ -289,7 +283,7 @@ function closeAddrList(){
 function goToAddr(r){
   const lat=parseFloat(r.y), lng=parseFloat(r.x);
   const p=new kakao.maps.LatLng(lat,lng);
-  map.setCenter(p); map.setLevel(viewLevel());
+  setMag(1); map.setCenter(p); map.setLevel(viewLevel());
   if(mode==='parcel'){
     fetchParcelWhole(lat,lng);
   } else if(mode==='farmmap'){
@@ -343,8 +337,7 @@ function setAreaMode(m){
   document.getElementById('undoBtn').style.display = m==='manual' ? '' : 'none';
   clearAll();
   if(m==='farmmap') scheduleNearbyFarm(); else hideNearbyFarm();
-  if(m!=='manual') setMag(1);
-  document.getElementById('magBtn').classList.toggle('show', m==='manual');
+
 }
 
 function addrPlaceholderFor(m){
@@ -548,47 +541,100 @@ async function loadNearbyFarm(){
   }
 }
 
-/* ── 수동측정 돋보기 ──
-   카카오 지도는 레벨1보다 더 확대가 안 되므로, 지도 화면 자체를 2~4배로 키워서 보여줌(화질은 떨어짐)
-   확대 중 탭 위치는 화면 배율을 되돌려 계산한 뒤 지도 좌표로 변환 */
-let magK=1;
-const MAG_STEPS=[1,2,3,4];
-function setMag(k){
-  magK=k;
-  const el=document.getElementById('map');
-  el.style.transform = k>1 ? `scale(${k})` : '';
-  const b=document.getElementById('magBtn');
-  if(b){ b.textContent='🔍 ×'+k; b.classList.toggle('on',k>1); }
+function handleMapTap(la,ln){
+  if(mode==='manual') addPoint(la, ln);
+  else if(mode==='farmmap'){ if(!selectCachedFarm(la, ln)) fetchFarmmap(la, ln); }
+  else fetchParcelWhole(la, ln);
 }
-function cycleMag(){
-  if(magK===1 && map.getLevel()>1){ map.setLevel(1); } // 먼저 지도 최대 확대
-  const i=MAG_STEPS.indexOf(magK);
-  const k=MAG_STEPS[(i+1)%MAG_STEPS.length];
-  setMag(k);
-  if(k>1) showToast('🔍 '+k+'배 확대 — 탭하면 핀이 찍혀요');
+
+/* ── 최대 확대(레벨1)에서 손가락으로 더 벌리면 지도 화면을 최대 4배까지 키움 (화질은 떨어짐) ──
+   카카오 지도는 레벨1보다 확대가 안 돼서 튕겨 돌아가므로, 레벨1에서는 카카오 확대를 끄고 직접 처리
+   - 두 손가락 벌리기/오므리기: 1~4배 (1배에서 더 오므리면 레벨2로 축소)
+   - 한 손가락 끌기: 지도 이동 / 탭: 핀·필지 선택 (배율 되돌려 좌표 계산) */
+const MAG_MAX=4;
+let magK=1;
+function setMag(k){
+  magK=Math.max(1,Math.min(MAG_MAX,k));
+  if(magK<1.02) magK=1;
+  document.getElementById('map').style.transform = magK>1 ? `scale(${magK})` : '';
+  updateGestureMode();
+}
+function updateGestureMode(){
+  if(!map) return;
+  const atMax = map.getLevel()<=1;
+  map.setZoomable(!atMax);            // 레벨1에서는 카카오 확대 끔(튕김 방지)
+  map.setDraggable(magK===1);         // 초과 확대 중에는 이동도 직접 처리
+}
+function wrapPoint(cx,cy){ // 화면 좌표 → 원래(배율 전) 지도 화면 좌표
+  const r=document.getElementById('mapWrap').getBoundingClientRect();
+  return {x:(cx-r.left), y:(cy-r.top), w:r.width, h:r.height};
+}
+function setCenterByPoint(x,y){
+  const ll=map.getProjection().coordsFromContainerPoint(new kakao.maps.Point(x,y));
+  map.setCenter(ll);
 }
 (function(){
   const wrap=document.getElementById('mapWrap');
+  let pinch=null, drag=null;
+  const dist=t=>Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
+  wrap.addEventListener('touchstart',e=>{
+    if(e.touches.length===2 && map.getLevel()<=1){
+      pinch={d0:dist(e.touches), k0:magK};
+      drag=null;
+    } else if(e.touches.length===1 && magK>1){
+      drag={x:e.touches[0].clientX, y:e.touches[0].clientY};
+    }
+  },{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    if(pinch && e.touches.length===2){
+      e.preventDefault();
+      const ratio=dist(e.touches)/pinch.d0;
+      if(pinch.k0===1 && magK===1 && ratio<0.8){ // 1배에서 오므리면 일반 축소
+        pinch=null; map.setLevel(2); return;
+      }
+      const k1=Math.max(1,Math.min(MAG_MAX,pinch.k0*ratio));
+      // 두 손가락 가운데 지점이 그대로 있도록 중심 보정
+      const mx=(e.touches[0].clientX+e.touches[1].clientX)/2, my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      const P=wrapPoint(mx,my), cx=P.w/2, cy=P.h/2;
+      const f=(1/magK-1/k1);
+      if(Math.abs(f)>1e-6) setCenterByPoint(cx+(P.x-cx)*f, cy+(P.y-cy)*f);
+      setMag(k1);
+    } else if(drag && e.touches.length===1 && magK>1){
+      e.preventDefault();
+      const t=e.touches[0], dx=t.clientX-drag.x, dy=t.clientY-drag.y;
+      drag={x:t.clientX, y:t.clientY};
+      const P=wrapPoint(0,0);
+      setCenterByPoint(P.w/2 - dx/magK, P.h/2 - dy/magK);
+    }
+  },{passive:false});
+  const end=e=>{
+    if(e.touches.length<2) pinch=null;
+    if(e.touches.length===0) drag=null;
+    else if(e.touches.length===1 && magK>1) drag={x:e.touches[0].clientX, y:e.touches[0].clientY};
+  };
+  wrap.addEventListener('touchend',end,{passive:true});
+  wrap.addEventListener('touchcancel',end,{passive:true});
+
+  // 초과 확대 중 탭 → 좌표 계산
   const active=new Map(); let tap=null;
   wrap.addEventListener('pointerdown',e=>{
     active.set(e.pointerId,true);
     tap = active.size===1 ? {x:e.clientX,y:e.clientY,t:Date.now(),id:e.pointerId} : null;
   },{passive:true});
-  const end=e=>{
+  const pend=e=>{
     active.delete(e.pointerId);
-    if(e.type!=='pointerup' || !tap || tap.id!==e.pointerId) { if(active.size===0) tap=null; return; }
+    if(e.type!=='pointerup' || !tap || tap.id!==e.pointerId){ if(active.size===0) tap=null; return; }
     const moved=Math.hypot(e.clientX-tap.x,e.clientY-tap.y), dt=Date.now()-tap.t;
     tap=null;
-    if(magK===1 || mode!=='manual' || moved>10 || dt>600) return;
+    if(magK===1 || moved>10 || dt>600) return;
     const al=document.getElementById('addrList');
     if(al && al.classList.contains('show')){ closeAddrList(); return; }
     const r=document.getElementById('map').getBoundingClientRect(); // 확대된 크기 기준
-    const x=(e.clientX-r.left)/magK, y=(e.clientY-r.top)/magK;       // 원래 지도 화면 좌표
-    const ll=map.getProjection().coordsFromContainerPoint(new kakao.maps.Point(x,y));
-    addPoint(ll.getLat(), ll.getLng());
+    const ll=map.getProjection().coordsFromContainerPoint(new kakao.maps.Point((e.clientX-r.left)/magK,(e.clientY-r.top)/magK));
+    handleMapTap(ll.getLat(), ll.getLng());
   };
-  wrap.addEventListener('pointerup',end,{passive:true});
-  wrap.addEventListener('pointercancel',end,{passive:true});
+  wrap.addEventListener('pointerup',pend,{passive:true});
+  wrap.addEventListener('pointercancel',pend,{passive:true});
 })();
 
 function redrawShape(){
@@ -657,7 +703,7 @@ function locateMe(){
     pos=>{
       curLat=pos.coords.latitude; curLng=pos.coords.longitude; curAcc=Math.round(pos.coords.accuracy);
       const p=new kakao.maps.LatLng(curLat,curLng);
-      map.setCenter(p); map.setLevel(viewLevel());
+      setMag(1); map.setCenter(p); map.setLevel(viewLevel());
       if(!myMarker){
         myMarker=new kakao.maps.CustomOverlay({
           position:p,
