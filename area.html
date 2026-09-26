@@ -69,6 +69,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .pbtn-clear{background:var(--bg);color:#C62828;border:0.5px solid var(--border);}
 .pbtn-walk{background:var(--blue);color:#fff;}
 .pbtn-walk.rec{background:#C62828;}
+.pbtn-walk.pause{background:#F57C00;}
 .walk-row{font-size:12px;font-weight:700;color:#2E7D32;margin-top:2px;line-height:1.4;white-space:pre-line;}
 .pbtn-save{background:#FEE500;color:#3C1E1E;}
 
@@ -136,6 +137,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
     </div>
     <div class="btn-row">
       <button class="pbtn pbtn-walk" id="walkBtn" onclick="toggleWalk()" style="display:none;">▶ 시작</button>
+      <button class="pbtn pbtn-walk rec" id="walkEndBtn" onclick="finishWalk()" style="display:none;">■ 끝내기</button>
       <button class="pbtn pbtn-undo" id="undoBtn" onclick="undoPoint()" style="display:none;">↩ 되돌리기</button>
       <button class="pbtn pbtn-clear" onclick="clearAll()">🗑 초기화</button>
     </div>
@@ -204,6 +206,7 @@ kakao.maps.load(function(){
   kakao.maps.event.addListener(map, 'idle', scheduleNearbyFarm);
 
   locateMe();
+  setTimeout(restoreWalk, 300);
 });
 
 /* ── 좌표 계산 (구면 근사, 소규모 필지에 충분히 정확) ── */
@@ -349,6 +352,7 @@ function setAreaMode(m){
   document.getElementById('modeManualBtn').classList.toggle('on', m==='manual');
   document.getElementById('modeWalkBtn').classList.toggle('on', m==='walk');
   document.getElementById('walkBtn').style.display = m==='walk' ? '' : 'none';
+  document.getElementById('walkEndBtn').style.display = 'none';
   if(walk.on) stopWalkRecording();
   document.getElementById('undoBtn').style.display = m==='manual' ? '' : 'none';
   clearAll();
@@ -371,7 +375,7 @@ function clearAll(){
   if(polygon){ polygon.setMap(null); polygon=null; }
   if(segLabelOverlay){ segLabelOverlay.setMap(null); segLabelOverlay=null; }
   if(walk.on) stopWalkRecording();
-  clearWalkDrawing();
+  clearWalkDrawing(); clearSavedWalk();
   updateInfoPanel();
   document.getElementById('addrVal').textContent=addrPlaceholderFor(mode);
   showToast('🗑 초기화했어요');
@@ -676,7 +680,8 @@ function correctWalk(rawLL, ringsLL, medAcc){
    → 보정 면적이 팜맵 ±5% 이내면 팜맵 경계 채택, 아니면(일부 경작 등) 보정된 실측 모양 사용 */
 const WALK_MAX_ACC=20;   // 이보다 오차 큰 위치는 버림(m)
 const WALK_MIN_STEP=1.5; // 이보다 가까운 점은 건너뜀(m)
-let walk={on:false,watchId:null,pts:[],accs:[],line:null,rawLine:null,wake:null};
+let walk={on:false,paused:false,autoPaused:false,watchId:null,pts:[],accs:[],line:null,rawLine:null,wake:null};
+const WALK_STORE_KEY='area_walk_v1'; // 사진 찍으러 카메라 갔다가 앱이 새로 열려도 기록을 이어가도록 저장
 function walkInfo(txt){
   const el=document.getElementById('walkInfo');
   el.style.display = txt ? '' : 'none'; el.textContent = txt||'';
@@ -686,44 +691,109 @@ function clearWalkDrawing(){
   if(walk.rawLine){ walk.rawLine.setMap(null); walk.rawLine=null; }
   walkInfo('');
 }
-function toggleWalk(){ walk.on ? finishWalk() : startWalk(); }
-async function startWalk(){
-  if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
-  points=[]; redrawShape(); updateInfoPanel(); clearWalkDrawing();
-  walk.pts=[]; walk.accs=[]; walk.on=true;
-  const b=document.getElementById('walkBtn'); b.textContent='■ 끝내기'; b.classList.add('rec');
-  document.getElementById('addrVal').textContent='경계를 따라 걷는 중...\n출발한 곳으로 돌아오면 ■ 끝내기';
-  walkInfo('GPS 신호 기다리는 중...');
+function saveWalk(){ try{ localStorage.setItem(WALK_STORE_KEY, JSON.stringify({t:Date.now(),pts:walk.pts,accs:walk.accs})); }catch(e){} }
+function clearSavedWalk(){ try{ localStorage.removeItem(WALK_STORE_KEY); }catch(e){} }
+function walkDist(){ let d=0; for(let i=1;i<walk.pts.length;i++) d+=haversine(walk.pts[i-1],walk.pts[i]); return d; }
+function walkStatus(prefix,extra){
+  const a = walk.pts.length>=3 ? calcArea(walk.pts) : 0;
+  walkInfo(`${prefix} · 점 ${walk.pts.length}개 · ${fmtNum(walkDist(),0)}m`+(extra||'')+(a?` · 현재 ${fmtNum(a,0)}㎡`:''));
+}
+function drawWalkLine(){
+  const path=walk.pts.map(q=>new kakao.maps.LatLng(q.lat,q.lng));
+  if(walk.line) walk.line.setPath(path);
+  else if(path.length) walk.line=new kakao.maps.Polyline({map,path,strokeWeight:4,strokeColor:'#FF9800',strokeOpacity:0.95,zIndex:4});
+}
+function updateWalkButtons(){
+  const b=document.getElementById('walkBtn'), e=document.getElementById('walkEndBtn');
+  b.classList.remove('rec','pause');
+  if(!walk.on){ b.textContent='▶ 시작'; e.style.display='none'; }
+  else if(walk.paused){ b.textContent='▶ 계속'; e.style.display=''; }
+  else { b.textContent='⏸ 일시정지'; b.classList.add('pause'); e.style.display=''; }
+}
+async function startWatch(){
   try{ if(navigator.wakeLock) walk.wake=await navigator.wakeLock.request('screen'); }catch(e){}
   walk.watchId=navigator.geolocation.watchPosition(onWalkPos, err=>{
     walkInfo('GPS 오류: '+(err.code===1?'위치 권한 거부':'신호 없음'));
   },{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+}
+function stopWatch(){
+  if(walk.watchId!=null) navigator.geolocation.clearWatch(walk.watchId);
+  walk.watchId=null;
+  try{ if(walk.wake){ walk.wake.release(); walk.wake=null; } }catch(e){}
+}
+function toggleWalk(){
+  if(!walk.on) startWalk();
+  else if(walk.paused) resumeWalk();
+  else pauseWalk();
+}
+async function startWalk(){
+  if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
+  points=[]; redrawShape(); updateInfoPanel(); clearWalkDrawing();
+  walk.pts=[]; walk.accs=[]; walk.on=true; walk.paused=false; walk.autoPaused=false;
+  clearSavedWalk();
+  updateWalkButtons();
+  document.getElementById('addrVal').textContent='경계를 따라 걷는 중...\n사진 찍을 땐 ⏸ 일시정지, 다 돌면 ■ 끝내기';
+  walkInfo('GPS 신호 기다리는 중...');
+  await startWatch();
   showToast('🚶 기록 시작 — 경계를 따라 걸어주세요');
 }
+function pauseWalk(auto){
+  if(!walk.on || walk.paused) return;
+  stopWatch();
+  walk.paused=true; walk.autoPaused=!!auto;
+  saveWalk();
+  updateWalkButtons();
+  walkStatus('⏸ 일시정지');
+  document.getElementById('addrVal').textContent='일시정지 중 — 멈춘 곳으로 돌아와서\n▶ 계속을 누르면 이어서 기록돼요';
+  if(!auto) showToast('⏸ 일시정지 — 사진 찍고 멈춘 곳에서 ▶ 계속');
+}
+async function resumeWalk(){
+  if(!walk.on || !walk.paused) return;
+  walk.paused=false; walk.autoPaused=false;
+  updateWalkButtons();
+  document.getElementById('addrVal').textContent='경계를 따라 걷는 중...\n사진 찍을 땐 ⏸ 일시정지, 다 돌면 ■ 끝내기';
+  walkStatus('기록 중');
+  await startWatch();
+  showToast('▶ 이어서 기록합니다');
+}
 function onWalkPos(pos){
-  if(!walk.on) return;
+  if(!walk.on || walk.paused) return;
   const acc=Math.round(pos.coords.accuracy), p={lat:pos.coords.latitude,lng:pos.coords.longitude};
   const badge=document.getElementById('gpsBadge');
   badge.className='gps-badge '+(acc<=WALK_MAX_ACC?'ok':'err'); badge.textContent='±'+acc+'m';
   const ll=new kakao.maps.LatLng(p.lat,p.lng);
   if(myMarker) myMarker.setPosition(ll);
   if(!map.getBounds().contain(ll)) map.panTo(ll);
-  if(acc>WALK_MAX_ACC){ walkInfo(`기록 중 · 점 ${walk.pts.length}개 · 오차 ±${acc}m 너무 큼(건너뜀)`); return; }
+  if(acc>WALK_MAX_ACC){ walkStatus('기록 중',` · 오차 ±${acc}m 너무 큼(건너뜀)`); return; }
   const last=walk.pts[walk.pts.length-1];
   if(last && haversine(last,p)<WALK_MIN_STEP) return;
   walk.pts.push(p); walk.accs.push(acc);
-  const path=walk.pts.map(q=>new kakao.maps.LatLng(q.lat,q.lng));
-  if(walk.line) walk.line.setPath(path);
-  else walk.line=new kakao.maps.Polyline({map,path,strokeWeight:4,strokeColor:'#FF9800',strokeOpacity:0.95,zIndex:4});
-  let dist=0; for(let i=1;i<walk.pts.length;i++) dist+=haversine(walk.pts[i-1],walk.pts[i]);
-  const a = walk.pts.length>=3 ? calcArea(walk.pts) : 0;
-  walkInfo(`기록 중 · 점 ${walk.pts.length}개 · ${fmtNum(dist,0)}m · ±${acc}m`+(a?` · 현재 ${fmtNum(a,0)}㎡`:''));
+  drawWalkLine();
+  saveWalk();
+  walkStatus('기록 중',` · ±${acc}m`);
 }
 function stopWalkRecording(){
-  if(walk.watchId!=null) navigator.geolocation.clearWatch(walk.watchId);
-  walk.watchId=null; walk.on=false;
-  try{ if(walk.wake){ walk.wake.release(); walk.wake=null; } }catch(e){}
-  const b=document.getElementById('walkBtn'); b.textContent='▶ 시작'; b.classList.remove('rec');
+  stopWatch();
+  walk.on=false; walk.paused=false; walk.autoPaused=false;
+  updateWalkButtons();
+}
+// 카메라 등 다른 앱으로 넘어가면 자동 일시정지
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){ if(walk.on && !walk.paused) pauseWalk(true); }
+  else if(walk.on && walk.paused && walk.autoPaused){ showToast('⏸ 자동 일시정지됨 — 멈춘 곳에서 ▶ 계속'); }
+});
+// 앱이 다시 열렸을 때 저장된 실측 기록 이어가기 (6시간 이내)
+function restoreWalk(){
+  let sv=null; try{ sv=JSON.parse(localStorage.getItem(WALK_STORE_KEY)||'null'); }catch(e){}
+  if(!sv || !sv.pts || !sv.pts.length || Date.now()-sv.t>6*3600000){ clearSavedWalk(); return; }
+  setAreaMode('walk');
+  walk.pts=sv.pts; walk.accs=sv.accs||[]; walk.on=true; walk.paused=true; walk.autoPaused=true;
+  drawWalkLine(); updateWalkButtons(); saveWalk();
+  walkStatus('⏸ 일시정지');
+  document.getElementById('addrVal').textContent='이전 실측 기록을 불러왔어요\n멈춘 곳에서 ▶ 계속, 또는 ■ 끝내기';
+  const l=walk.pts[walk.pts.length-1];
+  map.setCenter(new kakao.maps.LatLng(l.lat,l.lng));
+  showToast('🚶 이전 실측 기록을 이어서 할 수 있어요');
 }
 // 걸은 범위 주변 팜맵 필지를 모두 확보(없으면 반경 조회 → ID별 경계 조회)
 async function ensureFarmsAround(lat,lng,radius){
@@ -753,6 +823,7 @@ function getFarmAt(lat,lng){
 }
 async function finishWalk(){
   stopWalkRecording();
+  clearSavedWalk();
   const raw=walk.pts.slice();
   if(raw.length<3){ showToast('🚶 기록된 점이 부족해요 (3개 이상 필요)'); walkInfo(''); document.getElementById('addrVal').textContent=addrPlaceholderFor(mode); return; }
   // 걸은 선(닫힌 모양)을 주황 점선으로 남겨둠
