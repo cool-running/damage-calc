@@ -60,7 +60,8 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .result-main{flex:1;min-width:0;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
 .area-val{font-size:22px;font-weight:800;color:var(--text);}
 .pyeong-val{font-size:13px;font-weight:700;color:var(--blue);}
-.meta-row{font-size:11.5px;color:var(--sub);margin-top:2px;}
+.meta-row{font-size:11.5px;color:var(--sub);margin-top:2px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.detail-btn{display:none;border:none;background:var(--bg);color:var(--blue);font-size:12px;font-weight:800;padding:3px 10px;border-radius:12px;cursor:pointer;font-family:-apple-system,'Noto Sans KR',sans-serif;white-space:nowrap;}
 .addr-row{font-size:13.5px;font-weight:800;color:var(--blue);margin-top:3px;white-space:pre-line;line-height:1.35;}
 .btn-row{display:flex;gap:6px;flex-shrink:0;}
 .pbtn{height:32px;padding:0 11px;border-radius:16px;border:none;cursor:pointer;font-size:12.5px;font-weight:800;font-family:-apple-system,'Noto Sans KR',sans-serif;display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap;}
@@ -147,7 +148,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
       <button class="pbtn pbtn-clear" onclick="clearAll()">🗑 초기화</button>
     </div>
   </div>
-  <div class="meta-row"><span id="ptWrap">점 <span id="ptCount">0개</span> | </span>총 둘레: <span id="periVal">0m</span></div>
+  <div class="meta-row"><span><span id="ptWrap">점 <span id="ptCount">0개</span> | </span>총 둘레: <span id="periVal">0m</span></span><button class="detail-btn" id="detailBtn" onclick="toggleDetail()">상세 ▾</button></div>
   <div class="lot-list" id="lotList" style="display:none;"></div>
   <div class="walk-row" id="walkInfo" style="display:none;"></div>
   <div class="addr-row" id="addrVal">지도를 탭하면 면적과 주소가 표시돼요</div>
@@ -762,7 +763,19 @@ function splitByLots(shapeLL, feats, clip){
 }
 
 let _lotReq=0,_lotTimer=null;
-function hideLots(){ const el=document.getElementById('lotList'); el.style.display='none'; el.innerHTML=''; }
+function hideLots(){ const el=document.getElementById('lotList'); el.innerHTML=''; refreshDetail(); }
+/* 결과 패널 접기/펼치기: 결과가 나오면 면적·둘레만 보이고, [상세 ▾]를 누르면 주소·지번별 면적을 보여줌 */
+let detailOpen=false;
+function toggleDetail(){ detailOpen=!detailOpen; refreshDetail(); }
+function refreshDetail(){
+  const has=points.length>=3;
+  const addr=document.getElementById('addrVal'), lots=document.getElementById('lotList'), btn=document.getElementById('detailBtn');
+  if(!has) detailOpen=false;
+  addr.style.display = (!has || detailOpen) ? '' : 'none';   // 결과 전에는 안내 문구 표시
+  lots.style.display = (has && detailOpen && lots.innerHTML) ? '' : 'none';
+  btn.style.display = has ? 'inline-block' : 'none';
+  btn.textContent = detailOpen ? '접기 ▴' : '상세 ▾';
+}
 function scheduleLots(){
   clearTimeout(_lotTimer); _lotReq++;
   if(mode==='parcel' || points.length<3 || typeof polygonClipping==='undefined'){ hideLots(); return; }
@@ -790,7 +803,7 @@ function fetchLots(){
       const k=calcArea(pts)/r.total; // 화면 면적 계산값과 맞춤
       let h=r.main.map(o=>`<div class="lot-row"><span class="lot-name">${o.label}</span><span class="lot-val">${fmtNum(o.a*k,1)}㎡ (${o.pct.toFixed(1)}%)</span></div>`).join('');
       if(r.rest*k>=0.1) h+=`<div class="lot-row rest"><span class="lot-name">기타</span><span class="lot-val">${fmtNum(r.rest*k,1)}㎡ (${r.restPct.toFixed(1)}%)</span></div>`;
-      const el=document.getElementById('lotList'); el.innerHTML=h; el.style.display='';
+      const el=document.getElementById('lotList'); el.innerHTML=h; refreshDetail();
     }catch(e){ hideLots(); }
   };
   sc.onerror=()=>{ delete window[cb]; sc.remove(); if(my===_lotReq) hideLots(); };
@@ -1183,7 +1196,7 @@ function updateInfoPanel(){
     document.getElementById('areaVal').textContent='—';
     document.getElementById('pyeongVal').textContent='';
     document.getElementById('periVal').textContent = n===2 ? fmtNum(haversine(points[0],points[1]),1)+'m' : '0m';
-    scheduleLots();
+    scheduleLots(); refreshDetail();
     return;
   }
   const areaM2=calcArea(points);
@@ -1191,7 +1204,7 @@ function updateInfoPanel(){
   document.getElementById('areaVal').textContent=fmtNum(areaM2,1)+' ㎡';
   document.getElementById('pyeongVal').textContent='('+fmtNum(pyeong,1)+'평)';
   document.getElementById('periVal').textContent=fmtNum(calcPerimeter(points),1)+'m';
-  scheduleLots();
+  scheduleLots(); refreshDetail();
 }
 
 function updateAddress(lat,lng,extra){
