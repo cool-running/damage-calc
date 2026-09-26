@@ -571,15 +571,18 @@ async function loadNearbyFarm(){
   window.addEventListener('load',apply);
 })();
 
-/* ── 실측 보정 계산 (지도와 무관한 순수 계산) ── */
-const WALK_MATCH_PCT=5;   // 보정 면적이 팜맵 면적 ±5% 이내면 팜맵 경계 채택
+/* ── 실측 보정 계산 (지도와 무관한 순수 계산) ──
+   여러 팜맵 필지를 한 번에 돈 경우(팜맵은 나뉘어 있지만 실제로는 하나로 경작)도 처리:
+   걸은 모양 안에 들어오는 필지들을 모두 기준으로 삼아 보정하고, 팜맵 면적은 합산해서 비교 */
+const WALK_MATCH_PCT=5;   // 보정 면적이 팜맵(합산) 면적 ±5% 이내면 팜맵 경계 채택
 const WALK_SNAP_M=4;      // 평행이동 후 경계에서 이 거리(m) 이내 점은 경계에 붙임
 function geoRef(pts){ let a=0,b=0; pts.forEach(p=>{a+=p.lat;b+=p.lng;}); return {lat:a/pts.length,lng:b/pts.length}; }
 function toM(p,ref){ const R=6378137,k=Math.PI/180; return {x:(p.lng-ref.lng)*k*R*Math.cos(ref.lat*k), y:(p.lat-ref.lat)*k*R}; }
 function fromM(q,ref){ const R=6378137,k=Math.PI/180; return {lat:ref.lat+q.y/(k*R), lng:ref.lng+q.x/(k*R*Math.cos(ref.lat*k))}; }
 function areaM(pts){ let a=0; for(let i=0;i<pts.length;i++){const j=(i+1)%pts.length; a+=pts[i].x*pts[j].y-pts[j].x*pts[i].y;} return Math.abs(a/2); }
-// 링 위 가장 가까운 점: {x,y,d,s(둘레상 위치)}
-function ringInfo(ring){ const seg=[]; let s=0; for(let i=0;i<ring.length;i++){const a=ring[i],b=ring[(i+1)%ring.length]; const L=Math.hypot(b.x-a.x,b.y-a.y); seg.push({a,b,L,s0:s}); s+=L;} return {seg,per:s}; }
+function centroidM(pts){ let a=0,cx=0,cy=0; for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length],c=p.x*q.y-q.x*p.y; a+=c; cx+=(p.x+q.x)*c; cy+=(p.y+q.y)*c;} if(Math.abs(a)<1e-9){let x=0,y=0;pts.forEach(p=>{x+=p.x;y+=p.y;});return {x:x/pts.length,y:y/pts.length};} return {x:cx/(3*a),y:cy/(3*a)}; }
+function inPolyM(p,poly){ let ins=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j]; if(((a.y>p.y)!==(b.y>p.y)) && (p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)) ins=!ins;} return ins; }
+function ringInfo(ring){ const seg=[]; let s=0; for(let i=0;i<ring.length;i++){const a=ring[i],b=ring[(i+1)%ring.length]; const L=Math.hypot(b.x-a.x,b.y-a.y); seg.push({a,b,L,s0:s}); s+=L;} return {ring,seg,per:s}; }
 function nearestOnRing(p,ri){
   let best=null;
   for(const g of ri.seg){
@@ -590,56 +593,64 @@ function nearestOnRing(p,ri){
   }
   return best;
 }
-function alignCost(pts,ri,ox,oy){ let c=0; for(const p of pts){ c+=Math.min(8, nearestOnRing({x:p.x+ox,y:p.y+oy},ri).d); } return c/pts.length; }
-// 걸은 선 전체를 팜맵 경계에 가장 잘 맞게 평행이동 (최대 maxShift m)
-function alignShift(pts,ri,maxShift){
-  let best={ox:0,oy:0,c:alignCost(pts,ri,0,0)};
+function nearestOnRings(p,ris){ let best=null; ris.forEach((ri,k)=>{ const n=nearestOnRing(p,ri); if(!best||n.d<best.d){ n.k=k; best=n; } }); return best; }
+function alignCost(pts,ris,ox,oy){ let c=0; for(const p of pts){ c+=Math.min(8, nearestOnRings({x:p.x+ox,y:p.y+oy},ris).d); } return c/pts.length; }
+function alignShift(pts,ris,maxShift){
+  let best={ox:0,oy:0,c:alignCost(pts,ris,0,0)};
   for(let ox=-maxShift;ox<=maxShift;ox+=1) for(let oy=-maxShift;oy<=maxShift;oy+=1){
     if(ox*ox+oy*oy>maxShift*maxShift) continue;
-    const c=alignCost(pts,ri,ox,oy); if(c<best.c) best={ox,oy,c};
+    const c=alignCost(pts,ris,ox,oy); if(c<best.c) best={ox,oy,c};
   }
   const cx=best.ox, cy=best.oy;
   for(let ox=cx-1;ox<=cx+1;ox+=0.25) for(let oy=cy-1;oy<=cy+1;oy+=0.25){
-    const c=alignCost(pts,ri,ox,oy); if(c<best.c) best={ox,oy,c};
+    const c=alignCost(pts,ris,ox,oy); if(c<best.c) best={ox,oy,c};
   }
   return best;
 }
-// 경계 가까운 점은 경계에 붙이고, 연속으로 붙은 구간 사이에는 팜맵 꼭짓점을 채워 넣음(모서리 깎임 방지)
-function snapToRing(pts,ring,ri,tol){
+// 경계 가까운 점은 경계에 붙이고, 같은 필지 경계로 연속해서 붙은 구간 사이에는 그 필지 꼭짓점을 채움(모서리 깎임 방지)
+function snapToRings(pts,ris,tol){
   const out=[]; let prev=null;
-  const vs=ring.map((v,i)=>({v,s:ri.seg[i].s0}));
   for(const p of pts){
-    const n=nearestOnRing(p,ri);
+    const n=nearestOnRings(p,ris);
     if(n.d<=tol){
-      if(prev){
-        let fwd=(n.s-prev.s+ri.per)%ri.per, bwd=ri.per-fwd;
-        const useF=fwd<=bwd, arc=Math.min(fwd,bwd);
+      if(prev && prev.k===n.k){
+        const ri=ris[n.k];
+        const fwd=(n.s-prev.s+ri.per)%ri.per, bwd=ri.per-fwd, useF=fwd<=bwd, arc=Math.min(fwd,bwd);
         if(arc>0 && arc<ri.per*0.5){
-          const mid=vs.map(o=>({o,k:useF?(o.s-prev.s+ri.per)%ri.per:(prev.s-o.s+ri.per)%ri.per}))
-            .filter(z=>z.k>1e-6 && z.k<arc-1e-6).sort((a,b)=>a.k-b.k);
-          mid.forEach(z=>out.push({x:z.o.v.x,y:z.o.v.y}));
+          ri.seg.map(g=>({v:g.a,k:useF?(g.s0-prev.s+ri.per)%ri.per:(prev.s-g.s0+ri.per)%ri.per}))
+            .filter(z=>z.k>1e-6 && z.k<arc-1e-6).sort((a,b)=>a.k-b.k)
+            .forEach(z=>out.push({x:z.v.x,y:z.v.y}));
         }
       }
       out.push({x:n.x,y:n.y}); prev=n;
     } else { out.push(p); prev=null; }
   }
-  // 마지막→처음 이어지는 구간도 처리
   return out;
 }
-function correctWalk(rawLL, ringLL, medAcc){
+// 걸은 모양이 감싸는 필지 고르기: 필지 중심이 걸은 모양 안에 있거나, 걸은 모양 중심이 필지 안에 있으면 포함
+function pickRings(rawM,ringsM){
+  const c=centroidM(rawM);
+  return ringsM.filter(r=>inPolyM(centroidM(r),rawM) || inPolyM(c,r));
+}
+function correctWalk(rawLL, ringsLL, medAcc){
   const ref=geoRef(rawLL);
-  const raw=rawLL.map(p=>toM(p,ref)), ring=ringLL.map(p=>toM(p,ref));
-  const ri=ringInfo(ring);
+  const raw=rawLL.map(p=>toM(p,ref));
+  const rings=pickRings(raw, ringsLL.map(r=>r.map(p=>toM(p,ref))));
+  const rawA=areaM(raw);
+  if(!rings.length) return {rawA,corrA:rawA,farmA:0,diff:null,match:false,shift:0,n:0,result:rawLL};
+  const ris=rings.map(ringInfo);
   const maxShift=Math.min(15,Math.max(5,Math.round(medAcc||8)));
-  const sh=alignShift(raw,ri,maxShift);
+  const sh=alignShift(raw,ris,maxShift);
   const moved=raw.map(p=>({x:p.x+sh.ox,y:p.y+sh.oy}));
-  // 닫힘 처리: 처음 점을 끝에 한 번 더 넣어 마지막 구간도 꼭짓점 채움 후 제거
-  const snapped=snapToRing(moved.concat([moved[0]]),ring,ri,WALK_SNAP_M); snapped.pop();
-  const rawA=areaM(raw), corrA=areaM(snapped), farmA=areaM(ring);
+  const snapped=snapToRings(moved.concat([moved[0]]),ris,WALK_SNAP_M); snapped.pop();
+  const corrA=areaM(snapped), farmA=rings.reduce((a,r)=>a+areaM(r),0);
   const diff=Math.abs(corrA-farmA)/farmA*100;
   const match=diff<=WALK_MATCH_PCT;
-  return {rawA,corrA,farmA,diff,match,shift:Math.hypot(sh.ox,sh.oy),
-    result:(match?ring:snapped).map(q=>fromM(q,ref))};
+  // 팜맵 일치: 한 필지면 팜맵 경계 그대로, 여러 필지면 모든 점을 경계에 붙여 합친 외곽을 만듦
+  let shape=snapped;
+  if(match) shape = rings.length===1 ? rings[0] : (()=>{ const f=snapToRings(moved.concat([moved[0]]),ris,Infinity); f.pop(); return f; })();
+  return {rawA,corrA,farmA,diff,match,n:rings.length,shift:Math.hypot(sh.ox,sh.oy),
+    result:shape.map(q=>fromM(q,ref))};
 }
 
 /* ── 실측(걸어서 측정) ──
@@ -696,6 +707,21 @@ function stopWalkRecording(){
   try{ if(walk.wake){ walk.wake.release(); walk.wake=null; } }catch(e){}
   const b=document.getElementById('walkBtn'); b.textContent='▶ 시작'; b.classList.remove('rec');
 }
+// 걸은 범위 주변 팜맵 필지를 모두 확보(없으면 반경 조회 → ID별 경계 조회)
+async function ensureFarmsAround(lat,lng,radius){
+  try{
+    const r=await fetch(`${FARMMAP_URL}?mode=area&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}&radius=${Math.min(300,Math.ceil(radius))}&rows=300`);
+    const d=await r.json(); if(!d.ok) return;
+    const need=[...new Set((d.items||[]).map(x=>x.id).filter(id=>id && !farmCache[id]))];
+    for(let i=0;i<need.length;i+=40){
+      const rr=await fetch(`${FARMMAP_URL}?mode=ids&ids=${need.slice(i,i+40).join(',')}`);
+      const dd=await rr.json();
+      if(dd.ok) (dd.items||[]).forEach(it=>{ if(it.rings&&it.rings.length){
+        farmCache[it.id]={id:it.id,use:it.use,lnm:it.lnm,year:it.year,img:it.img,rings:it.rings}; drawFarmPoly(farmCache[it.id]); } });
+    }
+    if(need.length) saveFarmStore();
+  }catch(e){}
+}
 function getFarmAt(lat,lng){
   for(const it of Object.values(farmCache)){
     if(it.rings.some(rg=>pointInRing(lat,lng,rg))) return Promise.resolve(it);
@@ -718,25 +744,44 @@ async function finishWalk(){
   const c=geoRef(raw);
   const rawA=calcArea(raw);
   walkInfo('팜맵 기준으로 보정 중...');
-  const it=await getFarmAt(c.lat,c.lng);
-  let result=raw, extra, info;
-  if(!it){
+  // 걸은 범위(가장 먼 점 + 여유 20m) 안의 팜맵 필지 확보
+  let far=0; raw.forEach(q=>{ far=Math.max(far,haversine(c,q)); });
+  await ensureFarmsAround(c.lat,c.lng,far+20);
+  await getFarmAt(c.lat,c.lng);
+  const cands=[], used=[];
+  Object.values(farmCache).forEach(it=>{
+    it.rings.forEach(rg=>{
+      if(rg.some(q=>haversine(c,{lat:q[0],lng:q[1]})<=far+30)){
+        let ll=rg.map(q=>({lat:q[0],lng:q[1]}));
+        const f=ll[0], l=ll[ll.length-1];
+        if(ll.length>3 && f.lat===l.lat && f.lng===l.lng) ll.pop();
+        cands.push(ll); used.push(it);
+      }
+    });
+  });
+  let result=raw, extra, info, areaShow=null;
+  const accs=walk.accs.slice().sort((a,b)=>a-b), med=accs[Math.floor(accs.length/2)]||10;
+  const r = cands.length ? correctWalk(raw,cands,med) : null;
+  if(!r || !r.n){
     info=`걸은 면적 ${fmtNum(rawA,1)}㎡ · 이 위치에 팜맵이 없어 보정 없이 사용`;
     extra='실측 · 보정 없음';
   } else {
-    let ring=it.rings.find(rg=>pointInRing(c.lat,c.lng,rg)) || it.rings.slice().sort((a,b)=>b.length-a.length)[0];
-    let ringLL=ring.map(q=>({lat:q[0],lng:q[1]}));
-    const f=ringLL[0], l=ringLL[ringLL.length-1];
-    if(ringLL.length>3 && f.lat===l.lat && f.lng===l.lng) ringLL.pop();
-    const accs=walk.accs.slice().sort((a,b)=>a-b), med=accs[Math.floor(accs.length/2)]||10;
-    const r=correctWalk(raw,ringLL,med);
     result=r.result;
-    info=`걸음 ${fmtNum(r.rawA,0)} → 보정 ${fmtNum(r.corrA,0)} · 팜맵 ${fmtNum(r.farmA,0)}㎡ (${r.diff.toFixed(1)}%) · 이동 ${r.shift.toFixed(1)}m`;
-    extra = r.match ? `실측 · 팜맵 일치(±${WALK_MATCH_PCT}%) → 팜맵 경계 적용` : `실측 · 팜맵과 ${r.diff.toFixed(1)}% 차이 → 보정 실측값`;
-    if(it.use) extra+=' · '+it.use;
+    const nTxt = r.n>1 ? `팜맵 ${r.n}필지 합` : '팜맵';
+    info=`걸음 ${fmtNum(r.rawA,0)} → 보정 ${fmtNum(r.corrA,0)} · ${nTxt} ${fmtNum(r.farmA,0)}㎡ (${r.diff.toFixed(1)}%) · 이동 ${r.shift.toFixed(1)}m`;
+    if(r.match){
+      extra = r.n>1 ? `실측 · 팜맵 ${r.n}필지 하나로 경작(±${WALK_MATCH_PCT}%) → 합산 면적 적용` : `실측 · 팜맵 일치(±${WALK_MATCH_PCT}%) → 팜맵 경계 적용`;
+      if(r.n>1) areaShow=r.farmA;
+    } else {
+      extra = `실측 · ${nTxt}과 ${r.diff.toFixed(1)}% 차이 → 보정 실측값`;
+    }
   }
   points=result;
   redrawShape(); updateInfoPanel();
+  if(areaShow!=null){ // 여러 필지 합산 면적 표시
+    document.getElementById('areaVal').textContent=fmtNum(areaShow,1)+' ㎡';
+    document.getElementById('pyeongVal').textContent='('+fmtNum(areaShow/3.305785,1)+'평)';
+  }
   walkInfo(info);
   updateAddress(c.lat,c.lng,extra);
   showToast('🚶 실측 완료');
