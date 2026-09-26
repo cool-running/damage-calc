@@ -637,19 +637,23 @@ function correctWalk(rawLL, ringsLL, medAcc){
   const raw=rawLL.map(p=>toM(p,ref));
   const rings=pickRings(raw, ringsLL.map(r=>r.map(p=>toM(p,ref))));
   const rawA=areaM(raw);
-  if(!rings.length) return {rawA,corrA:rawA,farmA:0,diff:null,match:false,shift:0,n:0,result:rawLL};
+  if(!rings.length) return {rawA,corrA:rawA,farmA:0,baseA:0,gapA:0,diff:null,match:false,shift:0,n:0,result:rawLL};
   const ris=rings.map(ringInfo);
   const maxShift=Math.min(15,Math.max(5,Math.round(medAcc||8)));
   const sh=alignShift(raw,ris,maxShift);
   const moved=raw.map(p=>({x:p.x+sh.ox,y:p.y+sh.oy}));
   const snapped=snapToRings(moved.concat([moved[0]]),ris,WALK_SNAP_M); snapped.pop();
   const corrA=areaM(snapped), farmA=rings.reduce((a,r)=>a+areaM(r),0);
-  const diff=Math.abs(corrA-farmA)/farmA*100;
+  // 여러 필지: 필지 사이 트랙터길·농로까지 포함한 '합친 외곽'을 기준으로 비교
+  //  (모든 점을 가장 가까운 필지 경계에 붙여 만든 외곽 = 필지들 + 사이 길)
+  let full=null, baseA=farmA;
+  if(rings.length>1){ full=snapToRings(moved.concat([moved[0]]),ris,Infinity); full.pop(); baseA=Math.max(farmA,areaM(full)); }
+  const diff=Math.abs(corrA-baseA)/baseA*100;
   const match=diff<=WALK_MATCH_PCT;
-  // 팜맵 일치: 한 필지면 팜맵 경계 그대로, 여러 필지면 모든 점을 경계에 붙여 합친 외곽을 만듦
+  // 팜맵 일치: 한 필지면 팜맵 경계 그대로, 여러 필지면 합친 외곽(길 포함)
   let shape=snapped;
-  if(match) shape = rings.length===1 ? rings[0] : (()=>{ const f=snapToRings(moved.concat([moved[0]]),ris,Infinity); f.pop(); return f; })();
-  return {rawA,corrA,farmA,diff,match,n:rings.length,shift:Math.hypot(sh.ox,sh.oy),
+  if(match) shape = rings.length===1 ? rings[0] : full;
+  return {rawA,corrA,farmA,baseA,gapA:Math.max(0,baseA-farmA),diff,match,n:rings.length,shift:Math.hypot(sh.ox,sh.oy),
     result:shape.map(q=>fromM(q,ref))};
 }
 
@@ -767,13 +771,16 @@ async function finishWalk(){
     extra='실측 · 보정 없음';
   } else {
     result=r.result;
-    const nTxt = r.n>1 ? `팜맵 ${r.n}필지 합` : '팜맵';
-    info=`걸음 ${fmtNum(r.rawA,0)} → 보정 ${fmtNum(r.corrA,0)} · ${nTxt} ${fmtNum(r.farmA,0)}㎡ (${r.diff.toFixed(1)}%) · 이동 ${r.shift.toFixed(1)}m`;
-    if(r.match){
-      extra = r.n>1 ? `실측 · 팜맵 ${r.n}필지 하나로 경작(±${WALK_MATCH_PCT}%) → 합산 면적 적용` : `실측 · 팜맵 일치(±${WALK_MATCH_PCT}%) → 팜맵 경계 적용`;
-      if(r.n>1) areaShow=r.farmA;
+    if(r.n>1){
+      // 여러 필지: 필지 합 + 사이 길 = 합친 외곽
+      info=`걸음 ${fmtNum(r.rawA,0)} → 보정 ${fmtNum(r.corrA,0)} · 팜맵 ${r.n}필지 ${fmtNum(r.farmA,0)} + 사이길 ${fmtNum(r.gapA,0)} = ${fmtNum(r.baseA,0)}㎡ (${r.diff.toFixed(1)}%) · 이동 ${r.shift.toFixed(1)}m`;
     } else {
-      extra = `실측 · ${nTxt}과 ${r.diff.toFixed(1)}% 차이 → 보정 실측값`;
+      info=`걸음 ${fmtNum(r.rawA,0)} → 보정 ${fmtNum(r.corrA,0)} · 팜맵 ${fmtNum(r.farmA,0)}㎡ (${r.diff.toFixed(1)}%) · 이동 ${r.shift.toFixed(1)}m`;
+    }
+    if(r.match){
+      extra = r.n>1 ? `실측 · 팜맵 ${r.n}필지 하나로 경작(±${WALK_MATCH_PCT}%) → 사이길 포함 외곽 적용` : `실측 · 팜맵 일치(±${WALK_MATCH_PCT}%) → 팜맵 경계 적용`;
+    } else {
+      extra = `실측 · 팜맵${r.n>1?' '+r.n+'필지':''}과 ${r.diff.toFixed(1)}% 차이 → 보정 실측값`;
     }
   }
   points=result;
