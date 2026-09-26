@@ -172,7 +172,7 @@ kakao.maps.load(function(){
   geocoder = new kakao.maps.services.Geocoder();
 
   map = new kakao.maps.Map(document.getElementById('map'), {
-    center: new kakao.maps.LatLng(37.5665, 126.9780), level: 3,
+    center: new kakao.maps.LatLng(37.5665, 126.9780), level: 1,
     mapTypeId: kakao.maps.MapTypeId.HYBRID,
     tileAnimation: false
   });
@@ -443,7 +443,7 @@ function locateMe(){
     pos=>{
       curLat=pos.coords.latitude; curLng=pos.coords.longitude; curAcc=Math.round(pos.coords.accuracy);
       const p=new kakao.maps.LatLng(curLat,curLng);
-      map.setCenter(p); map.setLevel(3);
+      map.setCenter(p); map.setLevel(1);
       if(!myMarker){
         myMarker=new kakao.maps.CustomOverlay({
           position:p,
