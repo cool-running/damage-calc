@@ -809,7 +809,7 @@ function walkStatus(prefix,extra){
 function drawWalkLine(){
   const path=walk.pts.map(q=>new kakao.maps.LatLng(q.lat,q.lng));
   if(walk.line) walk.line.setPath(path);
-  else if(path.length) walk.line=new kakao.maps.Polyline({map,path,strokeWeight:4,strokeColor:'#FF9800',strokeOpacity:0.95,zIndex:4});
+  else if(path.length) walk.line=new kakao.maps.Polyline({map,path,strokeWeight:3,strokeColor:'#FF9800',strokeOpacity:0.95,zIndex:4});
 }
 function updateWalkButtons(){
   const b=document.getElementById('walkBtn'), e=document.getElementById('walkEndBtn');
@@ -1146,7 +1146,7 @@ function locateMe(){
       if(!myMarker){
         myMarker=new kakao.maps.CustomOverlay({
           position:p,
-          content:'<div class="keep-size" style="width:16px;height:16px;border-radius:50%;background:#2196F3;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);"></div>',
+          content:'<div class="keep-size" style="width:10px;height:10px;border-radius:50%;background:#2196F3;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);"></div>',
           zIndex:4
         });
         myMarker.setMap(map);
