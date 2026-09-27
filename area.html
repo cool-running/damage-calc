@@ -59,10 +59,11 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .aim.show{display:block;}
 .aim-info{display:none;position:absolute;left:50%;top:calc(50% + 30px);transform:translateX(-50%);pointer-events:none;z-index:20;background:rgba(20,20,30,.82);color:#fff;font-size:12px;font-weight:800;padding:3px 9px;border-radius:10px;white-space:nowrap;font-family:-apple-system,'Noto Sans KR',sans-serif;}
 .aim-info.show{display:block;}
-.fab-row{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);gap:14px;z-index:150;}
+.fab-row{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);gap:11px;z-index:150;}
 .fab-row.show{display:flex;}
-.fab{width:56px;height:56px;border-radius:50%;border:none;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.fab{width:46px;height:46px;border-radius:50%;border:none;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
 .fab:active{transform:scale(.94);}
+.fab svg{width:22px;height:22px;}
 .fab.dis{background:#E0E0E0;box-shadow:none;}
 .fab.dis svg{opacity:.45;}
 .fab.hide{display:none;}
@@ -172,10 +173,12 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   <div class="aim-info" id="aimInfo"></div>
 </div>
 <div class="fab-row" id="walkFabRow">
+  <button class="fab" onclick="askClear()" aria-label="초기화"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#757575" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></button>
   <button class="fab hide" id="walkEndFab" onclick="finishWalk()" aria-label="끝내기"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#C62828"/></svg></button>
   <button class="fab" id="walkMainFab" onclick="toggleWalk()" aria-label="시작"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="#1E88E5" stroke="#1E88E5" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
 </div>
 <div class="fab-row" id="fabRow">
+  <button class="fab" onclick="askClear()" aria-label="초기화"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#757575" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></button>
   <button class="fab" id="doneFab" onclick="finishManual()" aria-label="완료"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
   <button class="fab" id="undoFab" onclick="undoPoint()" aria-label="되돌리기"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
   <button class="fab" id="addFab" onclick="addAimPoint()" aria-label="점 찍기"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2.8" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></button>
@@ -476,7 +479,7 @@ function setAreaMode(m){
   document.getElementById('undoBtn').style.display = 'none'; // 되돌리기는 수동측정 둥근 버튼으로
   const simple = (m==='manual' || m==='walk');   // 수동측정·실측은 결과 칸을 단순하게 (✕ 로 초기화)
   document.getElementById('clearBtn').style.display = simple ? 'none' : '';
-  document.getElementById('xBtn').style.display = simple ? 'block' : 'none';
+  document.getElementById('xBtn').style.display = 'none'; // 초기화는 둥근 버튼 줄에
   clearAll(true);
   hideNearbyFarm();
   if(farmModeOn()) scheduleNearbyFarm();
@@ -1250,6 +1253,12 @@ function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.get
 function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
 window.addAimPoint=addAimPoint;
 
+function askClear(){
+  const has = points.length>0 || (walk.pts && walk.pts.length>0) || walk.on;
+  if(has && !confirm('측정한 내용을 모두 지울까요?')) return;
+  clearAll();
+}
+window.askClear=askClear;
 function finishManual(){
   if(points.length<3){ showToast('점을 3개 이상 찍어주세요'); return; }
   manualDone=true;
