@@ -459,6 +459,7 @@ function setAreaMode(m){
   if(farmModeOn()) scheduleNearbyFarm();
   refreshMyMarker();
   updateAim();
+  updateGestureMode();
   if(m==='walk' && !_restoringWalk) restoreWalkDone(); // 저장된 실측 결과가 있으면 다시 표시
 
 }
@@ -1255,7 +1256,7 @@ function setMag(k){
 function updateGestureMode(){
   if(!map) return;
   const atMax = map.getLevel()<=1;
-  map.setZoomable(!atMax);            // 레벨1에서는 카카오 확대 끔(튕김 방지)
+  map.setZoomable(!atMax && mode!=='manual'); // 레벨1에서는 카카오 확대 끔(튕김 방지), 수동측정은 조준점 기준 확대를 직접 처리
   map.setDraggable(magK===1);         // 초과 확대 중에는 이동도 직접 처리
 }
 function wrapPoint(cx,cy){ // 화면 좌표 → 원래(배율 전) 지도 화면 좌표
@@ -1271,7 +1272,11 @@ function setCenterByPoint(x,y){
   let pinch=null, drag=null;
   const dist=t=>Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
   wrap.addEventListener('touchstart',e=>{
-    if(e.touches.length===2 && map.getLevel()<=1){
+    if(e.touches.length===2 && mode==='manual'){
+      // 수동측정: 손가락 위치와 상관없이 조준점(화면 가운데)을 기준으로 확대·축소 → 조준한 곳이 그대로 조준점 안에 있음
+      pinch={manual:true, d0:dist(e.touches), k0:magK, lvl0:map.getLevel(), eff:magK};
+      drag=null; map.setDraggable(false);
+    } else if(e.touches.length===2 && map.getLevel()<=1){
       pinch={d0:dist(e.touches), k0:magK};
       drag=null;
     } else if(e.touches.length===1 && magK>1){
@@ -1279,7 +1284,14 @@ function setCenterByPoint(x,y){
     }
   },{passive:true});
   wrap.addEventListener('touchmove',e=>{
-    if(pinch && e.touches.length===2){
+    if(pinch && pinch.manual && e.touches.length===2){
+      e.preventDefault();
+      // 움직이는 동안은 화면을 가운데 기준으로 키우거나 줄여서 보여주고, 손을 떼면 지도 확대 단계에 반영
+      const maxEff=Math.pow(2,pinch.lvl0-1)*MAG_MAX;
+      pinch.eff=Math.max(0.12,Math.min(maxEff,pinch.k0*dist(e.touches)/pinch.d0));
+      const mEl=document.getElementById('map');
+      mEl.style.transform=`scale(${pinch.eff})`; mEl.style.setProperty('--inv',(1/pinch.eff).toFixed(4));
+    } else if(pinch && e.touches.length===2){
       e.preventDefault();
       const ratio=dist(e.touches)/pinch.d0;
       if(pinch.k0===1 && magK===1 && ratio<0.8){ // 1배에서 오므리면 일반 축소
@@ -1308,6 +1320,17 @@ function setCenterByPoint(x,y){
     }
   },{passive:false});
   const end=e=>{
+    if(pinch && pinch.manual && e.touches.length<2){
+      // 확대 배율 → 지도 단계(2배마다 1단계)로 바꾸고, 최대 확대(1단계)를 넘는 만큼은 초과 확대로
+      const steps=Math.round(Math.log2(pinch.eff));
+      const L=Math.max(1,Math.min(14,pinch.lvl0-steps));
+      const rest=pinch.eff/Math.pow(2,pinch.lvl0-L);
+      const c=map.getCenter();
+      map.setLevel(L); map.setCenter(c);                       // 가운데(조준점) 기준
+      setMag(L===1 && rest>1.05 ? Math.min(MAG_MAX,rest) : 1);  // 스타일·핀 크기 원래대로
+      pinch=null; updateGestureMode(); updateAim();
+      return;
+    }
     if(e.touches.length<2) pinch=null;
     if(e.touches.length===0) drag=null;
     else if(e.touches.length===1 && magK>1) drag={x:e.touches[0].clientX, y:e.touches[0].clientY};
