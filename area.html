@@ -54,6 +54,14 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 
 .myloc-btn{position:fixed;left:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);width:44px;height:44px;border-radius:50%;background:#fff;border:0.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;}
 .myloc-btn:active{opacity:.7;}
+/* 수동측정 조준경 */
+.aim{display:none;position:absolute;left:50%;top:50%;width:64px;height:64px;transform:translate(-50%,-50%);pointer-events:none;z-index:20;}
+.aim.show{display:block;}
+.aim-info{display:none;position:absolute;left:50%;top:calc(50% + 38px);transform:translateX(-50%);pointer-events:none;z-index:20;background:rgba(20,20,30,.82);color:#fff;font-size:12px;font-weight:800;padding:3px 9px;border-radius:10px;white-space:nowrap;font-family:-apple-system,'Noto Sans KR',sans-serif;}
+.aim-info.show{display:block;}
+.aim-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:52px;padding:0 18px;border-radius:26px;border:none;background:#E53935;color:#fff;font-size:16px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:6px;}
+.aim-btn.show{display:flex;}
+.aim-btn:active{transform:scale(.96);}
 
 .panel{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));background:#fff;border-top:0.5px solid var(--border);padding:8px 14px 10px;z-index:50;box-shadow:0 -2px 10px rgba(0,0,0,0.06);}
 .result-row{display:flex;align-items:center;gap:8px;}
@@ -138,7 +146,23 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   <button class="mbtn" id="modeManualBtn" onclick="setAreaMode('manual')">✏️ 수동측정</button>
 </div>
 
-<div id="mapWrap"><div id="map"></div></div>
+<div id="mapWrap"><div id="map"></div>
+  <svg class="aim" id="aim" viewBox="0 0 64 64">
+    <g fill="none" stroke="rgba(255,255,255,.75)" stroke-width="5" stroke-linecap="round">
+      <circle cx="32" cy="32" r="22"/>
+      <line x1="32" y1="3" x2="32" y2="24"/><line x1="32" y1="40" x2="32" y2="61"/>
+      <line x1="3" y1="32" x2="24" y2="32"/><line x1="40" y1="32" x2="61" y2="32"/>
+    </g>
+    <g fill="none" stroke="#E53935" stroke-width="2.6" stroke-linecap="round">
+      <circle cx="32" cy="32" r="22"/>
+      <line x1="32" y1="3" x2="32" y2="24"/><line x1="32" y1="40" x2="32" y2="61"/>
+      <line x1="3" y1="32" x2="24" y2="32"/><line x1="40" y1="32" x2="61" y2="32"/>
+    </g>
+    <circle cx="32" cy="32" r="3" fill="#E53935" stroke="#fff" stroke-width="1.2"/>
+  </svg>
+  <div class="aim-info" id="aimInfo"></div>
+</div>
+<button class="aim-btn" id="aimBtn" onclick="addAimPoint()">＋ 점 찍기</button>
 
 <button class="myloc-btn" onclick="locateMe()">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round">
@@ -263,6 +287,7 @@ kakao.maps.load(function(){
     handleMapTap(e.latLng.getLat(), e.latLng.getLng());
   });
   kakao.maps.event.addListener(map, 'zoom_changed', updateGestureMode);
+  kakao.maps.event.addListener(map, 'center_changed', ()=>{ if(mode==='manual') updateAim(); });
   updateGestureMode();
   kakao.maps.event.addListener(map, 'idle', scheduleNearbyFarm);
 
@@ -386,10 +411,11 @@ function goToAddr(r){
 function addPoint(lat,lng){
   points.push({lat,lng});
   const pos = new kakao.maps.LatLng(lat,lng);
-  const color = points.length===1 ? '#E53935' : '#FF9800';
   const dot = new kakao.maps.CustomOverlay({
-    position: pos,
-    content: `<div class="keep-size" style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);"></div>`,
+    position: pos, yAnchor:1, xAnchor:0.5,   // 핀 끝이 찍은 위치
+    content: `<div class="keep-size" style="transform-origin:50% 100%;line-height:0;"><svg width="22" height="32" viewBox="0 0 22 32">`
+      +`<path d="M11 31C11 31 2 18.5 2 11a9 9 0 0 1 18 0c0 7.5-9 20-9 20z" fill="#E53935" stroke="#fff" stroke-width="1.6"/>`
+      +`<circle cx="11" cy="11" r="3.6" fill="#8B0000"/></svg></div>`,
     zIndex:5
   });
   dot.setMap(map);
@@ -432,6 +458,7 @@ function setAreaMode(m){
   hideNearbyFarm();
   if(farmModeOn()) scheduleNearbyFarm();
   refreshMyMarker();
+  updateAim();
   if(m==='walk' && !_restoringWalk) restoreWalkDone(); // 저장된 실측 결과가 있으면 다시 표시
 
 }
@@ -441,7 +468,7 @@ function addrPlaceholderFor(m){
   if(m==='walk') return '▶ 시작을 누르고 농지 경계를 따라 한 바퀴 걸어주세요\n(걷는 동안 화면은 켜 두세요)';
   return m==='parcel'
     ? '지도를 탭하면 지적도 필지 면적과 주소가 표시돼요'
-    : '핀을 선택하면서 면적을 측정할 수 있어요\n(3개 이상 찍으면 면적이 계산돼요)';
+    : '지도를 움직여 가운데 조준점을 꼭짓점에 맞추고\n[＋ 점 찍기]를 누르세요 (3개부터 면적 계산)';
 }
 
 function clearAll(fromModeSwitch){
@@ -1182,8 +1209,30 @@ async function finishWalkImpl(){
   showToast('🚶 실측 완료 · 📋 내역에 저장됨');
 }
 
+/* ── 수동측정 조준경: 화면 가운데 조준점에 지도를 맞추고 [＋ 점 찍기] ──
+   손가락이 가리지 않아 정확하게 찍을 수 있음. 조준점까지 미리보기 선과 거리·예상 면적 표시 */
+let aimLine=null;
+function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.getLng()}; }
+function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
+window.addAimPoint=addAimPoint;
+function updateAim(){
+  const on = mode==='manual';
+  document.getElementById('aim').classList.toggle('show',on);
+  document.getElementById('aimBtn').classList.toggle('show',on);
+  const info=document.getElementById('aimInfo');
+  if(!on || !points.length){ info.classList.remove('show'); if(aimLine){ aimLine.setMap(null); aimLine=null; } return; }
+  const c=aimCenter(), last=points[points.length-1];
+  const path=[new kakao.maps.LatLng(last.lat,last.lng), new kakao.maps.LatLng(c.lat,c.lng)];
+  if(points.length>=2) path.push(new kakao.maps.LatLng(points[0].lat,points[0].lng));
+  if(aimLine) aimLine.setPath(path);
+  else aimLine=new kakao.maps.Polyline({map,path,strokeWeight:2,strokeColor:'#E53935',strokeOpacity:0.9,strokeStyle:'shortdash',zIndex:4});
+  let t='+'+fmtNum(haversine(last,c),1)+'m';
+  if(points.length>=2) t+=' · 예상 '+fmtNum(calcArea(points.concat([c])),1)+'㎡';
+  info.textContent=t; info.classList.add('show');
+}
 function handleMapTap(la,ln){
   if(mode==='walk') return; // 실측은 걸어서 기록
+  if(mode==='manual') return; // 수동측정은 조준경으로 찍음
   if(mode==='manual') addPoint(la, ln);
   else if(mode==='farmmap'){ if(!selectCachedFarm(la, ln)) fetchFarmmap(la, ln); }
   else fetchParcelWhole(la, ln);
@@ -1328,7 +1377,7 @@ function updateInfoPanel(){
     document.getElementById('areaVal').textContent='—';
     document.getElementById('pyeongVal').textContent='';
     document.getElementById('periVal').textContent = n===2 ? fmtNum(haversine(points[0],points[1]),1)+'m' : '0m';
-    scheduleLots(); refreshDetail();
+    scheduleLots(); refreshDetail(); updateAim();
     return;
   }
   const areaM2=calcArea(points);
@@ -1336,7 +1385,7 @@ function updateInfoPanel(){
   document.getElementById('areaVal').textContent=fmtNum(areaM2,1)+' ㎡';
   document.getElementById('pyeongVal').textContent='('+fmtNum(pyeong,1)+'평)';
   document.getElementById('periVal').textContent=fmtNum(calcPerimeter(points),1)+'m';
-  scheduleLots(); refreshDetail();
+  scheduleLots(); refreshDetail(); updateAim();
 }
 
 function updateAddress(lat,lng,extra){
