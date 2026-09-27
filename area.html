@@ -171,6 +171,10 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   </svg>
   <div class="aim-info" id="aimInfo"></div>
 </div>
+<div class="fab-row" id="walkFabRow">
+  <button class="fab hide" id="walkEndFab" onclick="finishWalk()" aria-label="끝내기"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#C62828"/></svg></button>
+  <button class="fab" id="walkMainFab" onclick="toggleWalk()" aria-label="시작"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="#1E88E5" stroke="#1E88E5" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+</div>
 <div class="fab-row" id="fabRow">
   <button class="fab" id="doneFab" onclick="finishManual()" aria-label="완료"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
   <button class="fab" id="undoFab" onclick="undoPoint()" aria-label="되돌리기"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
@@ -465,12 +469,14 @@ function setAreaMode(m){
   document.getElementById('modeFarmBtn').classList.toggle('on', m==='farmmap');
   document.getElementById('modeManualBtn').classList.toggle('on', m==='manual');
   document.getElementById('modeWalkBtn').classList.toggle('on', m==='walk');
-  document.getElementById('walkBtn').style.display = m==='walk' ? '' : 'none';
+  document.getElementById('walkBtn').style.display = 'none';      // 실측 버튼은 둥근 버튼으로
   document.getElementById('walkEndBtn').style.display = 'none';
+  document.getElementById('walkFabRow').classList.toggle('show', m==='walk');
   if(walk.on) stopWalkRecording();
   document.getElementById('undoBtn').style.display = 'none'; // 되돌리기는 수동측정 둥근 버튼으로
-  document.getElementById('clearBtn').style.display = m==='manual' ? 'none' : '';
-  document.getElementById('xBtn').style.display = m==='manual' ? 'block' : 'none';
+  const simple = (m==='manual' || m==='walk');   // 수동측정·실측은 결과 칸을 단순하게 (✕ 로 초기화)
+  document.getElementById('clearBtn').style.display = simple ? 'none' : '';
+  document.getElementById('xBtn').style.display = simple ? 'block' : 'none';
   clearAll(true);
   hideNearbyFarm();
   if(farmModeOn()) scheduleNearbyFarm();
@@ -484,7 +490,7 @@ function setAreaMode(m){
 
 function addrPlaceholderFor(m){
   if(m==='farmmap') return '지도를 탭하면 팜맵(실경작지) 경계와 면적이 표시돼요';
-  if(m==='walk') return '▶ 시작을 누르고 농지 경계를 따라 한 바퀴 걸어주세요\n(걷는 동안 화면은 켜 두세요)';
+  if(m==='walk') return '▶ 을 누르고 경계를 따라 한 바퀴 걸어주세요';
   return m==='parcel'
     ? '지도를 탭하면 지적도 필지 면적과 주소가 표시돼요'
     : '지도: 조준점 맞추고 [＋ 점 찍기]\n현장: 모서리에 서서 [📍 현위치] → 다 찍으면 [✔ 완료]';
@@ -886,7 +892,7 @@ function refreshDetail(){
   const has=points.length>=3;
   const addr=document.getElementById('addrVal'), lots=document.getElementById('lotList'), btn=document.getElementById('detailBtn');
   if(!has) detailOpen=false;
-  addr.style.display = ((!has && !manualPlacing()) || detailOpen) ? '' : 'none';   // 결과 전 안내 문구 (수동측정은 조준점 아래에 표시)
+  addr.style.display = ((!has && !manualPlacing() && !walk.on) || detailOpen) ? '' : 'none'; // 걷는 중에는 상태 줄만   // 결과 전 안내 문구 (수동측정은 조준점 아래에 표시)
   lots.style.display = (has && detailOpen && lots.innerHTML) ? '' : 'none';
   btn.style.display = has ? 'inline-block' : 'none';
   btn.textContent = detailOpen ? '접기 ▴' : '상세 ▾';
@@ -1068,12 +1074,16 @@ function drawWalkLine(){
   }
   drawStartMark();
 }
+const WALK_ICON={play:'<svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="#1E88E5" stroke="#1E88E5" stroke-width="1.5" stroke-linejoin="round"/></svg>',pause:'<svg width="26" height="26" viewBox="0 0 24 24" fill="#F57C00"><rect x="6.5" y="5" width="3.8" height="14" rx="1"/><rect x="13.7" y="5" width="3.8" height="14" rx="1"/></svg>'};
 function updateWalkButtons(){
+  // 둥근 버튼: 시작 ▶ / 기록 중 ⏸ + ■ / 일시정지 ▶ + ■
+  const mf=document.getElementById('walkMainFab'), ef=document.getElementById('walkEndFab');
+  mf.innerHTML = (walk.on && !walk.paused) ? WALK_ICON.pause : WALK_ICON.play;
+  mf.setAttribute('aria-label', !walk.on?'시작':walk.paused?'계속':'일시정지');
+  ef.classList.toggle('hide', !walk.on);
   const b=document.getElementById('walkBtn'), e=document.getElementById('walkEndBtn');
   b.classList.remove('rec','pause');
-  if(!walk.on){ b.textContent='▶ 시작'; e.style.display='none'; }
-  else if(walk.paused){ b.textContent='▶ 계속'; e.style.display=''; }
-  else { b.textContent='⏸ 일시정지'; b.classList.add('pause'); e.style.display=''; }
+  b.style.display='none'; e.style.display='none'; // 결과 칸 글자 버튼은 쓰지 않음 (둥근 버튼 사용)
   refreshDetail();
 }
 async function startWatch(){
