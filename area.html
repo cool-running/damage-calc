@@ -88,6 +88,21 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 
 .addr-list{display:none;position:fixed;top:calc(var(--top-h) + var(--search-h));left:0;right:0;max-height:55vh;overflow-y:auto;background:#fff;border-bottom:0.5px solid var(--border);box-shadow:0 6px 16px rgba(0,0,0,0.18);z-index:160;}
 .addr-list.show{display:block;}
+.hist-btn{display:none;border:none;background:var(--bg);color:#2E7D32;font-size:12px;font-weight:800;padding:3px 10px;border-radius:12px;cursor:pointer;font-family:-apple-system,'Noto Sans KR',sans-serif;white-space:nowrap;}
+.meta-btns{display:flex;gap:6px;align-items:center;}
+.hist-sheet{display:none;position:fixed;left:0;right:0;top:calc(var(--top-h) + var(--search-h));bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.35);z-index:300;}
+.hist-sheet.show{display:block;}
+.hist-box{background:#fff;max-height:78%;overflow-y:auto;border-radius:0 0 16px 16px;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+.hist-head{position:sticky;top:0;background:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--border);font-size:14px;font-weight:800;color:var(--text);}
+.hist-close{border:none;background:var(--bg);border-radius:14px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.hist-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;}
+.hist-item:active{background:var(--bg);}
+.hist-main{flex:1;min-width:0;}
+.hist-area{font-size:15px;font-weight:800;color:var(--text);}
+.hist-area small{font-size:12px;color:var(--blue);font-weight:700;margin-left:4px;}
+.hist-sub{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hist-del{border:none;background:none;color:#C62828;font-size:18px;padding:4px 8px;cursor:pointer;}
+.hist-empty{padding:28px 16px;text-align:center;color:var(--sub);font-size:13px;}
 .addr-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg);font-size:12px;font-weight:700;color:var(--sub);border-bottom:0.5px solid var(--border);}
 .addr-close{border:none;background:none;font-size:18px;color:var(--sub);cursor:pointer;padding:0 4px;}
 .addr-item{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border:none;border-bottom:0.5px solid var(--border);background:#fff;text-align:left;cursor:pointer;font-family:-apple-system,'Noto Sans KR',sans-serif;}
@@ -148,12 +163,18 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
       <button class="pbtn pbtn-clear" onclick="clearAll()">🗑 초기화</button>
     </div>
   </div>
-  <div class="meta-row"><span><span id="ptWrap">점 <span id="ptCount">0개</span> | </span>총 둘레: <span id="periVal">0m</span></span><button class="detail-btn" id="detailBtn" onclick="toggleDetail()">상세 ▾</button></div>
+  <div class="meta-row"><span><span id="ptWrap">점 <span id="ptCount">0개</span> | </span>총 둘레: <span id="periVal">0m</span></span><span class="meta-btns"><button class="hist-btn" id="histBtn" onclick="openHistory()">📋 내역</button><button class="detail-btn" id="detailBtn" onclick="toggleDetail()">상세 ▾</button></span></div>
   <div class="lot-list" id="lotList" style="display:none;"></div>
   <div class="walk-row" id="walkInfo" style="display:none;"></div>
   <div class="addr-row" id="addrVal">지도를 탭하면 면적과 주소가 표시돼요</div>
 </div>
 <div class="addr-list" id="addrList"></div>
+<div class="hist-sheet" id="histSheet" onclick="if(event.target===this) closeHistory()">
+  <div class="hist-box">
+    <div class="hist-head"><span id="histTitle">실측 내역</span><button class="hist-close" onclick="closeHistory()">닫기</button></div>
+    <div id="histList"></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -821,6 +842,7 @@ function refreshDetail(){
   lots.style.display = (has && detailOpen && lots.innerHTML) ? '' : 'none';
   btn.style.display = has ? 'inline-block' : 'none';
   btn.textContent = detailOpen ? '접기 ▴' : '상세 ▾';
+  const hb=document.getElementById('histBtn'); if(hb) hb.style.display = (mode==='walk' && !walk.on) ? 'inline-block' : 'none';
 }
 function scheduleLots(){
   clearTimeout(_lotTimer); _lotReq++;
@@ -889,6 +911,56 @@ function smoothLoop(pts,times){
   return p;
 }
 
+/* ── 실측 내역: 끝낸 실측을 날짜·주소·면적·둘레·모양과 함께 폰에 저장 (최근 100건) ── */
+const HIST_KEY='area_walk_history_v1';
+function loadHist(){ try{ return JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); }catch(e){ return []; } }
+function saveHist(h){ try{ localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(0,100))); }catch(e){ showToast('저장 공간이 부족해 내역을 저장하지 못했어요'); } }
+function addHist(pts,c){
+  const id=Date.now();
+  const r7=v=>Math.round(v*1e7)/1e7;
+  const item={id, t:id, area:calcArea(pts), peri:calcPerimeter(pts), addr:'', c, pts:pts.map(q=>({lat:r7(q.lat),lng:r7(q.lng)}))};
+  const h=loadHist(); h.unshift(item); saveHist(h);
+  // 주소는 조회되는 대로 채움
+  geocoder.coord2Address(c.lng,c.lat,(res,st)=>{
+    if(st!==kakao.maps.services.Status.OK) return;
+    const a=res[0].address?res[0].address.address_name:'';
+    const hh=loadHist(); const it=hh.find(x=>x.id===id); if(it){ it.addr=a; saveHist(hh); }
+  });
+}
+function fmtDate(t){ const d=new Date(t), z=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}.${z(d.getMonth()+1)}.${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; }
+function openHistory(){
+  const h=loadHist();
+  document.getElementById('histTitle').textContent=`실측 내역 ${h.length}건`;
+  document.getElementById('histList').innerHTML = h.length ? h.map(it=>
+    `<div class="hist-item" onclick="showHistory(${it.id})"><div class="hist-main">`
+    +`<div class="hist-area">${fmtNum(it.area,1)} ㎡<small>(${fmtNum(it.area/3.305785,1)}평)</small></div>`
+    +`<div class="hist-sub">${fmtDate(it.t)} · 둘레 ${fmtNum(it.peri,1)}m</div>`
+    +`<div class="hist-sub">${it.addr||'주소 확인 중'}</div></div>`
+    +`<button class="hist-del" onclick="event.stopPropagation();delHistory(${it.id})">✕</button></div>`).join('')
+    : '<div class="hist-empty">아직 저장된 실측 내역이 없어요.<br>실측을 끝내면 자동으로 저장돼요.</div>';
+  document.getElementById('histSheet').classList.add('show');
+}
+function closeHistory(){ document.getElementById('histSheet').classList.remove('show'); }
+function delHistory(id){
+  if(!confirm('이 내역을 삭제할까요?')) return;
+  saveHist(loadHist().filter(x=>x.id!==id)); openHistory();
+}
+function showHistory(id){
+  const it=loadHist().find(x=>x.id===id); if(!it) return;
+  closeHistory();
+  if(walk.on){ showToast('실측 기록 중에는 내역을 불러올 수 없어요'); return; }
+  if(mode!=='walk'){ _restoringWalk=true; setAreaMode('walk'); _restoringWalk=false; }
+  clearAll(true); clearWalkDrawing();
+  walk.pts=it.pts.slice(); drawStartMark(true);
+  points=it.pts.slice(); redrawShape(); updateInfoPanel();
+  const b=new kakao.maps.LatLngBounds(); points.forEach(q=>b.extend(new kakao.maps.LatLng(q.lat,q.lng))); map.setBounds(b);
+  document.getElementById('addrVal').textContent=(it.addr||'')+'\n실측 내역 · '+fmtDate(it.t);
+  try{ localStorage.setItem(WALK_DONE_KEY, JSON.stringify({t:it.t, raw:it.pts, result:it.pts, c:it.c})); }catch(e){}
+  showToast('📋 '+fmtDate(it.t)+' 실측 결과');
+}
+window.openHistory=openHistory; window.closeHistory=closeHistory; window.delHistory=delHistory; window.showHistory=showHistory;
+
 /* ── 실측(걸어서 측정) ──
    GPS로 걸은 선을 기록 → 끝나면 해당 팜맵 필지에 맞춰 ① 전체 평행이동 ② 경계 가까운 점만 경계에 붙이기
    → 보정 면적이 팜맵 ±5% 이내면 팜맵 경계 채택, 아니면(일부 경작 등) 보정된 실측 모양 사용 */
@@ -954,6 +1026,7 @@ function updateWalkButtons(){
   if(!walk.on){ b.textContent='▶ 시작'; e.style.display='none'; }
   else if(walk.paused){ b.textContent='▶ 계속'; e.style.display=''; }
   else { b.textContent='⏸ 일시정지'; b.classList.add('pause'); e.style.display=''; }
+  refreshDetail();
 }
 async function startWatch(){
   try{ if(navigator.wakeLock) walk.wake=await navigator.wakeLock.request('screen'); }catch(e){}
@@ -1105,7 +1178,8 @@ async function finishWalkImpl(){
   walkInfo('');
   updateAddress(c.lat,c.lng);
   try{ localStorage.setItem(WALK_DONE_KEY, JSON.stringify({t:Date.now(), raw, result, c})); }catch(e){}
-  showToast('🚶 실측 완료');
+  addHist(result,c);
+  showToast('🚶 실측 완료 · 📋 내역에 저장됨');
 }
 
 function handleMapTap(la,ln){
