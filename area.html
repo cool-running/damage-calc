@@ -410,6 +410,7 @@ function setAreaMode(m){
   clearAll(true);
   hideNearbyFarm();
   if(farmModeOn()) scheduleNearbyFarm();
+  refreshMyMarker();
   if(m==='walk' && !_restoringWalk) restoreWalkDone(); // 저장된 실측 결과가 있으면 다시 표시
 
 }
@@ -910,6 +911,7 @@ function clearWalkDrawing(){
   if(walk.line){ walk.line.setMap(null); walk.line=null; }
   if(walk.fill){ walk.fill.setMap(null); walk.fill=null; }
   if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; }
+  if(walk.endMk){ walk.endMk.setMap(null); walk.endMk=null; }
   if(walk.rawLine){ walk.rawLine.setMap(null); walk.rawLine=null; }
   walkInfo('');
 }
@@ -924,13 +926,16 @@ function walkStatus(prefix,extra){
 // 시작점: 걷는 동안은 작은 초록 삼각형, 끝나면 시작·끝 표시(초록 테두리 + 빨간 점)
 function drawStartMark(done){
   if(!walk.pts.length) return;
-  if(walk.startMk){ if(walk.startMk._done===!!done) return; walk.startMk.setMap(null); walk.startMk=null; }
+  if(walk.startMk && walk.startMk._done===!!done) return;
+  if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; }
+  if(walk.endMk){ walk.endMk.setMap(null); walk.endMk=null; }
   const p=walk.pts[0];
-  const html = done
-    ? '<div class="keep-size" style="width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #2E7D32;box-shadow:0 1px 4px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;"><div style="width:6px;height:6px;border-radius:50%;background:#E53935;"></div></div>'
-    : '<div class="keep-size" style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #2E7D32;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 1px 2px rgba(0,0,0,.5));"></div>';
-  walk.startMk=new kakao.maps.CustomOverlay({map, position:new kakao.maps.LatLng(p.lat,p.lng), zIndex:6, yAnchor:0.5, xAnchor:0.5, content:html});
+  walk.startMk=new kakao.maps.CustomOverlay({map, position:new kakao.maps.LatLng(p.lat,p.lng), zIndex:6, yAnchor:0.5, xAnchor:0.5, content:iconBadge('START','#2E7D32')});
   walk.startMk._done=!!done;
+  if(done && walk.pts.length>1){
+    const q=walk.pts[walk.pts.length-1];
+    walk.endMk=new kakao.maps.CustomOverlay({map, position:new kakao.maps.LatLng(q.lat,q.lng), zIndex:6, yAnchor:0.5, xAnchor:0.5, content:iconBadge('STOP','#C62828')});
+  }
 }
 function drawWalkLine(){
   const path=walk.pts.map(q=>new kakao.maps.LatLng(q.lat,q.lng));
@@ -1087,6 +1092,7 @@ async function finishWalkImpl(){
   const tl=trimLoop(walk.pts.slice());
   const raw = tl.pts.length>=3 ? smoothLoop(tl.pts,1) : walk.pts.slice();
   if(tl.trimmed){ walk.pts=raw; if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; } }
+  if(walk.startMk) walk.startMk._done=false; // 끝나면 START·STOP 다시 그림
   if(raw.length<3){ showToast('🚶 기록된 점이 부족해요 (3개 이상 필요)'); walkInfo(''); document.getElementById('addrVal').textContent=addrPlaceholderFor(mode); return; }
   if(walk.line){ walk.line.setMap(null); walk.line=null; }
   if(walk.fill){ walk.fill.setMap(null); walk.fill=null; }
@@ -1271,6 +1277,15 @@ function updateAddress(lat,lng,extra){
 }
 
 /* ── 현위치 ── */
+/* ── 지도 아이콘 (현장 측정기 화면을 참고해 만든 표시) ──
+   사람: 실측 중 내 위치 / START: 시작점 / STOP: 끝점 */
+const ICON_PERSON='<div class="keep-size" style="width:22px;height:22px;border-radius:50%;background:rgba(46,125,50,.25);border:2px solid #2E7D32;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.4);">'
+  +'<svg width="10" height="16" viewBox="0 0 10 16"><circle cx="5" cy="2.6" r="2.4" fill="#F9A825" stroke="#8D6E00" stroke-width=".7"/>'
+  +'<path d="M2 6.2h6l.6 5H7l-.4 4.3H3.4L3 11.2H1.4z" fill="#F9A825" stroke="#8D6E00" stroke-width=".7" stroke-linejoin="round"/></svg></div>';
+const ICON_DOT='<div class="keep-size" style="width:10px;height:10px;border-radius:50%;background:#2196F3;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);"></div>';
+const iconBadge=(txt,bg)=>'<div class="keep-size" style="min-width:26px;height:18px;padding:0 5px;border-radius:9px;background:'+bg+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);color:#fff;font-size:8.5px;font-weight:900;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;">'+txt+'</div>';
+function myMarkerHtml(){ return mode==='walk' ? ICON_PERSON : ICON_DOT; }
+function refreshMyMarker(){ if(myMarker) myMarker.setContent(myMarkerHtml()); }
 let _bgWatch=null;
 function startBgGps(){
   if(_bgWatch!=null || !navigator.geolocation) return;
@@ -1299,8 +1314,7 @@ function locateMe(keepView){
       setMag(1); map.setCenter(p); if(!moved) map.setLevel(viewLevel()); moved=true;
     }
     if(!myMarker){
-      myMarker=new kakao.maps.CustomOverlay({position:p,zIndex:4,
-        content:'<div class="keep-size" style="width:10px;height:10px;border-radius:50%;background:#2196F3;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);"></div>'});
+      myMarker=new kakao.maps.CustomOverlay({position:p,zIndex:7,content:myMarkerHtml()});
       myMarker.setMap(map);
     } else myMarker.setPosition(p);
     const label = curAcc<10?'좋음':curAcc<30?'보통':'낮음';
