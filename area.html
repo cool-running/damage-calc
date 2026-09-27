@@ -59,13 +59,16 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .aim.show{display:block;}
 .aim-info{display:none;position:absolute;left:50%;top:calc(50% + 30px);transform:translateX(-50%);pointer-events:none;z-index:20;background:rgba(20,20,30,.82);color:#fff;font-size:12px;font-weight:800;padding:3px 9px;border-radius:10px;white-space:nowrap;font-family:-apple-system,'Noto Sans KR',sans-serif;}
 .aim-info.show{display:block;}
+.fab-row{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);gap:14px;z-index:150;}
+.fab-row.show{display:flex;}
+.fab{width:56px;height:56px;border-radius:50%;border:none;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.fab:active{transform:scale(.94);}
+.fab.dis{background:#E0E0E0;box-shadow:none;}
+.fab.dis svg{opacity:.45;}
+.fab.hide{display:none;}
+.x-btn{display:none;width:34px;height:34px;border:none;background:none;cursor:pointer;padding:0;flex-shrink:0;}
 .aim-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:52px;padding:0 18px;border-radius:26px;border:none;background:#E53935;color:#fff;font-size:16px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:6px;}
 .aim-btn.show{display:flex;}
-.gpspt-btn{display:none;position:fixed;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:52px;padding:0 14px;border-radius:26px;border:none;background:#2E7D32;color:#fff;font-size:15px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:4px;white-space:nowrap;}
-.gpspt-btn.show{display:flex;}
-.gpspt-btn.busy{background:#9E9E9E;}
-.done-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 74px);height:46px;padding:0 16px;border-radius:23px;border:none;background:#1565C0;color:#fff;font-size:15px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:6px;}
-.done-btn.show{display:flex;}
 .aim-btn:active{transform:scale(.96);}
 
 .panel{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));background:#fff;border-top:0.5px solid var(--border);padding:8px 14px 10px;z-index:50;box-shadow:0 -2px 10px rgba(0,0,0,0.06);}
@@ -168,9 +171,11 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   </svg>
   <div class="aim-info" id="aimInfo"></div>
 </div>
-<button class="done-btn" id="doneBtn" onclick="finishManual()">✔ 완료</button>
-<button class="gpspt-btn" id="gpsPtBtn" onclick="addGpsPoint()">📍 현위치</button>
-<button class="aim-btn" id="aimBtn" onclick="addAimPoint()">＋ 점 찍기</button>
+<div class="fab-row" id="fabRow">
+  <button class="fab" id="doneFab" onclick="finishManual()" aria-label="완료"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
+  <button class="fab" id="undoFab" onclick="undoPoint()" aria-label="되돌리기"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+  <button class="fab" id="addFab" onclick="addAimPoint()" aria-label="점 찍기"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2.8" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></button>
+</div>
 
 <button class="myloc-btn" onclick="locateMe()">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round">
@@ -192,7 +197,8 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
       <button class="pbtn pbtn-walk" id="walkBtn" onclick="toggleWalk()" style="display:none;">▶ 시작</button>
       <button class="pbtn pbtn-walk rec" id="walkEndBtn" onclick="finishWalk()" style="display:none;">■ 끝내기</button>
       <button class="pbtn pbtn-undo" id="undoBtn" onclick="undoPoint()" style="display:none;">↩ 되돌리기</button>
-      <button class="pbtn pbtn-clear" onclick="clearAll()">🗑 초기화</button>
+      <button class="pbtn pbtn-clear" id="clearBtn" onclick="clearAll()">🗑 초기화</button>
+      <button class="x-btn" id="xBtn" onclick="clearAll()" aria-label="초기화"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9E9E9E" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
   </div>
   <div class="meta-row"><span><span id="ptWrap">점 <span id="ptCount">0개</span> | </span>총 둘레: <span id="periVal">0m</span></span><span class="meta-btns"><button class="hist-btn" id="histBtn" onclick="openHistory()">📋 내역</button><button class="detail-btn" id="detailBtn" onclick="toggleDetail()">상세 ▾</button></span></div>
@@ -462,7 +468,9 @@ function setAreaMode(m){
   document.getElementById('walkBtn').style.display = m==='walk' ? '' : 'none';
   document.getElementById('walkEndBtn').style.display = 'none';
   if(walk.on) stopWalkRecording();
-  document.getElementById('undoBtn').style.display = m==='manual' ? '' : 'none';
+  document.getElementById('undoBtn').style.display = 'none'; // 되돌리기는 수동측정 둥근 버튼으로
+  document.getElementById('clearBtn').style.display = m==='manual' ? 'none' : '';
+  document.getElementById('xBtn').style.display = m==='manual' ? 'block' : 'none';
   clearAll(true);
   hideNearbyFarm();
   if(farmModeOn()) scheduleNearbyFarm();
@@ -878,7 +886,7 @@ function refreshDetail(){
   const has=points.length>=3;
   const addr=document.getElementById('addrVal'), lots=document.getElementById('lotList'), btn=document.getElementById('detailBtn');
   if(!has) detailOpen=false;
-  addr.style.display = (!has || detailOpen) ? '' : 'none';   // 결과 전에는 안내 문구 표시
+  addr.style.display = ((!has && !manualPlacing()) || detailOpen) ? '' : 'none';   // 결과 전 안내 문구 (수동측정은 조준점 아래에 표시)
   lots.style.display = (has && detailOpen && lots.innerHTML) ? '' : 'none';
   btn.style.display = has ? 'inline-block' : 'none';
   btn.textContent = detailOpen ? '접기 ▴' : '상세 ▾';
@@ -1231,35 +1239,7 @@ function manualPlacing(){ return mode==='manual' && !manualDone; }
 function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.getLng()}; }
 function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
 window.addAimPoint=addAimPoint;
-const GPSPT_SEC=3, GPSPT_MAX_ACC=15;
-let _gpsPtBusy=false;
-function addGpsPoint(){
-  if(_gpsPtBusy) return;
-  if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
-  _gpsPtBusy=true;
-  const btn=document.getElementById('gpsPtBtn'); btn.classList.add('busy');
-  const samples=[]; let left=GPSPT_SEC;
-  btn.textContent='📍 '+left+'…';
-  const wid=navigator.geolocation.watchPosition(pos=>{
-    const a=pos.coords.accuracy;
-    if(a<=GPSPT_MAX_ACC) samples.push({lat:pos.coords.latitude,lng:pos.coords.longitude,acc:a});
-  },()=>{},{enableHighAccuracy:true,maximumAge:0,timeout:GPSPT_SEC*1000+2000});
-  const tick=setInterval(()=>{
-    left--;
-    if(left>0){ btn.textContent='📍 '+left+'…'; return; }
-    clearInterval(tick); navigator.geolocation.clearWatch(wid);
-    _gpsPtBusy=false; btn.classList.remove('busy'); btn.textContent='📍 현위치';
-    if(!samples.length){ showToast(`📍 GPS 오차가 커요(±${GPSPT_MAX_ACC}m 초과) — 하늘이 트인 곳에서 다시 눌러주세요`); return; }
-    let W=0,la=0,ln=0,best=1e9;
-    samples.forEach(q=>{ const w=1/(q.acc*q.acc); W+=w; la+=q.lat*w; ln+=q.lng*w; best=Math.min(best,q.acc); });
-    const p={lat:la/W, lng:ln/W};
-    addPoint(p.lat,p.lng);
-    map.panTo(new kakao.maps.LatLng(p.lat,p.lng));
-    if(navigator.vibrate) navigator.vibrate(30);
-    showToast(`📍 현위치 찍음 (±${Math.round(best)}m · ${samples.length}회 평균)`);
-  },1000);
-}
-window.addGpsPoint=addGpsPoint;
+
 function finishManual(){
   if(points.length<3){ showToast('점을 3개 이상 찍어주세요'); return; }
   manualDone=true;
@@ -1273,13 +1253,15 @@ window.finishManual=finishManual;
 function updateAim(){
   const placing = manualPlacing();
   document.getElementById('aim').classList.toggle('show',placing);
-  document.getElementById('aimBtn').classList.toggle('show',placing);
-  document.getElementById('doneBtn').classList.toggle('show',placing && points.length>=3);
-  const gb=document.getElementById('gpsPtBtn'); gb.classList.toggle('show',placing);
-  if(placing){ const ab=document.getElementById('aimBtn'); gb.style.right=(14+ab.offsetWidth+8)+'px'; }
+  document.getElementById('fabRow').classList.toggle('show', mode==='manual');
+  document.getElementById('addFab').classList.toggle('hide',!placing);
+  document.getElementById('doneFab').classList.toggle('hide',!placing);
+  document.getElementById('doneFab').classList.toggle('dis',points.length<3);
+  document.getElementById('undoFab').classList.toggle('dis',!points.length);
   if(aimLine){ aimLine.setMap(null); aimLine=null; }
   const info=document.getElementById('aimInfo');
-  if(!placing || !points.length){ info.classList.remove('show'); return; }
+  if(!placing){ info.classList.remove('show'); return; }
+  if(!points.length){ info.textContent='조준점을 모서리에 맞추고 ＋'; info.classList.add('show'); return; }
   const c=aimCenter(), last=points[points.length-1];
   info.textContent='점 '+points.length+'개 · 마지막 점에서 '+fmtNum(haversine(last,c),1)+'m';
   info.classList.add('show');
@@ -1439,7 +1421,7 @@ function updateInfoPanel(){
     document.getElementById('ptWrap').style.display='';
     document.getElementById('ptCount').textContent=n+'개';
     document.getElementById('areaVal').textContent='—';
-    document.getElementById('pyeongVal').textContent = n>=3 ? '[✔ 완료]를 누르면 계산' : '';
+    document.getElementById('pyeongVal').textContent='';
     document.getElementById('periVal').textContent='—';
     hideLots(); updateAim();
     return;
