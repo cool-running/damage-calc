@@ -61,6 +61,9 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .aim-info.show{display:block;}
 .aim-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:52px;padding:0 18px;border-radius:26px;border:none;background:#E53935;color:#fff;font-size:16px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:6px;}
 .aim-btn.show{display:flex;}
+.gpspt-btn{display:none;position:fixed;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:52px;padding:0 14px;border-radius:26px;border:none;background:#2E7D32;color:#fff;font-size:15px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:4px;white-space:nowrap;}
+.gpspt-btn.show{display:flex;}
+.gpspt-btn.busy{background:#9E9E9E;}
 .done-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 74px);height:46px;padding:0 16px;border-radius:23px;border:none;background:#1565C0;color:#fff;font-size:15px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:6px;}
 .done-btn.show{display:flex;}
 .aim-btn:active{transform:scale(.96);}
@@ -166,6 +169,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   <div class="aim-info" id="aimInfo"></div>
 </div>
 <button class="done-btn" id="doneBtn" onclick="finishManual()">✔ 완료</button>
+<button class="gpspt-btn" id="gpsPtBtn" onclick="addGpsPoint()">📍 현위치</button>
 <button class="aim-btn" id="aimBtn" onclick="addAimPoint()">＋ 점 찍기</button>
 
 <button class="myloc-btn" onclick="locateMe()">
@@ -475,7 +479,7 @@ function addrPlaceholderFor(m){
   if(m==='walk') return '▶ 시작을 누르고 농지 경계를 따라 한 바퀴 걸어주세요\n(걷는 동안 화면은 켜 두세요)';
   return m==='parcel'
     ? '지도를 탭하면 지적도 필지 면적과 주소가 표시돼요'
-    : '지도를 움직여 가운데 조준점을 꼭짓점에 맞추고\n[＋ 점 찍기]를 누르세요 (3개부터 면적 계산)';
+    : '지도: 조준점 맞추고 [＋ 점 찍기]\n현장: 모서리에 서서 [📍 현위치] → 다 찍으면 [✔ 완료]';
 }
 
 function clearAll(fromModeSwitch){
@@ -1227,6 +1231,35 @@ function manualPlacing(){ return mode==='manual' && !manualDone; }
 function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.getLng()}; }
 function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
 window.addAimPoint=addAimPoint;
+const GPSPT_SEC=3, GPSPT_MAX_ACC=15;
+let _gpsPtBusy=false;
+function addGpsPoint(){
+  if(_gpsPtBusy) return;
+  if(!navigator.geolocation){ showToast('GPS 미지원'); return; }
+  _gpsPtBusy=true;
+  const btn=document.getElementById('gpsPtBtn'); btn.classList.add('busy');
+  const samples=[]; let left=GPSPT_SEC;
+  btn.textContent='📍 '+left+'…';
+  const wid=navigator.geolocation.watchPosition(pos=>{
+    const a=pos.coords.accuracy;
+    if(a<=GPSPT_MAX_ACC) samples.push({lat:pos.coords.latitude,lng:pos.coords.longitude,acc:a});
+  },()=>{},{enableHighAccuracy:true,maximumAge:0,timeout:GPSPT_SEC*1000+2000});
+  const tick=setInterval(()=>{
+    left--;
+    if(left>0){ btn.textContent='📍 '+left+'…'; return; }
+    clearInterval(tick); navigator.geolocation.clearWatch(wid);
+    _gpsPtBusy=false; btn.classList.remove('busy'); btn.textContent='📍 현위치';
+    if(!samples.length){ showToast(`📍 GPS 오차가 커요(±${GPSPT_MAX_ACC}m 초과) — 하늘이 트인 곳에서 다시 눌러주세요`); return; }
+    let W=0,la=0,ln=0,best=1e9;
+    samples.forEach(q=>{ const w=1/(q.acc*q.acc); W+=w; la+=q.lat*w; ln+=q.lng*w; best=Math.min(best,q.acc); });
+    const p={lat:la/W, lng:ln/W};
+    addPoint(p.lat,p.lng);
+    map.panTo(new kakao.maps.LatLng(p.lat,p.lng));
+    if(navigator.vibrate) navigator.vibrate(30);
+    showToast(`📍 현위치 찍음 (±${Math.round(best)}m · ${samples.length}회 평균)`);
+  },1000);
+}
+window.addGpsPoint=addGpsPoint;
 function finishManual(){
   if(points.length<3){ showToast('점을 3개 이상 찍어주세요'); return; }
   manualDone=true;
@@ -1242,6 +1275,8 @@ function updateAim(){
   document.getElementById('aim').classList.toggle('show',placing);
   document.getElementById('aimBtn').classList.toggle('show',placing);
   document.getElementById('doneBtn').classList.toggle('show',placing && points.length>=3);
+  const gb=document.getElementById('gpsPtBtn'); gb.classList.toggle('show',placing);
+  if(placing){ const ab=document.getElementById('aimBtn'); gb.style.right=(14+ab.offsetWidth+8)+'px'; }
   if(aimLine){ aimLine.setMap(null); aimLine=null; }
   const info=document.getElementById('aimInfo');
   if(!placing || !points.length){ info.classList.remove('show'); return; }
