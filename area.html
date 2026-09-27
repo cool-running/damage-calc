@@ -699,7 +699,8 @@ function correctWalk(rawLL, ringsLL, medAcc){
   const rawA=areaM(raw);
   if(!rings.length) return {rawA,corrA:rawA,farmA:0,baseA:0,gapA:0,movedA:rawA,rawDiff:null,fit:0,bias:0,okRaw:false,okFit:false,okBias:false,measA:rawA,diff:null,match:false,shift:0,n:0,result:rawLL};
   const ris=rings.map(ringInfo);
-  const maxShift=Math.min(15,Math.max(5,Math.round(medAcc||8)));
+  // 위치 쏠림 보정 범위는 GPS 오차만큼만 (오차 ±3m면 최대 4.5m): GPS가 좋을 때 괜히 멀리 옮기지 않도록
+  const maxShift=Math.min(10,Math.max(2,(medAcc||6)*1.5));
   const sh=alignShift(raw,ris,maxShift);
   const moved=raw.map(p=>({x:p.x+sh.ox,y:p.y+sh.oy}));
   const snapped=snapToRings(moved.concat([moved[0]]),ris,WALK_SNAP_M); snapped.pop();
@@ -722,8 +723,9 @@ function correctWalk(rawLL, ringsLL, medAcc){
   // 불일치: 경계에 붙이지 않고 '위치 쏠림만 보정한 걸은 모양' 그대로 (보정이 면적을 바꾸지 않게)
   // 통과: 경계 가까이 걸은 곳(4m 이내, GPS 오차 수준)만 경계에 맞추고, 그보다 벗어나 걸은 곳은 걸은 대로 반영
   // 불통과: 경계에 맞추지 않고 위치 쏠림만 보정한 걸은 모양 그대로
-  const shape = match ? snapped : moved;
-  const measA = match ? corrA : movedA;
+  // 불통과(팜맵과 다르게 걸음)면 팜맵을 기준으로 삼을 수 없으니 걸은 선(주황) 그대로
+  const shape = match ? snapped : raw;
+  const measA = match ? corrA : rawA;
   return {rawA,corrA,farmA,baseA,gapA:Math.max(0,baseA-farmA),diff,match,n:rings.length,movedA,rawDiff,fit,bias,okRaw,okFit,okBias,measA,shift:Math.hypot(sh.ox,sh.oy),
     result:shape.map(q=>fromM(q,ref))};
 }
@@ -839,7 +841,7 @@ function clearWalkDrawing(){
   if(walk.rawLine){ walk.rawLine.setMap(null); walk.rawLine=null; }
   walkInfo('');
 }
-function saveWalk(){ try{ localStorage.setItem(WALK_STORE_KEY, JSON.stringify({t:Date.now(),pts:walk.pts,accs:walk.accs})); }catch(e){} }
+function saveWalk(){ try{ localStorage.setItem(WALK_STORE_KEY, JSON.stringify({t:Date.now(),pts:walk.pts,accs:walk.accs,manual:walk.paused&&!walk.autoPaused})); }catch(e){} }
 function clearSavedWalk(){ try{ localStorage.removeItem(WALK_STORE_KEY); }catch(e){} }
 function clearSavedDone(){ try{ localStorage.removeItem(WALK_DONE_KEY); }catch(e){} }
 function walkDist(){ let d=0; for(let i=1;i<walk.pts.length;i++) d+=haversine(walk.pts[i-1],walk.pts[i]); return d; }
@@ -944,23 +946,25 @@ function stopWalkRecording(){
   walk.on=false; walk.paused=false; walk.autoPaused=false;
   updateWalkButtons();
 }
-// 카메라 등 다른 앱으로 넘어가면 자동 일시정지
+// 카메라 등 다른 앱으로 넘어가면 잠시 멈췄다가(화면 밖에서는 GPS가 멈춤), 돌아오면 자동으로 이어서 기록
+// 직접 ⏸ 일시정지를 누른 경우만 ▶ 계속을 눌러야 다시 기록
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){ if(walk.on && !walk.paused) pauseWalk(true); }
-  else if(walk.on && walk.paused && walk.autoPaused){ showToast('⏸ 자동 일시정지됨 — 멈춘 곳에서 ▶ 계속'); }
+  else if(walk.on && walk.paused && walk.autoPaused){ resumeWalk(); }
 });
 // 앱이 다시 열렸을 때 저장된 실측 기록 이어가기 (6시간 이내)
 function restoreWalk(){
   let sv=null; try{ sv=JSON.parse(localStorage.getItem(WALK_STORE_KEY)||'null'); }catch(e){}
   if(!sv || !sv.pts || !sv.pts.length || Date.now()-sv.t>6*3600000){ clearSavedWalk(); return restoreWalkDone(); }
   setAreaMode('walk');
-  walk.pts=sv.pts; walk.accs=sv.accs||[]; walk.on=true; walk.paused=true; walk.autoPaused=true;
+  walk.pts=sv.pts; walk.accs=sv.accs||[]; walk.on=true; walk.paused=true; walk.autoPaused=!sv.manual;
   drawWalkLine(); updateWalkButtons(); saveWalk();
   walkStatus('⏸ 일시정지');
   document.getElementById('addrVal').textContent='이전 실측 기록을 불러왔어요\n멈춘 곳에서 ▶ 계속, 또는 ■ 끝내기';
   const l=walk.pts[walk.pts.length-1];
   map.setCenter(new kakao.maps.LatLng(l.lat,l.lng));
-  showToast('🚶 이전 실측 기록을 이어서 할 수 있어요');
+  if(sv.manual) showToast('🚶 이전 실측 기록 — ▶ 계속을 누르면 이어서 기록');
+  else { resumeWalk(); showToast('🚶 이전 실측 기록에 이어서 기록합니다'); }
   return true;
 }
 // 끝낸 실측 결과 복원 (다른 메뉴 다녀와도 그대로)
@@ -971,8 +975,6 @@ function restoreWalkDone(){
   _restoringWalk=true; setAreaMode('walk'); _restoringWalk=false;
   walk.pts=sv.raw||[];
   drawStartMark(true);
-  if(walk.pts.length>=3) walk.rawLine=new kakao.maps.Polyline({map,path:walk.pts.concat([walk.pts[0]]).map(q=>new kakao.maps.LatLng(q.lat,q.lng)),
-    strokeWeight:3,strokeColor:'#FF9800',strokeOpacity:0.9,strokeStyle:'shortdash',zIndex:4});
   points=sv.result; redrawShape(); updateInfoPanel();
   const b=new kakao.maps.LatLngBounds(); points.forEach(q=>b.extend(new kakao.maps.LatLng(q.lat,q.lng)));
   map.setBounds(b);
@@ -1016,8 +1018,6 @@ async function finishWalkImpl(){
   if(walk.line){ walk.line.setMap(null); walk.line=null; }
   if(walk.fill){ walk.fill.setMap(null); walk.fill=null; }
   drawStartMark(true);
-  walk.rawLine=new kakao.maps.Polyline({map,path:raw.concat([raw[0]]).map(q=>new kakao.maps.LatLng(q.lat,q.lng)),
-    strokeWeight:3,strokeColor:'#FF9800',strokeOpacity:0.9,strokeStyle:'shortdash',zIndex:4});
   const c=geoRef(raw);
   const rawA=calcArea(raw);
   walkInfo('면적 계산 중...');
@@ -1166,7 +1166,9 @@ function redrawShape(){
   if(points.length===2){
     polyline = new kakao.maps.Polyline({ map, path, strokeWeight:3, strokeColor:'#E53935', strokeOpacity:0.9 });
   } else {
-    polygon = new kakao.maps.Polygon({ map, path, strokeWeight:3, strokeColor:'#E53935', strokeOpacity:1, fillColor:'#FF1744', fillOpacity:0.35, zIndex:3 });
+    polygon = mode==='walk'
+      ? new kakao.maps.Polygon({ map, path, strokeWeight:3, strokeColor:'#FF9800', strokeOpacity:1, fillColor:'#FFB74D', fillOpacity:0.3, zIndex:3 })  // 실측: 걸은 선 하나로 마무리
+      : new kakao.maps.Polygon({ map, path, strokeWeight:3, strokeColor:'#E53935', strokeOpacity:1, fillColor:'#FF1744', fillOpacity:0.35, zIndex:3 });
   }
 }
 
