@@ -172,29 +172,6 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   </svg>
   <div class="aim-info" id="aimInfo"></div>
 </div>
-<!-- 갤러리 저장용 캡처 템플릿 (화면 밖) -->
-<div id="capture-template" style="position:fixed;left:-99999px;top:0;width:680px;background:#f3f4f6;padding:0;z-index:-1;font-family:-apple-system,'Noto Sans KR',sans-serif;">
-  <div style="background:linear-gradient(180deg,#1f3b63 0%,#2f80ed 14%,#f3f4f6 14%,#f3f4f6 100%);padding:0 20px 20px;box-sizing:border-box">
-    <div style="height:16px"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:12px">
-      <div style="font-size:14px;font-weight:800;white-space:nowrap" id="cap-date"></div>
-      <div style="font-size:15px;font-weight:800;letter-spacing:0.04em;white-space:nowrap" id="cap-title">📐 면적측정 결과</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div style="background:#185FA5;border-radius:12px;padding:10px 16px;display:flex;justify-content:space-around">
-        <div style="text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.75);margin-bottom:2px">측정방식</div><div style="font-size:16px;font-weight:800;color:#fff" id="cap-kind">-</div></div>
-        <div style="width:1px;background:rgba(255,255,255,0.25)"></div>
-        <div style="text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.75);margin-bottom:2px">면적</div><div style="font-size:16px;font-weight:800;color:#fff" id="cap-area">-</div></div>
-        <div style="width:1px;background:rgba(255,255,255,0.25)"></div>
-        <div style="text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.75);margin-bottom:2px">평</div><div style="font-size:16px;font-weight:800;color:#fff" id="cap-py">-</div></div>
-        <div style="width:1px;background:rgba(255,255,255,0.25)"></div>
-        <div style="text-align:center"><div style="font-size:10px;color:rgba(255,255,255,0.75);margin-bottom:2px">둘레</div><div style="font-size:16px;font-weight:800;color:#fff" id="cap-peri">-</div></div>
-      </div>
-      <div style="background:#fff;border-radius:12px;padding:10px;display:flex;justify-content:center"><canvas id="cap-shape" width="640" height="340" style="width:640px;height:340px"></canvas></div>
-      <div style="background:#fff;border-radius:12px;padding:12px" id="cap-table"></div>
-    </div>
-  </div>
-</div>
 <div class="fab-row" id="walkFabRow">
   <button class="fab" id="walkSaveFab" onclick="saveAreaImage()" aria-label="갤러리 저장"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.1" stroke-linejoin="round"><path d="M5 3.5h11l3.5 3.5v12a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5z"/><path d="M7.5 3.5v5h8v-5M7.5 20.5v-6h9v6"/></svg></button>
   <button class="fab" onclick="askClear()" aria-label="초기화"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#757575" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></button>
@@ -913,7 +890,7 @@ function splitByLots(shapeLL, feats, clip){
 }
 
 let _lotReq=0,_lotTimer=null;
-function hideLots(){ const el=document.getElementById('lotList'); el.innerHTML=''; window._lastLots=null; refreshDetail(); }
+function hideLots(){ const el=document.getElementById('lotList'); el.innerHTML=''; refreshDetail(); }
 /* 결과 패널 접기/펼치기: 결과가 나오면 면적·둘레만 보이고, [상세 ▾]를 누르면 주소·지번별 면적을 보여줌 */
 let detailOpen=false;
 function toggleDetail(){ detailOpen=!detailOpen; refreshDetail(); }
@@ -958,7 +935,6 @@ function fetchLots(){
       let h=r.main.map(o=>`<div class="lot-row"><span class="lot-name">${o.label}</span><span class="lot-val">${fmtNum(o.a*k,1)}㎡ (${o.pct.toFixed(1)}%)</span></div>`).join('');
       if(r.rest*k>=0.1) h+=`<div class="lot-row rest"><span class="lot-name">기타</span><span class="lot-val">${fmtNum(r.rest*k,1)}㎡ (${r.restPct.toFixed(1)}%)</span></div>`;
       const el=document.getElementById('lotList'); el.innerHTML=h; refreshDetail();
-      window._lastLots={list:r.main.map(o=>({label:o.label,a:o.a*k,pct:o.pct})), rest:r.rest*k, restPct:r.restPct};
     }catch(e){ hideLots(); }
   };
   sc.onerror=()=>{ delete window[cb]; sc.remove(); if(my===_lotReq) hideLots(); };
@@ -1284,76 +1260,38 @@ function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.get
 function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
 window.addAimPoint=addAimPoint;
 
-/* ── 💾 갤러리 저장: 경계 모양 + 면적·둘레·주소·지번별 면적을 이미지로 ── */
-function drawCapShape(cv,pts){
-  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#f7f9fc'; ctx.fillRect(0,0,W,H);
-  // 격자
-  ctx.strokeStyle='#e6ebf2'; ctx.lineWidth=1;
-  for(let x=0;x<=W;x+=40){ ctx.beginPath(); ctx.moveTo(x+.5,0); ctx.lineTo(x+.5,H); ctx.stroke(); }
-  for(let y=0;y<=H;y+=40){ ctx.beginPath(); ctx.moveTo(0,y+.5); ctx.lineTo(W,y+.5); ctx.stroke(); }
-  const xy=tmLocal(pts);
-  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; xy.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
-  const pad=36, sc=Math.min((W-pad*2)/Math.max(1e-6,x1-x0),(H-pad*2)/Math.max(1e-6,y1-y0));
-  const ox=(W-(x1-x0)*sc)/2, oy=(H-(y1-y0)*sc)/2;
-  const P=q=>[ox+(q.x-x0)*sc, H-(oy+(q.y-y0)*sc)];
-  ctx.beginPath(); xy.forEach((q,i)=>{ const [a,b]=P(q); i?ctx.lineTo(a,b):ctx.moveTo(a,b); }); ctx.closePath();
-  const orange = mode==='walk';
-  ctx.fillStyle = orange ? 'rgba(255,183,77,.35)' : 'rgba(255,23,68,.18)'; ctx.fill();
-  ctx.strokeStyle = orange ? '#FF9800' : '#E53935'; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.stroke();
-  if(!orange){ ctx.fillStyle='#E53935'; xy.forEach(q=>{ const [a,b]=P(q); ctx.beginPath(); ctx.arc(a,b,4,0,Math.PI*2); ctx.fill(); }); }
-  // 방위
-  ctx.fillStyle='#1f3b63'; ctx.font='bold 14px sans-serif'; ctx.textAlign='center';
-  ctx.beginPath(); ctx.moveTo(W-24,14); ctx.lineTo(W-31,32); ctx.lineTo(W-17,32); ctx.closePath(); ctx.fill();
-  ctx.fillText('N',W-24,48);
-  // 축척 막대
-  const nice=[1,2,5,10,20,50,100,200,500,1000]; const target=(W*0.2)/sc; let len=nice[0]; nice.forEach(v=>{ if(v<=target) len=v; });
-  const bl=len*sc; ctx.strokeStyle='#333'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(16,H-16); ctx.lineTo(16+bl,H-16); ctx.moveTo(16,H-21); ctx.lineTo(16,H-11); ctx.moveTo(16+bl,H-21); ctx.lineTo(16+bl,H-11); ctx.stroke();
-  ctx.fillStyle='#333'; ctx.textAlign='left'; ctx.font='bold 12px sans-serif'; ctx.fillText(len+' m',20+bl,H-12);
-}
+/* ── 💾 갤러리 저장: 지금 보이는 화면을 그대로 이미지로 저장 ──
+   (웹앱은 휴대폰 캡처 기능을 직접 쓸 수 없어서, 화면을 그대로 복사해서 저장. 지도 사진이 빠지면 알려줌) */
 async function saveAreaImage(){
   if(points.length<3 || (mode==='manual' && !manualDone) || walk.on){ showToast('측정을 마친 뒤 저장할 수 있어요'); return; }
   if(typeof html2canvas==='undefined'){ showToast('저장 기능을 불러오지 못했어요 (인터넷 확인)'); return; }
   try{
+    showToast('💾 화면 저장 중...');
+    await new Promise(r=>setTimeout(r,350)); // 안내 문구가 사라진 뒤 캡처
+    const tEl=document.getElementById('toast'); if(tEl) tEl.style.display='none'; // 안내 문구는 캡처에서 빼기
+    const canvas=await html2canvas(document.body,{
+      useCORS:true, backgroundColor:null, logging:false,
+      x:window.scrollX, y:window.scrollY, width:window.innerWidth, height:window.innerHeight,
+      scale:Math.min(2,window.devicePixelRatio||1)
+    });
+    // 지도 사진이 들어갔는지 확인: 지도 영역 여러 곳의 색이 전부 같으면 사진이 빠진 것
+    let mapOk=true;
+    try{
+      const r=document.getElementById('mapWrap').getBoundingClientRect(), k=canvas.width/window.innerWidth;
+      const ctx=canvas.getContext('2d'), seen=new Set();
+      for(let i=1;i<=4;i++) for(let j=1;j<=4;j++){
+        const d=ctx.getImageData(Math.round((r.left+r.width*i/5)*k), Math.round((r.top+r.height*j/5)*k),1,1).data;
+        seen.add(d[0]>>4<<8|d[1]>>4<<4|d[2]>>4);
+      }
+      mapOk = seen.size>3;
+    }catch(e){}
     const now=new Date(), z=n=>String(n).padStart(2,'0');
-    const area=calcArea(points), peri=calcPerimeter(points);
-    const kind = mode==='walk' ? '실측' : '수동측정';
-    const addr=(document.getElementById('addrVal').textContent||'').split('\n')[0];
-    document.getElementById('cap-date').textContent=`${now.getFullYear()}.${z(now.getMonth()+1)}.${z(now.getDate())} ${z(now.getHours())}:${z(now.getMinutes())}`;
-    document.getElementById('cap-title').textContent=`📐 ${kind} 면적측정 결과`;
-    document.getElementById('cap-kind').textContent=kind;
-    document.getElementById('cap-area').textContent=fmtNum(area,1)+' ㎡';
-    document.getElementById('cap-py').textContent=fmtNum(area/3.305785,1)+' 평';
-    document.getElementById('cap-peri').textContent=fmtNum(peri,1)+' m';
-    drawCapShape(document.getElementById('cap-shape'),points);
-    const th=t=>`<td style="padding:7px 10px;border:1px solid #d1d5db;background:#eef2f7;font-weight:700;color:#1f3b63;font-size:12px;white-space:nowrap;width:110px">${t}</td>`;
-    const td=(t,al='left')=>`<td style="padding:7px 10px;border:1px solid #d1d5db;background:#fff;color:#111;font-size:12px;text-align:${al}">${t}</td>`;
-    const c=geoRef(points);
-    let h=`<table style="width:100%;border-collapse:collapse">`
-      +`<tr>${th('주소')}${td(addr||'-')}</tr>`
-      +`<tr>${th('면적')}${td(fmtNum(area,1)+' ㎡ ('+fmtNum(area/3.305785,1)+'평)')}</tr>`
-      +`<tr>${th('둘레')}${td(fmtNum(peri,1)+' m')}</tr>`
-      +(mode==='manual'?`<tr>${th('꼭짓점')}${td(points.length+'개')}</tr>`:'')
-      +`<tr>${th('중심 좌표')}${td(c.lat.toFixed(6)+', '+c.lng.toFixed(6))}</tr></table>`;
-    const L=window._lastLots;
-    if(L && L.list && L.list.length){
-      const cth=t=>`<td style="padding:6px 8px;border:1px solid #d1d5db;background:#185FA5;color:#fff;font-weight:700;font-size:12px;text-align:center">${t}</td>`;
-      h+=`<div style="font-size:12px;font-weight:800;color:#1f3b63;margin:12px 0 6px">지번별 면적</div><table style="width:100%;border-collapse:collapse"><tr>${cth('지번')}${cth('면적(㎡)')}${cth('비율')}</tr>`
-        +L.list.map((o,i)=>{ const bg=i%2?'#fff':'#eceef2';
-          return `<tr><td style="padding:6px 8px;border:1px solid #d1d5db;background:${bg};font-size:12px;font-weight:700">${o.label}</td><td style="padding:6px 8px;border:1px solid #d1d5db;background:${bg};font-size:12px;text-align:right">${fmtNum(o.a,1)}</td><td style="padding:6px 8px;border:1px solid #d1d5db;background:${bg};font-size:12px;text-align:right">${o.pct.toFixed(1)}%</td></tr>`; }).join('')
-        +(L.rest>=0.1?`<tr><td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px;color:#666">기타</td><td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px;text-align:right;color:#666">${fmtNum(L.rest,1)}</td><td style="padding:6px 8px;border:1px solid #d1d5db;font-size:12px;text-align:right;color:#666">${L.restPct.toFixed(1)}%</td></tr>`:'')
-        +`<tr style="vertical-align:middle"><td style="padding:6px 8px;border:1px solid #d1d5db;background:#dde6f2;font-size:12px;font-weight:800">합계</td><td style="padding:6px 8px;border:1px solid #d1d5db;background:#dde6f2;font-size:12px;font-weight:800;text-align:right">${fmtNum(area,1)}</td><td style="padding:6px 8px;border:1px solid #d1d5db;background:#dde6f2;font-size:12px;font-weight:800;text-align:right">100.0%</td></tr></table>`;
-    }
-    document.getElementById('cap-table').innerHTML=h;
-    const canvas=await html2canvas(document.getElementById('capture-template'),{backgroundColor:'#f3f4f6',scale:2,windowWidth:680});
-    const stamp=`${now.getFullYear()}${z(now.getMonth()+1)}${z(now.getDate())}_${z(now.getHours())}${z(now.getMinutes())}`;
+    const stamp=`${now.getFullYear()}${z(now.getMonth()+1)}${z(now.getDate())}_${z(now.getHours())}${z(now.getMinutes())}${z(now.getSeconds())}`;
     const link=document.createElement('a');
-    link.download=`면적측정_${kind}_${stamp}.png`;
+    link.download=`면적측정_${mode==='walk'?'실측':'수동측정'}_${stamp}.png`;
     link.href=canvas.toDataURL('image/png');
     link.click();
-    showToast('💾 갤러리에 저장됐어요');
+    showToast(mapOk ? '💾 화면을 갤러리에 저장했어요' : '💾 저장했지만 지도 사진은 빠졌어요 — 휴대폰 캡처(전원+볼륨↓)를 이용해 주세요');
   }catch(e){ showToast('저장 중 오류가 발생했어요'); }
 }
 window.saveAreaImage=saveAreaImage;
