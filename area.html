@@ -128,6 +128,16 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .addr-name{font-size:14px;font-weight:700;color:var(--text);word-break:keep-all;}
 .addr-road{font-size:12px;color:var(--sub);margin-top:2px;word-break:keep-all;}
 .addr-dist{font-size:12px;font-weight:700;color:var(--blue);white-space:nowrap;}
+.cfm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:24px;}
+.cfm.show{display:flex;}
+.cfm-box{width:100%;max-width:320px;background:#fff;border-radius:18px;padding:22px 20px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:center;font-family:-apple-system,'Noto Sans KR',sans-serif;}
+.cfm-ico{width:52px;height:52px;border-radius:50%;background:#FDECEA;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.cfm-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.cfm-msg{font-size:14px;color:var(--sub);line-height:1.5;margin-bottom:18px;white-space:pre-line;}
+.cfm-btns{display:flex;gap:10px;}
+.cfm-btns button{flex:1;height:46px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
+.cfm-no{background:var(--bg);color:var(--text);}
+.cfm-yes{background:#E53935;color:#fff;}
 .toast{display:none;position:fixed;bottom:calc(var(--panel-h) + var(--nav-h) + 16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:rgba(20,20,30,0.92);color:#fff;font-size:13px;font-weight:600;font-family:-apple-system,'Noto Sans KR',sans-serif;padding:10px 20px;border-radius:20px;white-space:nowrap;z-index:999;}
 
 </style>
@@ -224,6 +234,14 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="cfm" id="cfm">
+  <div class="cfm-box">
+    <div class="cfm-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></div>
+    <div class="cfm-title" id="cfmTitle"></div>
+    <div class="cfm-msg" id="cfmMsg"></div>
+    <div class="cfm-btns"><button class="cfm-no" id="cfmNo">취소</button><button class="cfm-yes" id="cfmYes">지우기</button></div>
+  </div>
+</div>
 
 <nav class="bottom-nav">
   <button class="nav-item" onclick="location.href='./cover_card.html'"><div class="nav-icon">📋</div><span>표지카드</span></button>
@@ -1006,8 +1024,7 @@ function openHistory(){
 }
 function closeHistory(){ document.getElementById('histSheet').classList.remove('show'); }
 function delHistory(id){
-  if(!confirm('이 내역을 삭제할까요?')) return;
-  saveHist(loadHist().filter(x=>x.id!==id)); openHistory();
+  appConfirm('내역 삭제','이 측정 내역을 삭제할까요?','삭제').then(ok=>{ if(ok){ saveHist(loadHist().filter(x=>x.id!==id)); openHistory(); } });
 }
 function showHistory(id){
   const it=loadHist().find(x=>x.id===id); if(!it) return;
@@ -1295,10 +1312,24 @@ async function saveAreaImage(){
   }catch(e){ showToast('저장 중 오류가 발생했어요'); }
 }
 window.saveAreaImage=saveAreaImage;
+/* 앱 모양 확인창 (브라우저 기본 창 대신) */
+function appConfirm(title,msg,yes){
+  return new Promise(res=>{
+    const w=document.getElementById('cfm');
+    document.getElementById('cfmTitle').textContent=title;
+    document.getElementById('cfmMsg').textContent=msg||'';
+    document.getElementById('cfmYes').textContent=yes||'확인';
+    const done=v=>{ w.classList.remove('show'); res(v); };
+    document.getElementById('cfmYes').onclick=()=>done(true);
+    document.getElementById('cfmNo').onclick=()=>done(false);
+    w.onclick=e=>{ if(e.target===w) done(false); };
+    w.classList.add('show');
+  });
+}
 function askClear(){
   const has = points.length>0 || (walk.pts && walk.pts.length>0) || walk.on;
-  if(has && !confirm('측정한 내용을 모두 지울까요?')) return;
-  clearAll();
+  if(!has){ clearAll(); return; }
+  appConfirm('초기화','측정한 내용을 모두 지울까요?','지우기').then(ok=>{ if(ok) clearAll(); });
 }
 window.askClear=askClear;
 function finishManual(){
