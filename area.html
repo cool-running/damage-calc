@@ -403,7 +403,8 @@ function setAreaMode(m){
   if(walk.on) stopWalkRecording();
   document.getElementById('undoBtn').style.display = m==='manual' ? '' : 'none';
   clearAll(true);
-  if(farmModeOn()) scheduleNearbyFarm(); else hideNearbyFarm();
+  hideNearbyFarm();
+  if(farmModeOn()) scheduleNearbyFarm();
   if(m==='walk' && !_restoringWalk) restoreWalkDone(); // 저장된 실측 결과가 있으면 다시 표시
 
 }
@@ -546,7 +547,7 @@ function cacheFarmItem(it){
   saveFarmStore();
 }
 function drawFarmPoly(it){
-  if(!farmModeOn() || farmPolys[it.id]) return;
+  if(mode!=='farmmap' || farmPolys[it.id]) return; // 실측 모드에서는 선을 숨기고 자료만 사용
   const path=it.rings.map(rg=>rg.map(c=>new kakao.maps.LatLng(c[0],c[1])));
   farmPolys[it.id]=new kakao.maps.Polygon({
     map, path, strokeWeight:2, strokeColor:'#4CFF4C', strokeOpacity:0.95,
@@ -667,23 +668,60 @@ function alignShift(pts,ris,maxShift){
   }
   return best;
 }
-// 경계 가까운 점은 경계에 붙이고, 같은 필지 경계로 연속해서 붙은 구간 사이에는 그 필지 꼭짓점을 채움(모서리 깎임 방지)
+// 경계 가까운 구간만 경계에 붙이기
+//  - 들쭉날쭉 방지: 경계 근처가 '연속으로 5점 이상, 경계 따라 8m 이상' 이어질 때만 붙임
+//    (한두 점만 가까운 곳은 걸은 대로 둬서 네모·세모로 들어갔다 나오는 모양이 생기지 않게)
+//  - 붙인 구간 안에서는 팜맵 꼭짓점을 채워 모서리가 깎이지 않게 (단, 엉뚱하게 멀리 도는 경우는 채우지 않음)
+const SNAP_RUN_PTS=8, SNAP_RUN_M=12, SNAP_RAMP=4; // 연속 8점·12m 이상일 때만, 구간 양끝 4점은 서서히 붙임(계단 방지)
 function snapToRings(pts,ris,tol){
-  const out=[]; let prev=null;
-  for(const p of pts){
-    const n=nearestOnRings(p,ris);
-    if(n.d<=tol){
-      if(prev && prev.k===n.k){
-        const ri=ris[n.k];
-        const fwd=(n.s-prev.s+ri.per)%ri.per, bwd=ri.per-fwd, useF=fwd<=bwd, arc=Math.min(fwd,bwd);
-        if(arc>0 && arc<ri.per*0.5){
+  const n=pts.length; if(!n) return [];
+  const nr=pts.map(p=>nearestOnRings(p,ris));
+  const ok=nr.map(o=>o.d<=tol);
+  const keep=new Array(n).fill(false);
+  if(tol===Infinity){ keep.fill(true); }
+  else {
+    // 연속 구간 찾기 (고리 모양이라 끝과 처음이 이어짐)
+    let start=ok.findIndex(v=>!v);
+    if(start<0){ keep.fill(true); }
+    else {
+      let i=start;
+      for(let c=0;c<n;){
+        const j=(start+c)%n;
+        if(!ok[j] ){ c++; continue; }
+        const run=[]; let cc=c;
+        while(cc<n && ok[(start+cc)%n] && nr[(start+cc)%n].k===nr[j].k){ run.push((start+cc)%n); cc++; }
+        let len=0; for(let t=1;t<run.length;t++){ const a=pts[run[t-1]], b=pts[run[t]]; len+=Math.hypot(b.x-a.x,b.y-a.y); }
+        if(run.length>=SNAP_RUN_PTS && len>=SNAP_RUN_M) run.forEach(q=>keep[q]=true);
+        c=cc;
+      }
+    }
+  }
+  // 구간 양끝은 서서히 붙이도록 가중치(0~1): 경계선과 걸은 선 사이가 계단처럼 튀지 않게
+  const w=new Array(n).fill(0);
+  if(keep.every(v=>v)) w.fill(1);
+  else for(let i=0;i<n;i++) if(keep[i]){
+    let dl=0; while(dl<SNAP_RAMP && keep[(i-dl-1+n)%n]) dl++;
+    let dr=0; while(dr<SNAP_RAMP && keep[(i+dr+1)%n]) dr++;
+    w[i]=Math.min(1,(Math.min(dl,dr)+1)/(SNAP_RAMP+1));
+  }
+  const out=[]; let prev=null, prevP=null;
+  for(let i=0;i<n;i++){
+    const p=pts[i], o=nr[i];
+    if(w[i]>=1){
+      if(prev && prev.k===o.k){
+        const ri=ris[o.k];
+        const fwd=(o.s-prev.s+ri.per)%ri.per, bwd=ri.per-fwd, useF=fwd<=bwd, arc=Math.min(fwd,bwd);
+        const straight=Math.hypot(p.x-prevP.x,p.y-prevP.y);
+        if(arc>0 && arc<=straight*1.5+3){   // 걸은 거리와 비슷할 때만 꼭짓점 채움
           ri.seg.map(g=>({v:g.a,k:useF?(g.s0-prev.s+ri.per)%ri.per:(prev.s-g.s0+ri.per)%ri.per}))
             .filter(z=>z.k>1e-6 && z.k<arc-1e-6).sort((a,b)=>a.k-b.k)
             .forEach(z=>out.push({x:z.v.x,y:z.v.y}));
         }
       }
-      out.push({x:n.x,y:n.y}); prev=n;
-    } else { out.push(p); prev=null; }
+      out.push({x:o.x,y:o.y}); prev=o; prevP=p;
+    } else if(w[i]>0){
+      out.push({x:p.x+(o.x-p.x)*w[i], y:p.y+(o.y-p.y)*w[i]}); prev=null; prevP=null;
+    } else { out.push({x:p.x,y:p.y}); prev=null; prevP=null; }
   }
   return out;
 }
