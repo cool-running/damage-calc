@@ -292,6 +292,17 @@ kakao.maps.load(function(){
   });
   kakao.maps.event.addListener(map, 'zoom_changed', updateGestureMode);
   kakao.maps.event.addListener(map, 'center_changed', ()=>{ if(mode==='manual') updateAim(); });
+  // 수동측정: 카카오 기본 확대는 손가락 사이를 기준으로 커지므로, 확대가 끝나면 조준하던 지점을 조준점으로 부드럽게 되돌림
+  let aimHold=null, aimHoldT=null;
+  document.getElementById('mapWrap').addEventListener('touchstart',e=>{
+    if(e.touches.length===2 && manualPlacing() && magK===1){ aimHold=map.getCenter(); clearTimeout(aimHoldT); }
+  },{passive:true});
+  document.getElementById('mapWrap').addEventListener('touchend',e=>{
+    if(e.touches.length===0 && aimHold){ clearTimeout(aimHoldT); aimHoldT=setTimeout(()=>{ aimHold=null; },900); }
+  },{passive:true});
+  kakao.maps.event.addListener(map, 'zoom_changed', ()=>{
+    if(aimHold && manualPlacing()){ const t=aimHold; setTimeout(()=>map.panTo(t),30); }
+  });
   updateGestureMode();
   kakao.maps.event.addListener(map, 'idle', scheduleNearbyFarm);
 
@@ -1221,8 +1232,7 @@ async function finishWalkImpl(){
    손가락이 가리지 않아 정확하게 찍을 수 있음. 조준점까지 미리보기 선과 거리·예상 면적 표시 */
 let aimLine=null;
 let manualDone=false;
-const IS_TOUCH=('ontouchstart' in window);
-function manualDragOn(){ return IS_TOUCH && mode==='manual' && !manualDone; } // 관성 없는 이동 // 수동측정: [✔ 완료]를 눌러야 선·면적 표시
+ // 수동측정: [✔ 완료]를 눌러야 선·면적 표시
 function manualPlacing(){ return mode==='manual' && !manualDone; }
 function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.getLng()}; }
 function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
@@ -1274,8 +1284,8 @@ function setMag(k){
 function updateGestureMode(){
   if(!map) return;
   const atMax = map.getLevel()<=1;
-  map.setZoomable(!atMax && mode!=='manual'); // 레벨1에서는 카카오 확대 끔(튕김 방지), 수동측정은 조준점 기준 확대를 직접 처리
-  map.setDraggable(magK===1 && !manualDragOn()); // 초과 확대 중·수동측정 조준 중에는 이동을 직접 처리(관성 없음)
+  map.setZoomable(!atMax);            // 레벨1에서는 카카오 확대 끔(튕김 방지) — 그 외에는 카카오 기본 확대(가볍고 부드러움)
+  map.setDraggable(magK===1);         // 초과 확대 중에만 이동을 직접 처리, 그 외에는 카카오 기본 이동
 }
 function wrapPoint(cx,cy){ // 화면 좌표 → 원래(배율 전) 지도 화면 좌표
   const r=document.getElementById('mapWrap').getBoundingClientRect();
@@ -1290,26 +1300,15 @@ function setCenterByPoint(x,y){
   let pinch=null, drag=null;
   const dist=t=>Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
   wrap.addEventListener('touchstart',e=>{
-    if(e.touches.length===2 && mode==='manual'){
-      // 수동측정: 손가락 위치와 상관없이 조준점(화면 가운데)을 기준으로 확대·축소 → 조준한 곳이 그대로 조준점 안에 있음
-      pinch={manual:true, d0:dist(e.touches), k0:magK, lvl0:map.getLevel(), eff:magK};
-      drag=null; map.setDraggable(false);
-    } else if(e.touches.length===2 && map.getLevel()<=1){
+    if(e.touches.length===2 && map.getLevel()<=1){
       pinch={d0:dist(e.touches), k0:magK};
       drag=null;
-    } else if(e.touches.length===1 && (magK>1 || manualDragOn())){
+    } else if(e.touches.length===1 && magK>1){
       drag={x:e.touches[0].clientX, y:e.touches[0].clientY};
     }
   },{passive:true});
   wrap.addEventListener('touchmove',e=>{
-    if(pinch && pinch.manual && e.touches.length===2){
-      e.preventDefault();
-      // 움직이는 동안은 화면을 가운데 기준으로 키우거나 줄여서 보여주고, 손을 떼면 지도 확대 단계에 반영
-      const maxEff=Math.pow(2,pinch.lvl0-1)*MAG_MAX;
-      pinch.eff=Math.max(0.12,Math.min(maxEff,pinch.k0*dist(e.touches)/pinch.d0));
-      const mEl=document.getElementById('map');
-      mEl.style.transform=`scale(${pinch.eff})`; mEl.style.setProperty('--inv',(1/pinch.eff).toFixed(4));
-    } else if(pinch && e.touches.length===2){
+    if(pinch && e.touches.length===2){
       e.preventDefault();
       const ratio=dist(e.touches)/pinch.d0;
       if(pinch.k0===1 && magK===1 && ratio<0.8){ // 1배에서 오므리면 일반 축소
@@ -1320,9 +1319,9 @@ function setCenterByPoint(x,y){
       const mx=(e.touches[0].clientX+e.touches[1].clientX)/2, my=(e.touches[0].clientY+e.touches[1].clientY)/2;
       const P=wrapPoint(mx,my), cx=P.w/2, cy=P.h/2;
       const f=(1/magK-1/k1);
-      if(Math.abs(f)>1e-6) setCenterByPoint(cx+(P.x-cx)*f, cy+(P.y-cy)*f);
+      if(Math.abs(f)>1e-6 && mode!=='manual') setCenterByPoint(cx+(P.x-cx)*f, cy+(P.y-cy)*f); // 수동측정은 조준점 기준
       setMag(k1);
-    } else if(drag && e.touches.length===1 && (magK>1 || manualDragOn())){
+    } else if(drag && e.touches.length===1 && magK>1){
       e.preventDefault();
       const t=e.touches[0];
       drag.ax=(drag.ax||0)+(t.clientX-drag.x); drag.ay=(drag.ay||0)+(t.clientY-drag.y);
@@ -1338,30 +1337,9 @@ function setCenterByPoint(x,y){
     }
   },{passive:false});
   const end=e=>{
-    if(pinch && pinch.manual && e.touches.length<2){
-      // 손을 떼면 가장 가까운 지도 단계로 '부드럽게' 맞춘 뒤 바꿈 (갑자기 튀지 않게)
-      const p0=pinch; pinch=null;
-      const steps=Math.round(Math.log2(p0.eff));
-      const L=Math.max(1,Math.min(14,p0.lvl0-steps));
-      const rest=p0.eff/Math.pow(2,p0.lvl0-L);
-      const keepMag = (L===1 && rest>1.05) ? Math.min(MAG_MAX,rest) : 1;
-      const target=Math.pow(2,p0.lvl0-L)*keepMag;
-      const mEl=document.getElementById('map');
-      const commit=()=>{
-        mEl.style.transition='';
-        const c=map.getCenter();
-        map.setLevel(L); map.setCenter(c);   // 가운데(조준점) 기준
-        setMag(keepMag); updateGestureMode(); updateAim();
-      };
-      if(Math.abs(target-p0.eff)<0.01){ commit(); return; }
-      mEl.style.transition='transform .16s ease-out';
-      mEl.style.transform=`scale(${target})`; mEl.style.setProperty('--inv',(1/target).toFixed(4));
-      setTimeout(commit,170);
-      return;
-    }
     if(e.touches.length<2) pinch=null;
     if(e.touches.length===0) drag=null;
-    else if(e.touches.length===1 && (magK>1 || manualDragOn())) drag={x:e.touches[0].clientX, y:e.touches[0].clientY};
+    else if(e.touches.length===1 && magK>1) drag={x:e.touches[0].clientX, y:e.touches[0].clientY};
   };
   wrap.addEventListener('touchend',end,{passive:true});
   wrap.addEventListener('touchcancel',end,{passive:true});
