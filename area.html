@@ -464,6 +464,7 @@ function setAreaMode(m){
   if(farmModeOn()) scheduleNearbyFarm();
   refreshMyMarker();
   updateAim();
+  if(magK>magMax()) setMag(magMax());
   updateGestureMode();
   if(m==='walk' && !_restoringWalk) restoreWalkDone(); // 저장된 실측 결과가 있으면 다시 표시
 
@@ -1263,10 +1264,11 @@ function handleMapTap(la,ln){
    카카오 지도는 레벨1보다 확대가 안 돼서 튕겨 돌아가므로, 레벨1에서는 카카오 확대를 끄고 직접 처리
    - 두 손가락 벌리기/오므리기: 1~4배 (1배에서 더 오므리면 레벨2로 축소)
    - 한 손가락 끌기: 지도 이동 / 탭: 핀·필지 선택 (배율 되돌려 좌표 계산) */
-const MAG_MAX=2; // 너무 크게 키우면 조작이 어려워서 2배까지만
+// 최대 확대(레벨1)보다 더 키울 수 있는 배율: 수동측정은 조준을 쉽게 하려고 8배, 나머지는 2배
+function magMax(){ return mode==='manual' ? 8 : 2; }
 let magK=1;
 function setMag(k){
-  magK=Math.max(1,Math.min(MAG_MAX,k));
+  magK=Math.max(1,Math.min(magMax(),k));
   if(magK<1.02) magK=1;
   const mEl=document.getElementById('map');
   mEl.style.transform = magK>1 ? `scale(${magK})` : '';
@@ -1278,6 +1280,14 @@ function updateGestureMode(){
   const atMax = map.getLevel()<=1;
   map.setZoomable(!atMax);            // 레벨1에서는 카카오 확대 끔(튕김 방지) — 그 외에는 카카오 기본 확대(가볍고 부드러움)
   map.setDraggable(magK===1);         // 초과 확대 중에만 이동을 직접 처리, 그 외에는 카카오 기본 이동
+}
+// 초과 확대 중 옮긴 만큼을 지도 중심에 반영하고 화면 이동은 되돌림
+function commitDrag(d){
+  if(!d || (!d.tx && !d.ty)) return;
+  const P=wrapPoint(0,0);
+  setCenterByPoint(P.w/2 - d.tx/magK, P.h/2 - d.ty/magK);
+  d.tx=0; d.ty=0;
+  document.getElementById('map').style.transform = magK>1 ? `scale(${magK})` : '';
 }
 function wrapPoint(cx,cy){ // 화면 좌표 → 원래(배율 전) 지도 화면 좌표
   const r=document.getElementById('mapWrap').getBoundingClientRect();
@@ -1293,6 +1303,7 @@ function setCenterByPoint(x,y){
   const dist=t=>Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
   wrap.addEventListener('touchstart',e=>{
     if(e.touches.length===2 && map.getLevel()<=1){
+      if(drag) commitDrag(drag);
       pinch={d0:dist(e.touches), k0:magK};
       drag=null;
     } else if(e.touches.length===1 && magK>1){
@@ -1306,7 +1317,7 @@ function setCenterByPoint(x,y){
       if(pinch.k0===1 && magK===1 && ratio<0.8){ // 1배에서 오므리면 일반 축소
         pinch=null; map.setLevel(2); return;
       }
-      const k1=Math.max(1,Math.min(MAG_MAX,pinch.k0*ratio));
+      const k1=Math.max(1,Math.min(magMax(),pinch.k0*ratio));
       // 두 손가락 가운데 지점이 그대로 있도록 중심 보정
       const mx=(e.touches[0].clientX+e.touches[1].clientX)/2, my=(e.touches[0].clientY+e.touches[1].clientY)/2;
       const P=wrapPoint(mx,my), cx=P.w/2, cy=P.h/2;
@@ -1316,19 +1327,16 @@ function setCenterByPoint(x,y){
     } else if(drag && e.touches.length===1 && magK>1){
       e.preventDefault();
       const t=e.touches[0];
-      drag.ax=(drag.ax||0)+(t.clientX-drag.x); drag.ay=(drag.ay||0)+(t.clientY-drag.y);
+      drag.tx=(drag.tx||0)+(t.clientX-drag.x); drag.ty=(drag.ty||0)+(t.clientY-drag.y);
       drag.x=t.clientX; drag.y=t.clientY;
-      if(!drag.raf){
-        const d=drag;
-        d.raf=requestAnimationFrame(()=>{
-          const P=wrapPoint(0,0);
-          setCenterByPoint(P.w/2 - (d.ax||0)/magK, P.h/2 - (d.ay||0)/magK);
-          d.ax=0; d.ay=0; d.raf=0;
-        });
-      }
+      const mEl=document.getElementById('map');
+      mEl.style.transform=`translate(${drag.tx}px,${drag.ty}px) scale(${magK})`;
+      const P=wrapPoint(0,0);
+      if(Math.abs(drag.tx)>P.w*0.3 || Math.abs(drag.ty)>P.h*0.3) commitDrag(drag); // 많이 옮기면 중간에 지도에 반영
     }
   },{passive:false});
   const end=e=>{
+    if(drag && e.touches.length===0) commitDrag(drag);
     if(e.touches.length<2) pinch=null;
     if(e.touches.length===0) drag=null;
     else if(e.touches.length===1 && magK>1) drag={x:e.touches[0].clientX, y:e.touches[0].clientY};
