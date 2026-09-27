@@ -150,18 +150,18 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 
 <div id="mapWrap"><div id="map"></div>
   <svg class="aim" id="aim" viewBox="0 0 64 64">
-    <g fill="none" stroke="rgba(255,255,255,.75)" stroke-width="5" stroke-linecap="round">
+    <g fill="none" stroke="rgba(255,255,255,.7)" stroke-width="3" stroke-linecap="round">
       <circle cx="32" cy="32" r="22"/>
       <line x1="32" y1="3" x2="32" y2="24"/><line x1="32" y1="40" x2="32" y2="61"/>
       <line x1="3" y1="32" x2="24" y2="32"/><line x1="40" y1="32" x2="61" y2="32"/>
     </g>
-    <g fill="none" stroke="#E53935" stroke-width="2.6" stroke-linecap="round">
+    <g fill="none" stroke="#E53935" stroke-width="1.4" stroke-linecap="round">
       <circle cx="32" cy="32" r="22"/>
       <line x1="32" y1="3" x2="32" y2="24"/><line x1="32" y1="40" x2="32" y2="61"/>
       <line x1="3" y1="32" x2="24" y2="32"/><line x1="40" y1="32" x2="61" y2="32"/>
     </g>
-    <circle cx="32" cy="32" r="2.2" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.8"/>
-    <circle cx="32" cy="32" r="2.2" fill="none" stroke="#E53935" stroke-width="0.9"/>
+    <circle cx="32" cy="32" r="2" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.4"/>
+    <circle cx="32" cy="32" r="2" fill="none" stroke="#E53935" stroke-width="0.7"/>
   </svg>
   <div class="aim-info" id="aimInfo"></div>
 </div>
@@ -292,17 +292,6 @@ kakao.maps.load(function(){
   });
   kakao.maps.event.addListener(map, 'zoom_changed', updateGestureMode);
   kakao.maps.event.addListener(map, 'center_changed', ()=>{ if(mode==='manual') updateAim(); });
-  // 수동측정: 카카오 기본 확대는 손가락 사이를 기준으로 커지므로, 확대가 끝나면 조준하던 지점을 조준점으로 부드럽게 되돌림
-  let aimHold=null, aimHoldT=null;
-  document.getElementById('mapWrap').addEventListener('touchstart',e=>{
-    if(e.touches.length===2 && manualPlacing() && magK===1){ aimHold=map.getCenter(); clearTimeout(aimHoldT); }
-  },{passive:true});
-  document.getElementById('mapWrap').addEventListener('touchend',e=>{
-    if(e.touches.length===0 && aimHold){ clearTimeout(aimHoldT); aimHoldT=setTimeout(()=>{ aimHold=null; },900); }
-  },{passive:true});
-  kakao.maps.event.addListener(map, 'zoom_changed', ()=>{
-    if(aimHold && manualPlacing()){ const t=aimHold; setTimeout(()=>map.panTo(t),30); }
-  });
   updateGestureMode();
   kakao.maps.event.addListener(map, 'idle', scheduleNearbyFarm);
 
@@ -1261,7 +1250,10 @@ function updateAim(){
 }
 function handleMapTap(la,ln){
   if(mode==='walk') return; // 실측은 걸어서 기록
-  if(mode==='manual') return; // 수동측정은 조준경으로 찍음
+  if(mode==='manual'){ // 수동측정: 탭한 곳을 조준점으로 부드럽게 옮김 (점은 [＋ 점 찍기]로만)
+    if(manualPlacing()) map.panTo(new kakao.maps.LatLng(la,ln));
+    return;
+  }
   if(mode==='manual') addPoint(la, ln);
   else if(mode==='farmmap'){ if(!selectCachedFarm(la, ln)) fetchFarmmap(la, ln); }
   else fetchParcelWhole(la, ln);
@@ -1319,7 +1311,7 @@ function setCenterByPoint(x,y){
       const mx=(e.touches[0].clientX+e.touches[1].clientX)/2, my=(e.touches[0].clientY+e.touches[1].clientY)/2;
       const P=wrapPoint(mx,my), cx=P.w/2, cy=P.h/2;
       const f=(1/magK-1/k1);
-      if(Math.abs(f)>1e-6 && mode!=='manual') setCenterByPoint(cx+(P.x-cx)*f, cy+(P.y-cy)*f); // 수동측정은 조준점 기준
+      if(Math.abs(f)>1e-6) setCenterByPoint(cx+(P.x-cx)*f, cy+(P.y-cy)*f);
       setMag(k1);
     } else if(drag && e.touches.length===1 && magK>1){
       e.preventDefault();
