@@ -61,6 +61,8 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .aim-info.show{display:block;}
 .aim-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 12px);height:52px;padding:0 18px;border-radius:26px;border:none;background:#E53935;color:#fff;font-size:16px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:6px;}
 .aim-btn.show{display:flex;}
+.done-btn{display:none;position:fixed;right:14px;bottom:calc(var(--panel-h) + var(--nav-h) + env(safe-area-inset-bottom,0px) + 74px);height:46px;padding:0 16px;border-radius:23px;border:none;background:#1565C0;color:#fff;font-size:15px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.35);z-index:150;font-family:-apple-system,'Noto Sans KR',sans-serif;cursor:pointer;align-items:center;gap:6px;}
+.done-btn.show{display:flex;}
 .aim-btn:active{transform:scale(.96);}
 
 .panel{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));background:#fff;border-top:0.5px solid var(--border);padding:8px 14px 10px;z-index:50;box-shadow:0 -2px 10px rgba(0,0,0,0.06);}
@@ -162,6 +164,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   </svg>
   <div class="aim-info" id="aimInfo"></div>
 </div>
+<button class="done-btn" id="doneBtn" onclick="finishManual()">✔ 완료</button>
 <button class="aim-btn" id="aimBtn" onclick="addAimPoint()">＋ 점 찍기</button>
 
 <button class="myloc-btn" onclick="locateMe()">
@@ -428,6 +431,7 @@ function addPoint(lat,lng){
 }
 
 function undoPoint(){
+  if(mode==='manual' && manualDone){ manualDone=false; redrawShape(); updateInfoPanel(); showToast('✏️ 다시 점을 찍을 수 있어요'); return; }
   if(!points.length) return;
   points.pop();
   const dot=vertexOverlays.pop();
@@ -474,6 +478,7 @@ function addrPlaceholderFor(m){
 
 function clearAll(fromModeSwitch){
   if(!fromModeSwitch) clearSavedDone();
+  manualDone=false;
   points=[];
   vertexOverlays.forEach(d=>d.setMap(null)); vertexOverlays=[];
   if(polyline){ polyline.setMap(null); polyline=null; }
@@ -1213,23 +1218,32 @@ async function finishWalkImpl(){
 /* ── 수동측정 조준경: 화면 가운데 조준점에 지도를 맞추고 [＋ 점 찍기] ──
    손가락이 가리지 않아 정확하게 찍을 수 있음. 조준점까지 미리보기 선과 거리·예상 면적 표시 */
 let aimLine=null;
+let manualDone=false; // 수동측정: [✔ 완료]를 눌러야 선·면적 표시
+function manualPlacing(){ return mode==='manual' && !manualDone; }
 function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.getLng()}; }
 function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
 window.addAimPoint=addAimPoint;
+function finishManual(){
+  if(points.length<3){ showToast('점을 3개 이상 찍어주세요'); return; }
+  manualDone=true;
+  redrawShape(); updateSegmentLabel(); updateInfoPanel();
+  const b=new kakao.maps.LatLngBounds(); points.forEach(q=>b.extend(new kakao.maps.LatLng(q.lat,q.lng)));
+  setMag(1); map.setBounds(b);
+  const l=points[points.length-1]; updateAddress(l.lat,l.lng);
+  showToast('✔ 측정 완료 — 고치려면 ↩ 되돌리기');
+}
+window.finishManual=finishManual;
 function updateAim(){
-  const on = mode==='manual';
-  document.getElementById('aim').classList.toggle('show',on);
-  document.getElementById('aimBtn').classList.toggle('show',on);
+  const placing = manualPlacing();
+  document.getElementById('aim').classList.toggle('show',placing);
+  document.getElementById('aimBtn').classList.toggle('show',placing);
+  document.getElementById('doneBtn').classList.toggle('show',placing && points.length>=3);
+  if(aimLine){ aimLine.setMap(null); aimLine=null; }
   const info=document.getElementById('aimInfo');
-  if(!on || !points.length){ info.classList.remove('show'); if(aimLine){ aimLine.setMap(null); aimLine=null; } return; }
+  if(!placing || !points.length){ info.classList.remove('show'); return; }
   const c=aimCenter(), last=points[points.length-1];
-  const path=[new kakao.maps.LatLng(last.lat,last.lng), new kakao.maps.LatLng(c.lat,c.lng)];
-  if(points.length>=2) path.push(new kakao.maps.LatLng(points[0].lat,points[0].lng));
-  if(aimLine) aimLine.setPath(path);
-  else aimLine=new kakao.maps.Polyline({map,path,strokeWeight:2,strokeColor:'#E53935',strokeOpacity:0.9,strokeStyle:'shortdash',zIndex:4});
-  let t='+'+fmtNum(haversine(last,c),1)+'m';
-  if(points.length>=2) t+=' · 예상 '+fmtNum(calcArea(points.concat([c])),1)+'㎡';
-  info.textContent=t; info.classList.add('show');
+  info.textContent='점 '+points.length+'개 · 마지막 점에서 '+fmtNum(haversine(last,c),1)+'m';
+  info.classList.add('show');
 }
 function handleMapTap(la,ln){
   if(mode==='walk') return; // 실측은 걸어서 기록
@@ -1321,14 +1335,24 @@ function setCenterByPoint(x,y){
   },{passive:false});
   const end=e=>{
     if(pinch && pinch.manual && e.touches.length<2){
-      // 확대 배율 → 지도 단계(2배마다 1단계)로 바꾸고, 최대 확대(1단계)를 넘는 만큼은 초과 확대로
-      const steps=Math.round(Math.log2(pinch.eff));
-      const L=Math.max(1,Math.min(14,pinch.lvl0-steps));
-      const rest=pinch.eff/Math.pow(2,pinch.lvl0-L);
-      const c=map.getCenter();
-      map.setLevel(L); map.setCenter(c);                       // 가운데(조준점) 기준
-      setMag(L===1 && rest>1.05 ? Math.min(MAG_MAX,rest) : 1);  // 스타일·핀 크기 원래대로
-      pinch=null; updateGestureMode(); updateAim();
+      // 손을 떼면 가장 가까운 지도 단계로 '부드럽게' 맞춘 뒤 바꿈 (갑자기 튀지 않게)
+      const p0=pinch; pinch=null;
+      const steps=Math.round(Math.log2(p0.eff));
+      const L=Math.max(1,Math.min(14,p0.lvl0-steps));
+      const rest=p0.eff/Math.pow(2,p0.lvl0-L);
+      const keepMag = (L===1 && rest>1.05) ? Math.min(MAG_MAX,rest) : 1;
+      const target=Math.pow(2,p0.lvl0-L)*keepMag;
+      const mEl=document.getElementById('map');
+      const commit=()=>{
+        mEl.style.transition='';
+        const c=map.getCenter();
+        map.setLevel(L); map.setCenter(c);   // 가운데(조준점) 기준
+        setMag(keepMag); updateGestureMode(); updateAim();
+      };
+      if(Math.abs(target-p0.eff)<0.01){ commit(); return; }
+      mEl.style.transition='transform .16s ease-out';
+      mEl.style.transform=`scale(${target})`; mEl.style.setProperty('--inv',(1/target).toFixed(4));
+      setTimeout(commit,170);
       return;
     }
     if(e.touches.length<2) pinch=null;
@@ -1363,7 +1387,7 @@ function setCenterByPoint(x,y){
 function redrawShape(){
   if(polyline){ polyline.setMap(null); polyline=null; }
   if(polygon){ polygon.setMap(null); polygon=null; }
-  if(points.length<2) return;
+  if(points.length<2 || manualPlacing()) return; // 수동측정은 완료 후에만 선 표시
   const path = points.map(p=>new kakao.maps.LatLng(p.lat,p.lng));
   if(points.length===2){
     polyline = new kakao.maps.Polyline({ map, path, strokeWeight:3, strokeColor:'#E53935', strokeOpacity:0.9 });
@@ -1376,7 +1400,7 @@ function redrawShape(){
 
 function updateSegmentLabel(){
   if(segLabelOverlay){ segLabelOverlay.setMap(null); segLabelOverlay=null; }
-  if(points.length<2) return;
+  if(points.length<2 || mode==='manual') return; // 수동측정은 핀만
   const a=points[points.length-2], b=points[points.length-1];
   const d=haversine(a,b);
   const mid=new kakao.maps.LatLng((a.lat+b.lat)/2,(a.lng+b.lng)/2);
@@ -1394,6 +1418,15 @@ function fmtNum(n, decimals){
 
 function updateInfoPanel(){
   const n=points.length;
+  if(manualPlacing()){
+    document.getElementById('ptWrap').style.display='';
+    document.getElementById('ptCount').textContent=n+'개';
+    document.getElementById('areaVal').textContent='—';
+    document.getElementById('pyeongVal').textContent = n>=3 ? '[✔ 완료]를 누르면 계산' : '';
+    document.getElementById('periVal').textContent='—';
+    hideLots(); updateAim();
+    return;
+  }
   document.getElementById('ptWrap').style.display = mode==='walk' ? 'none' : ''; // 실측은 면적·둘레만
   document.getElementById('ptCount').textContent=n+'개';
   if(n<3){
