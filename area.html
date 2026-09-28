@@ -1333,6 +1333,8 @@ async function finishWalkImpl(){
   points=result;
   redrawShape(); updateInfoPanel();
   walkInfo('');
+  // 밭 전체가 화면에 딱 들어오게
+  { const b=new kakao.maps.LatLngBounds(); points.forEach(q=>b.extend(new kakao.maps.LatLng(q.lat,q.lng))); setMag(1); map.setBounds(b,40,30,40,30); }
   updateAddress(c.lat,c.lng);
   try{ localStorage.setItem(WALK_DONE_KEY, JSON.stringify({t:Date.now(), raw, result, c})); }catch(e){}
   addHist(result,c);
@@ -1513,16 +1515,20 @@ function setCenterByPoint(x,y){
   wrap.addEventListener('pointercancel',pend,{passive:true});
 })();
 
+let shapeGlow=null; // 실측 결과 바깥 번짐
 function redrawShape(){
   if(polyline){ polyline.setMap(null); polyline=null; }
   if(polygon){ polygon.setMap(null); polygon=null; }
+  if(shapeGlow){ shapeGlow.setMap(null); shapeGlow=null; }
   if(points.length<2 || manualPlacing()) return; // 수동측정은 완료 후에만 선 표시
   const path = points.map(p=>new kakao.maps.LatLng(p.lat,p.lng));
   if(points.length===2){
     polyline = new kakao.maps.Polyline({ map, path, strokeWeight:3, strokeColor:'#E53935', strokeOpacity:0.9 });
   } else {
+    if(mode==='walk') // 실측: 부드러운 가장자리 (바깥 번짐 + 조금 굵은 선 + 선과 비슷한 채우기)
+      shapeGlow = new kakao.maps.Polygon({ map, path, strokeWeight:10, strokeColor:'#FF9800', strokeOpacity:0.28, fillOpacity:0, zIndex:2 });
     polygon = mode==='walk'
-      ? new kakao.maps.Polygon({ map, path, strokeWeight:3, strokeColor:'#FF9800', strokeOpacity:1, fillColor:'#FFB74D', fillOpacity:0.3, zIndex:3 })  // 실측: 걸은 선 하나로 마무리
+      ? new kakao.maps.Polygon({ map, path, strokeWeight:4, strokeColor:'#FB8C00', strokeOpacity:0.95, fillColor:'#FFA726', fillOpacity:0.4, zIndex:3 })
       : new kakao.maps.Polygon({ map, path, strokeWeight:3, strokeColor:'#E53935', strokeOpacity:1, fillColor:'#FF1744', fillOpacity:0.35, zIndex:3 });
   }
 }
