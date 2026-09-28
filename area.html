@@ -183,13 +183,11 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
   <div class="aim-info" id="aimInfo"></div>
 </div>
 <div class="fab-row" id="walkFabRow">
-  <button class="fab" id="walkSaveFab" onclick="saveAreaImage()" aria-label="갤러리 저장"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.1" stroke-linejoin="round"><path d="M5 3.5h11l3.5 3.5v12a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5z"/><path d="M7.5 3.5v5h8v-5M7.5 20.5v-6h9v6"/></svg></button>
   <button class="fab" onclick="askClear()" aria-label="초기화"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#757575" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></button>
   <button class="fab hide" id="walkEndFab" onclick="finishWalk()" aria-label="끝내기"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#C62828"/></svg></button>
   <button class="fab" id="walkMainFab" onclick="toggleWalk()" aria-label="시작"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="#1E88E5" stroke="#1E88E5" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
 </div>
 <div class="fab-row" id="fabRow">
-  <button class="fab" id="manSaveFab" onclick="saveAreaImage()" aria-label="갤러리 저장"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.1" stroke-linejoin="round"><path d="M5 3.5h11l3.5 3.5v12a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5z"/><path d="M7.5 3.5v5h8v-5M7.5 20.5v-6h9v6"/></svg></button>
   <button class="fab" onclick="askClear()" aria-label="초기화"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#757575" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></button>
   <button class="fab" id="doneFab" onclick="finishManual()" aria-label="완료"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></button>
   <button class="fab" id="undoFab" onclick="undoPoint()" aria-label="되돌리기"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
@@ -287,7 +285,6 @@ function mapSdkFailed(){
 //# sourceMappingURL=polygon-clipping.umd.min.js.map
 
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4e37fe9df4f59f95a43e3210327db09b&libraries=services&autoload=false" onerror="mapSdkFailed()"></script>
 <script>
 if(typeof kakao==='undefined'){
@@ -920,9 +917,6 @@ function refreshDetail(){
   lots.style.display = (has && detailOpen && lots.innerHTML) ? '' : 'none';
   btn.style.display = has ? 'inline-block' : 'none';
   btn.textContent = detailOpen ? '접기 ▴' : '상세 ▾';
-  const done3 = points.length>=3;
-  const ws=document.getElementById('walkSaveFab'); if(ws) ws.classList.toggle('dis', walk.on || !done3 || mode!=='walk');
-  const ms=document.getElementById('manSaveFab'); if(ms) ms.classList.toggle('dis', !(mode==='manual' && manualDone && done3));
   const hb=document.getElementById('histBtn'); if(hb) hb.style.display = (mode==='walk' && !walk.on) ? 'inline-block' : 'none';
 }
 function scheduleLots(){
@@ -1107,7 +1101,6 @@ function updateWalkButtons(){
   mf.innerHTML = (walk.on && !walk.paused) ? WALK_ICON.pause : WALK_ICON.play;
   mf.setAttribute('aria-label', !walk.on?'시작':walk.paused?'계속':'일시정지');
   ef.classList.toggle('hide', !walk.on);
-  document.getElementById('walkSaveFab').classList.toggle('dis', walk.on || points.length<3);
   const b=document.getElementById('walkBtn'), e=document.getElementById('walkEndBtn');
   b.classList.remove('rec','pause');
   b.style.display='none'; e.style.display='none'; // 결과 칸 글자 버튼은 쓰지 않음 (둥근 버튼 사용)
@@ -1277,41 +1270,7 @@ function aimCenter(){ const c=map.getCenter(); return {lat:c.getLat(), lng:c.get
 function addAimPoint(){ const c=aimCenter(); addPoint(c.lat,c.lng); if(navigator.vibrate) navigator.vibrate(20); }
 window.addAimPoint=addAimPoint;
 
-/* ── 💾 갤러리 저장: 지금 보이는 화면을 그대로 이미지로 저장 ──
-   (웹앱은 휴대폰 캡처 기능을 직접 쓸 수 없어서, 화면을 그대로 복사해서 저장. 지도 사진이 빠지면 알려줌) */
-async function saveAreaImage(){
-  if(points.length<3 || (mode==='manual' && !manualDone) || walk.on){ showToast('측정을 마친 뒤 저장할 수 있어요'); return; }
-  if(typeof html2canvas==='undefined'){ showToast('저장 기능을 불러오지 못했어요 (인터넷 확인)'); return; }
-  try{
-    showToast('💾 화면 저장 중...');
-    await new Promise(r=>setTimeout(r,350)); // 안내 문구가 사라진 뒤 캡처
-    const tEl=document.getElementById('toast'); if(tEl) tEl.style.display='none'; // 안내 문구는 캡처에서 빼기
-    const canvas=await html2canvas(document.body,{
-      useCORS:true, backgroundColor:null, logging:false,
-      x:window.scrollX, y:window.scrollY, width:window.innerWidth, height:window.innerHeight,
-      scale:Math.min(2,window.devicePixelRatio||1)
-    });
-    // 지도 사진이 들어갔는지 확인: 지도 영역 여러 곳의 색이 전부 같으면 사진이 빠진 것
-    let mapOk=true;
-    try{
-      const r=document.getElementById('mapWrap').getBoundingClientRect(), k=canvas.width/window.innerWidth;
-      const ctx=canvas.getContext('2d'), seen=new Set();
-      for(let i=1;i<=4;i++) for(let j=1;j<=4;j++){
-        const d=ctx.getImageData(Math.round((r.left+r.width*i/5)*k), Math.round((r.top+r.height*j/5)*k),1,1).data;
-        seen.add(d[0]>>4<<8|d[1]>>4<<4|d[2]>>4);
-      }
-      mapOk = seen.size>3;
-    }catch(e){}
-    const now=new Date(), z=n=>String(n).padStart(2,'0');
-    const stamp=`${now.getFullYear()}${z(now.getMonth()+1)}${z(now.getDate())}_${z(now.getHours())}${z(now.getMinutes())}${z(now.getSeconds())}`;
-    const link=document.createElement('a');
-    link.download=`면적측정_${mode==='walk'?'실측':'수동측정'}_${stamp}.png`;
-    link.href=canvas.toDataURL('image/png');
-    link.click();
-    showToast(mapOk ? '💾 화면을 갤러리에 저장했어요' : '💾 저장했지만 지도 사진은 빠졌어요 — 휴대폰 캡처(전원+볼륨↓)를 이용해 주세요');
-  }catch(e){ showToast('저장 중 오류가 발생했어요'); }
-}
-window.saveAreaImage=saveAreaImage;
+
 /* 앱 모양 확인창 (브라우저 기본 창 대신) */
 function appConfirm(title,msg,yes){
   return new Promise(res=>{
@@ -1346,7 +1305,6 @@ function updateAim(){
   const placing = manualPlacing();
   document.getElementById('aim').classList.toggle('show',placing);
   document.getElementById('fabRow').classList.toggle('show', mode==='manual');
-  document.getElementById('manSaveFab').classList.toggle('dis', !(mode==='manual' && manualDone && points.length>=3));
   document.getElementById('addFab').classList.toggle('hide',!placing);
   document.getElementById('doneFab').classList.toggle('hide',!placing);
   document.getElementById('doneFab').classList.toggle('dis',points.length<3);
