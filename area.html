@@ -1121,6 +1121,31 @@ function smoothTrack(pts){
   return sm.filter((_,i)=>keep[i]).map(q=>({lat:ref.lat+q.y/ky, lng:ref.lng+q.x/kx}));
 }
 
+/* 들어갔다 나온 좁은 선 빼기: 경계에서 밭 안(또는 밖)으로 같은 길로 들어갔다 나온 부분을 잘라냄
+   - 두 점이 4m 이내로 다시 만나고, 그 사이로 10m 넘게 걸었는데, 그 사이 모양의 평균 폭이 3m 미만이면 '들어갔다 나온 길'로 봄
+   - 밭 전체를 도는 큰 고리나 폭이 넓은 실제 오목한 곳은 폭이 커서 남음 */
+const SPUR_MEET=4, SPUR_MINLEN=10, SPUR_MAXWIDTH=3, SPUR_MAXLEN=150;
+function removeSpurs(pts){
+  const n=pts.length; if(n<10) return pts.slice();
+  const xy=tmLocal(pts);
+  const cum=[0]; for(let i=1;i<n;i++) cum.push(cum[i-1]+Math.hypot(xy[i].x-xy[i-1].x,xy[i].y-xy[i-1].y));
+  const out=[]; let i=0;
+  while(i<n){
+    out.push(pts[i]);
+    let cut=-1;
+    for(let j=i+4;j<n && cum[j]-cum[i]<=SPUR_MAXLEN;j++){
+      const len=cum[j]-cum[i];
+      if(len<SPUR_MINLEN) continue;
+      if(Math.hypot(xy[j].x-xy[i].x,xy[j].y-xy[i].y)>SPUR_MEET) continue;
+      let a=0; for(let k=i;k<j;k++) a+=xy[k].x*xy[k+1].y-xy[k+1].x*xy[k].y; a+=xy[j].x*xy[i].y-xy[i].x*xy[j].y;
+      const width=2*Math.abs(a/2)/len;          // 평균 폭 ≈ 넓이 ÷ (걸은 길이/2)
+      if(width<SPUR_MAXWIDTH) cut=j;            // 가장 먼 끝까지 (들어갔다 나온 길 전체)
+    }
+    i = cut>0 ? cut : i+1;
+  }
+  return out;
+}
+
 /* ── 실측(걸어서 측정) ──
    GPS로 걸은 선을 기록 → 끝나면 해당 팜맵 필지에 맞춰 ① 전체 평행이동 ② 경계 가까운 점만 경계에 붙이기
    → 보정 면적이 팜맵 ±5% 이내면 팜맵 경계 채택, 아니면(일부 경작 등) 보정된 실측 모양 사용 */
@@ -1250,6 +1275,9 @@ function onWalkPos(pos){
   if(!map.getBounds().contain(ll)) map.panTo(ll);
   if(acc>WALK_MAX_ACC){ walkStatus('기록 중',` · 오차 ±${acc}m 너무 큼(건너뜀)`); return; }
   const last=walk.pts[walk.pts.length-1];
+  // 서 있을 때(속도 초속 0.3m 미만)는 기록하지 않음 — 제자리에서 GPS가 떠돌며 생기는 선 방지
+  const sp=pos.coords.speed;
+  if(last && sp!=null && !isNaN(sp) && sp<0.3){ walkStatus('기록 중',' · 멈춤'); return; }
   if(last && haversine(last,p)<WALK_MIN_STEP) return;
   p.acc=acc; walk.pts.push(p); walk.accs.push(acc); // 오차도 같이 기록 (끝낼 때 좋은 위치를 더 믿는 데 사용)
   drawWalkLine();
@@ -1327,9 +1355,9 @@ window.finishWalk=function(){ return finishWalkImpl(); };
 async function finishWalkImpl(){
   stopWalkRecording();
   clearSavedWalk();
-  // 튄 점 제거 → 고리 맞추기(시작·끝 꼬리 자르기) → 흔들림 다듬기
+  // 튄 점 제거 → 들어갔다 나온 좁은 길 빼기 → 고리 맞추기(시작·끝 꼬리 자르기) → 흔들림 다듬기
   const origPts=walk.pts.slice(); // 보정 전 원본 (원인 확인용으로 내역에 저장)
-  const tl=trimLoop(removeSpikes(walk.pts.slice()));
+  const tl=trimLoop(removeSpurs(removeSpikes(walk.pts.slice())));
   const raw = tl.pts.length>=5 ? smoothTrack(tl.pts) : walk.pts.slice(); // 1m 간격 고르게 → 가우스 평균(오차 작은 위치를 더 믿음)
   if(tl.trimmed){ walk.pts=raw; if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; } }
   if(walk.startMk) walk.startMk._done=false; // 끝나면 START·STOP 다시 그림
