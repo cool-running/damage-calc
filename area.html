@@ -1376,8 +1376,7 @@ function finishManual(){
   if(points.length<3){ showToast('점을 3개 이상 찍어주세요'); return; }
   manualDone=true;
   redrawShape(); updateSegmentLabel(); updateInfoPanel();
-  const b=new kakao.maps.LatLngBounds(); points.forEach(q=>b.extend(new kakao.maps.LatLng(q.lat,q.lng)));
-  setMag(1); map.setBounds(b);
+  // 화면은 찍던 그대로 유지 (확대 상태 그대로 결과를 보여줌)
   const l=points[points.length-1]; updateAddress(l.lat,l.lng);
   showToast('✔ 측정 완료 — 고치려면 ↩ 되돌리기');
 }
