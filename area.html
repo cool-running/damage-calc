@@ -990,10 +990,11 @@ function smoothLoop(pts,times){
 const HIST_KEY='area_walk_history_v1';
 function loadHist(){ try{ return JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); }catch(e){ return []; } }
 function saveHist(h){ try{ localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(0,100))); }catch(e){ showToast('저장 공간이 부족해 내역을 저장하지 못했어요'); } }
-function addHist(pts,c){
+function addHist(pts,c,orig){
   const id=Date.now();
   const r7=v=>Math.round(v*1e7)/1e7;
   const item={id, t:id, area:calcArea(pts), peri:calcPerimeter(pts), addr:'', c, pts:pts.map(q=>({lat:r7(q.lat),lng:r7(q.lng)}))};
+  if(orig && orig.length) item.raw=orig.map(q=>[r7(q.lat),r7(q.lng),Math.round(q.acc||0)]); // 원본: [위도,경도,오차]
   const h=loadHist(); h.unshift(item); saveHist(h);
   // 주소는 조회되는 대로 채움
   geocoder.coord2Address(c.lng,c.lat,(res,st)=>{
@@ -1008,7 +1009,7 @@ function openHistory(){
   const h=loadHist();
   document.getElementById('histTitle').textContent=`실측 내역 ${h.length}건`;
   document.getElementById('histList').innerHTML = h.length ? h.map(it=>
-    `<div class="hist-item" onclick="showHistory(${it.id})"><div class="hist-main">`
+    `<div class="hist-item" onclick="if(!this._lp) showHistory(${it.id}); this._lp=false;" oncontextmenu="event.preventDefault()" ontouchstart="const el=this; el._lp=false; el._t=setTimeout(()=>{ el._lp=true; copyHistRaw(${it.id}); if(navigator.vibrate) navigator.vibrate(30); },700)" ontouchend="clearTimeout(this._t)" ontouchmove="clearTimeout(this._t)"><div class="hist-main">`
     +`<div class="hist-area">${fmtNum(it.area,1)} ㎡<small>(${fmtNum(it.area/3.305785,1)}평)</small></div>`
     +`<div class="hist-sub">${fmtDate(it.t)} · 둘레 ${fmtNum(it.peri,1)}m</div>`
     +`<div class="hist-sub">${it.addr||'주소 확인 중'}</div></div>`
@@ -1016,6 +1017,14 @@ function openHistory(){
     : '<div class="hist-empty">아직 저장된 실측 내역이 없어요.<br>실측을 끝내면 자동으로 저장돼요.</div>';
   document.getElementById('histSheet').classList.add('show');
 }
+function copyHistRaw(id){
+  const it=loadHist().find(x=>x.id===id); if(!it) return;
+  const txt=JSON.stringify({t:fmtDate(it.t),addr:it.addr,area:Math.round(it.area*10)/10,peri:Math.round(it.peri*10)/10,raw:it.raw||null,pts:it.pts});
+  const ok=()=>showToast(it.raw?'📋 원본 데이터를 복사했어요 — 채팅에 붙여넣어 주세요':'📋 이 내역은 원본이 없어서 결과만 복사했어요');
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok,()=>showToast('복사하지 못했어요'));
+  else { const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); ok(); }catch(e){ showToast('복사하지 못했어요'); } ta.remove(); }
+}
+window.copyHistRaw=copyHistRaw;
 function closeHistory(){ document.getElementById('histSheet').classList.remove('show'); }
 function delHistory(id){
   appConfirm('내역 삭제','이 측정 내역을 삭제할까요?','삭제').then(ok=>{ if(ok){ saveHist(loadHist().filter(x=>x.id!==id)); openHistory(); } });
@@ -1070,7 +1079,7 @@ function removeSpikes(pts){
 
 /* 흔들림 다듬기 + 오차 가중: 1m 간격으로 고르게 다시 찍고 → 앞뒤 가우스 평균 (오차 작은 위치를 더 믿음) → 필요 없는 점 정리
    - 폰이 알려주는 오차(±m)가 평소보다 큰 구간은 더 넓은 범위의 '좋은 위치' 쪽으로 당겨서, 한쪽으로 쏠린 구간을 줄임 */
-const SMOOTH_STEP=1, SMOOTH_SIGMA=3, SMOOTH_SIGMA_MAX=15, SMOOTH_SIMPLIFY=0.2;
+const SMOOTH_STEP=1, SMOOTH_SIGMA=3, SMOOTH_SIGMA_MAX=3, SMOOTH_SIMPLIFY=0.2; // 범위는 항상 3m (넓히면 모서리가 깎여서 되돌림)
 function smoothTrack(pts){
   const n=pts.length; if(n<5) return pts.slice();
   const ref=pts[0], d=Math.PI/180, R=6378137, kx=R*d*Math.cos(ref.lat*d), ky=R*d;
@@ -1319,6 +1328,7 @@ async function finishWalkImpl(){
   stopWalkRecording();
   clearSavedWalk();
   // 튄 점 제거 → 고리 맞추기(시작·끝 꼬리 자르기) → 흔들림 다듬기
+  const origPts=walk.pts.slice(); // 보정 전 원본 (원인 확인용으로 내역에 저장)
   const tl=trimLoop(removeSpikes(walk.pts.slice()));
   const raw = tl.pts.length>=5 ? smoothTrack(tl.pts) : walk.pts.slice(); // 1m 간격 고르게 → 가우스 평균(오차 작은 위치를 더 믿음)
   if(tl.trimmed){ walk.pts=raw; if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; } }
@@ -1337,7 +1347,7 @@ async function finishWalkImpl(){
   { const b=new kakao.maps.LatLngBounds(); points.forEach(q=>b.extend(new kakao.maps.LatLng(q.lat,q.lng))); setMag(1); map.setBounds(b,40,30,40,30); }
   updateAddress(c.lat,c.lng);
   try{ localStorage.setItem(WALK_DONE_KEY, JSON.stringify({t:Date.now(), raw, result, c})); }catch(e){}
-  addHist(result,c);
+  addHist(result,c,origPts);
   showToast('🚶 실측 완료 · 📋 내역에 저장됨');
 }
 
