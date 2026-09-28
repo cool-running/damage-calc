@@ -1355,12 +1355,9 @@ window.finishWalk=function(){ return finishWalkImpl(); };
 async function finishWalkImpl(){
   stopWalkRecording();
   clearSavedWalk();
-  // 튄 점 제거 → 들어갔다 나온 좁은 길 빼기 → 고리 맞추기(시작·끝 꼬리 자르기) → 흔들림 다듬기
-  const origPts=walk.pts.slice(); // 보정 전 원본 (원인 확인용으로 내역에 저장)
-  const tl=trimLoop(removeSpurs(removeSpikes(walk.pts.slice())));
-  const raw = tl.pts.length>=5 ? smoothTrack(tl.pts) : walk.pts.slice(); // 1m 간격 고르게 → 가우스 평균(오차 작은 위치를 더 믿음)
-  if(tl.trimmed){ walk.pts=raw; if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; } }
-  if(walk.startMk) walk.startMk._done=false; // 끝나면 START·STOP 다시 그림
+  // 끝낸 뒤 보정은 하지 않음 — 측정기처럼 걸은 선 그대로 (마지막 점과 첫 점을 곧게 이어 닫음)
+  const origPts=walk.pts.slice();
+  const raw=walk.pts.slice();
   if(raw.length<3){ showToast('🚶 기록된 점이 부족해요 (3개 이상 필요)'); walkInfo(''); document.getElementById('addrVal').textContent=addrPlaceholderFor(mode); return; }
   if(walk.line){ walk.line.setMap(null); walk.line=null; }
   if(walk.fill){ walk.fill.setMap(null); walk.fill=null; }
