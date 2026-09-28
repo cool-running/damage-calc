@@ -1068,14 +1068,17 @@ function removeSpikes(pts){
   return p;
 }
 
-/* 흔들림 다듬기(강화): 1m 간격으로 고르게 다시 찍은 뒤, 앞뒤 약 5m를 가우스 평균 → 필요 없는 점 정리
-   - 폰 GPS의 좌우 1~3m 떨림을 측정기처럼 매끈하게 폄 (모서리는 살짝만 둥글어짐) */
-const SMOOTH_STEP=1, SMOOTH_SIGMA=3, SMOOTH_SIMPLIFY=0.2;
+/* 흔들림 다듬기 + 오차 가중: 1m 간격으로 고르게 다시 찍고 → 앞뒤 가우스 평균 (오차 작은 위치를 더 믿음) → 필요 없는 점 정리
+   - 폰이 알려주는 오차(±m)가 평소보다 큰 구간은 더 넓은 범위의 '좋은 위치' 쪽으로 당겨서, 한쪽으로 쏠린 구간을 줄임 */
+const SMOOTH_STEP=1, SMOOTH_SIGMA=3, SMOOTH_SIGMA_MAX=15, SMOOTH_SIMPLIFY=0.2;
 function smoothTrack(pts){
   const n=pts.length; if(n<5) return pts.slice();
   const ref=pts[0], d=Math.PI/180, R=6378137, kx=R*d*Math.cos(ref.lat*d), ky=R*d;
-  const xy=pts.map(p=>({x:(p.lng-ref.lng)*kx, y:(p.lat-ref.lat)*ky}));
-  // 1) 닫힌 고리를 1m 간격으로 다시 찍기
+  const xy=pts.map(p=>({x:(p.lng-ref.lng)*kx, y:(p.lat-ref.lat)*ky, a:(p.acc>0?p.acc:0)}));
+  const known=xy.filter(q=>q.a>0).map(q=>q.a).sort((a,b)=>a-b);
+  const med=known.length ? Math.max(2,known[Math.floor(known.length/2)]) : 5;
+  xy.forEach(q=>{ if(!(q.a>0)) q.a=med; });
+  // 1) 닫힌 고리를 1m 간격으로 다시 찍기 (오차도 같이 이어 붙임)
   const cum=[0]; for(let i=1;i<=n;i++){ const a=xy[i-1], b=xy[i%n]; cum.push(cum[i-1]+Math.hypot(b.x-a.x,b.y-a.y)); }
   const per=cum[n]; if(per<10) return pts.slice();
   const m=Math.max(8,Math.round(per/SMOOTH_STEP)), step=per/m, rs=[];
@@ -1083,24 +1086,29 @@ function smoothTrack(pts){
   for(let k=0;k<m;k++){
     const t=k*step; while(seg<n-1 && cum[seg+1]<t) seg++;
     const a=xy[seg], b=xy[(seg+1)%n], L=cum[seg+1]-cum[seg], f=L>0?(t-cum[seg])/L:0;
-    rs.push({x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f});
+    rs.push({x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f, a:a.a+(b.a-a.a)*f});
   }
-  // 2) 가우스 평균 (고리라서 끝과 처음이 이어짐)
-  const w=Math.ceil(3*SMOOTH_SIGMA/step), ker=[]; let ks=0;
-  for(let j=-w;j<=w;j++){ const v=Math.exp(-((j*step)**2)/(2*SMOOTH_SIGMA*SMOOTH_SIGMA)); ker.push(v); ks+=v; }
-  const sm=rs.map((_,i)=>{ let x=0,y=0; for(let j=-w;j<=w;j++){ const q=rs[(i+j+m)%m], v=ker[j+w]; x+=q.x*v; y+=q.y*v; } return {x:x/ks,y:y/ks}; });
+  // 2) 가우스 평균: 오차가 평소(중앙값)보다 크면 범위를 넓히고, 오차가 작은 위치일수록 크게 반영
+  const W=Math.ceil(3*SMOOTH_SIGMA_MAX/step);
+  const sm=rs.map((c,i)=>{
+    const sg = c.a<=med*1.5 ? SMOOTH_SIGMA : Math.min(SMOOTH_SIGMA_MAX, SMOOTH_SIGMA*2*c.a/med);
+    const w=Math.min(W,Math.ceil(3*sg/step));
+    let x=0,y=0,s=0;
+    for(let j=-w;j<=w;j++){
+      const q=rs[(i+j+m)%m];
+      const v=Math.exp(-((j*step)**2)/(2*sg*sg)) * Math.min(8,(med/q.a)**3);
+      x+=q.x*v; y+=q.y*v; s+=v;
+    }
+    return {x:x/s,y:y/s};
+  });
   // 3) 필요 없는 점 정리 (선에서 0.2m 이내면 뺌)
-  const keep=new Array(m).fill(false); keep[0]=true; keep[Math.floor(m/2)]=true;
-  const dp=(i0,i1)=>{ const a=sm[i0], b=sm[i1]; let far=-1, fd=0; const L=Math.hypot(b.x-a.x,b.y-a.y)||1e-9;
-    for(let i=i0+1;i<i1;i++){ const q=sm[i]; const dd=Math.abs((b.x-a.x)*(a.y-q.y)-(a.x-q.x)*(b.y-a.y))/L; if(dd>fd){fd=dd;far=i;} }
-    if(fd>SMOOTH_SIMPLIFY){ keep[far]=true; dp(i0,far); dp(far,i1); } };
-  const h=Math.floor(m/2); dp(0,h);
-  // 뒤쪽 절반 (끝 → 처음)
-  const tail=sm.slice(h).concat([sm[0]]); const kt=new Array(tail.length).fill(false);
-  const dp2=(i0,i1)=>{ const a=tail[i0], b=tail[i1]; let far=-1, fd=0; const L=Math.hypot(b.x-a.x,b.y-a.y)||1e-9;
-    for(let i=i0+1;i<i1;i++){ const q=tail[i]; const dd=Math.abs((b.x-a.x)*(a.y-q.y)-(a.x-q.x)*(b.y-a.y))/L; if(dd>fd){fd=dd;far=i;} }
-    if(fd>SMOOTH_SIMPLIFY){ kt[far]=true; dp2(i0,far); dp2(far,i1); } };
-  dp2(0,tail.length-1); kt.forEach((v,i)=>{ if(v) keep[h+i]=true; });
+  const keep=new Array(m).fill(false);
+  const dp=(arr,i0,i1,mark)=>{ const a=arr[i0], b=arr[i1]; let far=-1, fd=0; const L=Math.hypot(b.x-a.x,b.y-a.y)||1e-9;
+    for(let i=i0+1;i<i1;i++){ const q=arr[i]; const dd=Math.abs((b.x-a.x)*(a.y-q.y)-(a.x-q.x)*(b.y-a.y))/L; if(dd>fd){fd=dd;far=i;} }
+    if(fd>SMOOTH_SIMPLIFY){ mark(far); dp(arr,i0,far,mark); dp(arr,far,i1,mark); } };
+  const h=Math.floor(m/2); keep[0]=true; keep[h]=true;
+  dp(sm,0,h,i=>keep[i]=true);
+  const tail=sm.slice(h).concat([sm[0]]); dp(tail,0,tail.length-1,i=>keep[h+i]=true);
   return sm.filter((_,i)=>keep[i]).map(q=>({lat:ref.lat+q.y/ky, lng:ref.lng+q.x/kx}));
 }
 
@@ -1234,7 +1242,7 @@ function onWalkPos(pos){
   if(acc>WALK_MAX_ACC){ walkStatus('기록 중',` · 오차 ±${acc}m 너무 큼(건너뜀)`); return; }
   const last=walk.pts[walk.pts.length-1];
   if(last && haversine(last,p)<WALK_MIN_STEP) return;
-  walk.pts.push(p); walk.accs.push(acc);
+  p.acc=acc; walk.pts.push(p); walk.accs.push(acc); // 오차도 같이 기록 (끝낼 때 좋은 위치를 더 믿는 데 사용)
   drawWalkLine();
   saveWalk();
   walkStatus('기록 중',` · ±${acc}m`);
@@ -1312,7 +1320,7 @@ async function finishWalkImpl(){
   clearSavedWalk();
   // 튄 점 제거 → 고리 맞추기(시작·끝 꼬리 자르기) → 흔들림 다듬기
   const tl=trimLoop(removeSpikes(walk.pts.slice()));
-  const raw = tl.pts.length>=5 ? smoothTrack(tl.pts) : walk.pts.slice(); // 1m 간격 고르게 → 앞뒤 약 3m 가우스 평균
+  const raw = tl.pts.length>=5 ? smoothTrack(tl.pts) : walk.pts.slice(); // 1m 간격 고르게 → 가우스 평균(오차 작은 위치를 더 믿음)
   if(tl.trimmed){ walk.pts=raw; if(walk.startMk){ walk.startMk.setMap(null); walk.startMk=null; } }
   if(walk.startMk) walk.startMk._done=false; // 끝나면 START·STOP 다시 그림
   if(raw.length<3){ showToast('🚶 기록된 점이 부족해요 (3개 이상 필요)'); walkInfo(''); document.getElementById('addrVal').textContent=addrPlaceholderFor(mode); return; }
