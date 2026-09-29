@@ -1274,7 +1274,10 @@ function onWalkPos(pos){
   const ll=new kakao.maps.LatLng(p.lat,p.lng);
   if(myMarker) myMarker.setPosition(ll);
   if(!map.getBounds().contain(ll)) map.panTo(ll);
-  if(acc>WALK_MAX_ACC){ walkStatus('기록 중',` · 오차 ±${acc}m 너무 큼(건너뜀)`); return; }
+  // 기록 기준: 평소 ±10m 초과는 기록 안 함. GPS가 전반적으로 나쁜 곳은 최근 평소 오차의 2.5배까지 허용(최대 ±20m)
+  const recent=walk.accs.slice(-20).sort((a,b)=>a-b), med=recent.length ? recent[Math.floor(recent.length/2)] : 5;
+  const accLimit=Math.min(WALK_MAX_ACC, Math.max(10, med*2.5));
+  if(acc>accLimit){ walkStatus('기록 중',` · 오차 ±${acc}m 커서 건너뜀`); return; }
   const last=walk.pts[walk.pts.length-1];
   // 서 있을 때(속도 초속 0.3m 미만)는 기록하지 않음 — 제자리에서 GPS가 떠돌며 생기는 선 방지
   const sp=pos.coords.speed;
