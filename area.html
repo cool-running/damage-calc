@@ -514,7 +514,7 @@ function addrPlaceholderFor(m){
   if(m==='walk') return '▶ 을 누르고 경계를 따라 한 바퀴 걸어주세요';
   return m==='parcel'
     ? '지도를 탭하면 지적도 필지 면적과 주소가 표시돼요'
-    : '지도: 조준점 맞추고 [＋ 점 찍기]\n현장: 모서리에 서서 [📍 현위치] → 다 찍으면 [✔ 완료]';
+    : '조준점을 모서리에 맞추고 [＋]로 점 찍기\n다 찍으면 [✔ 완료]';
 }
 
 function clearAll(fromModeSwitch){
@@ -1432,9 +1432,7 @@ function updateAim(){
   const info=document.getElementById('aimInfo');
   if(!placing){ info.classList.remove('show'); return; }
   if(!points.length){ info.textContent='조준점을 모서리에 맞추고 ＋'; info.classList.add('show'); return; }
-  const c=aimCenter(), last=points[points.length-1];
-  info.textContent='점 '+points.length+'개 · 마지막 점에서 '+fmtNum(haversine(last,c),1)+'m';
-  info.classList.add('show');
+  info.classList.remove('show'); // 점을 찍은 뒤에는 조준점만 표시
 }
 function handleMapTap(la,ln){
   if(mode==='walk') return; // 실측은 걸어서 기록
