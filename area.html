@@ -138,6 +138,7 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 .cfm-btns button{flex:1;height:46px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
 .cfm-no{background:var(--bg);color:var(--text);}
 .cfm-yes{background:#E53935;color:#fff;}
+.walk-lock .search-row,.walk-lock .mode-row .mbtn:not(.on),.walk-lock .bottom-nav .nav-item:not(.on),.walk-lock #histBtn{opacity:.35;}
 .toast{display:none;position:fixed;bottom:calc(var(--panel-h) + var(--nav-h) + 16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:rgba(20,20,30,0.92);color:#fff;font-size:13px;font-weight:600;font-family:-apple-system,'Noto Sans KR',sans-serif;padding:10px 20px;border-radius:20px;white-space:nowrap;z-index:999;}
 
 </style>
@@ -1213,13 +1214,40 @@ function updateWalkButtons(){
   mf.innerHTML = (walk.on && !walk.paused) ? WALK_ICON.pause : WALK_ICON.play;
   mf.setAttribute('aria-label', !walk.on?'시작':walk.paused?'계속':'일시정지');
   ef.classList.toggle('hide', !walk.on);
+  updateWalkLock();
   const b=document.getElementById('walkBtn'), e=document.getElementById('walkEndBtn');
   b.classList.remove('rec','pause');
   b.style.display='none'; e.style.display='none'; // 결과 칸 글자 버튼은 쓰지 않음 (둥근 버튼 사용)
   refreshDetail();
 }
+// 화면 꺼짐 방지 — 실측을 시작해서 끝낼 때까지(일시정지 중 포함) 화면을 켜 둠
+async function keepScreenOn(){
+  if(!walk.on || document.hidden || walk.wake || !navigator.wakeLock) return;
+  try{
+    walk.wake=await navigator.wakeLock.request('screen');
+    walk.wake.addEventListener('release',()=>{ walk.wake=null; });
+  }catch(e){ walk.wake=null; }
+}
+function allowScreenOff(){
+  try{ if(walk.wake) walk.wake.release(); }catch(e){}
+  walk.wake=null;
+}
+// 실측 중 잠금 — 걷다가 손이 닿아 다른 메뉴로 넘어가거나 화면이 바뀌는 것 방지
+const WALK_LOCK_SEL='.search-row, .mode-row .mbtn, .bottom-nav .nav-item, #histBtn';
+function updateWalkLock(){
+  const on=!!walk.on;
+  document.body.classList.toggle('walk-lock', on);
+  const si=document.getElementById('searchInput'); if(si){ si.disabled=on; if(on) si.blur(); }
+}
+['click','touchend'].forEach(ev=>document.addEventListener(ev,e=>{
+  if(!walk.on) return;
+  const t=e.target.closest && e.target.closest(WALK_LOCK_SEL);
+  if(!t || t.classList.contains('on')) return;
+  e.preventDefault(); e.stopPropagation();
+  if(ev==='click') showToast('🔒 실측 중에는 잠겨 있어요 — ■ 끝내기 후 사용');
+},true));
 async function startWatch(){
-  try{ if(navigator.wakeLock) walk.wake=await navigator.wakeLock.request('screen'); }catch(e){}
+  keepScreenOn();
   walk.watchId=navigator.geolocation.watchPosition(onWalkPos, err=>{
     walkInfo('GPS 오류: '+(err.code===1?'위치 권한 거부':'신호 없음'));
   },{enableHighAccuracy:true,maximumAge:0,timeout:20000});
@@ -1227,7 +1255,6 @@ async function startWatch(){
 function stopWatch(){
   if(walk.watchId!=null) navigator.geolocation.clearWatch(walk.watchId);
   walk.watchId=null;
-  try{ if(walk.wake){ walk.wake.release(); walk.wake=null; } }catch(e){}
 }
 function toggleWalk(){
   if(!walk.on) startWalk();
@@ -1291,6 +1318,7 @@ function onWalkPos(pos){
 function stopWalkRecording(){
   stopWatch();
   walk.on=false; walk.paused=false; walk.autoPaused=false;
+  allowScreenOff();
   updateWalkButtons();
 }
 // 카메라 등 다른 앱으로 넘어가면 잠시 멈췄다가(화면 밖에서는 GPS가 멈춤), 돌아오면 자동으로 이어서 기록
@@ -1298,6 +1326,7 @@ function stopWalkRecording(){
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){ if(walk.on && !walk.paused) pauseWalk(true); }
   else if(walk.on && walk.paused && walk.autoPaused){ resumeWalk(); }
+  else if(walk.on) keepScreenOn();
 });
 // 앱이 다시 열렸을 때 저장된 실측 기록 이어가기 (6시간 이내)
 function restoreWalk(){
@@ -1305,7 +1334,7 @@ function restoreWalk(){
   if(!sv || !sv.pts || !sv.pts.length || Date.now()-sv.t>6*3600000){ clearSavedWalk(); return restoreWalkDone(); }
   setAreaMode('walk');
   walk.pts=sv.pts; walk.accs=sv.accs||[]; walk.on=true; walk.paused=true; walk.autoPaused=!sv.manual;
-  drawWalkLine(); updateWalkButtons(); saveWalk();
+  drawWalkLine(); updateWalkButtons(); saveWalk(); keepScreenOn();
   walkStatus('⏸ 일시정지');
   document.getElementById('addrVal').textContent='이전 실측 기록을 불러왔어요\n멈춘 곳에서 ▶ 계속, 또는 ■ 끝내기';
   const l=walk.pts[walk.pts.length-1];
@@ -1355,7 +1384,13 @@ function getFarmAt(lat,lng){
       return it||null;
     }).catch(()=>null);
 }
-window.finishWalk=function(){ return finishWalkImpl(); };
+window.finishWalk=function(){
+  if(!walk.on) return;
+  // 걷다가 손이 닿아 끝나는 것 방지 — 한 번 더 확인
+  appConfirm('실측 끝내기','지금까지 걸은 선으로 면적을 계산할까요?','끝내기',
+    '<svg width="26" height="26" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="#C62828"/></svg>')
+    .then(ok=>{ if(ok) finishWalkImpl(); });
+};
 async function finishWalkImpl(){
   stopWalkRecording();
   clearSavedWalk();
@@ -1392,9 +1427,11 @@ window.addAimPoint=addAimPoint;
 
 
 /* 앱 모양 확인창 (브라우저 기본 창 대신) */
-function appConfirm(title,msg,yes){
+function appConfirm(title,msg,yes,ico){
   return new Promise(res=>{
     const w=document.getElementById('cfm');
+    const ic=w.querySelector('.cfm-ico'); if(!ic.dataset.def) ic.dataset.def=ic.innerHTML;
+    ic.innerHTML=ico||ic.dataset.def;
     document.getElementById('cfmTitle').textContent=title;
     document.getElementById('cfmMsg').textContent=msg||'';
     document.getElementById('cfmYes').textContent=yes||'확인';
