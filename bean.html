@@ -178,7 +178,7 @@ body.big-text .datewrap .date-disp{height:52px;font-size:17px;font-weight:800}
     <div style="display:flex;gap:6px;align-items:flex-end">
       <div class="field" style="flex:0 0 28%;min-width:0">
         <label>계약자명</label>
-        <input type="text" id="contractor_name" class="inp" placeholder="이름"
+        <input type="text" id="contractor_name" class="inp" placeholder="이름" enterkeyhint="next"
           oninput="this.classList.toggle('filled',this.value!=='');saveState()" autocomplete="off">
       </div>
       <div class="field" style="flex:0 0 22%;min-width:0">
@@ -636,6 +636,94 @@ function saveToHistory(){
   if(records.length>30) records=records.slice(-30);
   try{ localStorage.setItem(HISTORY_KEY,JSON.stringify(records)); }catch(e){}
 }
+
+// ── 직전 계약자명 자동입력 (계산기별로 따로 기억) ──────
+// 계약자명 칸이 비어 있을 때 Enter/이동 → 직전 계약자명 입력 후 농지번호로 이동
+const LAST_CONTRACTOR_KEY = 'bean_last_contractor';
+function _getLastContractor(){
+  try{ return (localStorage.getItem(LAST_CONTRACTOR_KEY)||'').trim(); }catch(e){ return ''; }
+}
+function refreshContractorPh(){
+  const el=document.getElementById('contractor_name'); if(!el) return;
+  const last=_getLastContractor();
+  el.placeholder = last ? last+' ↵' : '이름';
+}
+function rememberContractor(){
+  const v=(document.getElementById('contractor_name')?.value||'').trim();
+  if(v){ try{ localStorage.setItem(LAST_CONTRACTOR_KEY, v); }catch(e){} }
+  refreshContractorPh();
+}
+// 빈 칸일 때만 직전 계약자명을 실제 값으로 입력
+function applyLastContractor(){
+  const el=document.getElementById('contractor_name'); if(!el) return false;
+  if(el.value.trim()!=='') return false;
+  const last=_getLastContractor();
+  if(!last) return false;
+  el.value=last; el.classList.add('filled'); saveState();
+  return true;
+}
+// 손가락으로 직접 누른 시각 — 키보드 '이동' 버튼과 터치 이동을 구분
+let _ctPtrTs = 0;
+['pointerdown','touchstart','touchend','mousedown'].forEach(function(t){
+  document.addEventListener(t, function(){ _ctPtrTs=Date.now(); }, {capture:true, passive:true});
+});
+let _ctEnterTs = 0;
+function onContractorEnter(e){
+  e.preventDefault();
+  const now=Date.now();
+  if(now-_ctEnterTs<300) return; // keydown·beforeinput 중복 처리 방지
+  _ctEnterTs=now;
+  applyLastContractor();
+  const nx=document.getElementById('farm_no');
+  if(nx) nx.focus();
+}
+// 농지번호 칸에서 Enter → 평년수확량 칸으로 이동
+let _fnEnterTs = 0;
+function onFarmNoEnter(e){
+  e.preventDefault();
+  const now=Date.now();
+  if(now-_fnEnterTs<300) return; // keydown·beforeinput 중복 처리 방지
+  _fnEnterTs=now;
+  if(_dupCheckPending) return; // 원장변경건 확인창이 떠 있으면 이동 보류
+  const nx=document.getElementById('avgYield');
+  if(nx && !nx.disabled && !nx.readOnly) nx.focus();
+  else document.getElementById('farm_no')?.blur();
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const el=document.getElementById('contractor_name'); if(!el) return;
+  el.addEventListener('keydown', function(e){
+    if(e.key!=='Enter' && e.keyCode!==13) return;
+    if(e.isComposing) return; // 한글 조합 중 Enter는 beforeinput에서 처리
+    onContractorEnter(e);
+  });
+  el.addEventListener('beforeinput', function(e){
+    if(e.inputType==='insertLineBreak') onContractorEnter(e);
+  });
+  // Android 키보드 '이동(다음)' 버튼은 Enter 이벤트 없이 포커스만 넘김 → blur에서 처리
+  el.addEventListener('blur', function(e){
+    if(el.value.trim()!=='') return;
+    if(Date.now()-_ctPtrTs<700) return; // 다른 칸을 직접 터치해 넘어간 경우는 자동입력 안 함
+    if(e.relatedTarget){
+      if(e.relatedTarget.id==='farm_no') applyLastContractor();
+    } else {
+      setTimeout(function(){
+        if(document.activeElement && document.activeElement.id==='farm_no') applyLastContractor();
+      },0);
+    }
+  });
+  el.addEventListener('focus', refreshContractorPh);
+  refreshContractorPh();
+
+  const fn=document.getElementById('farm_no');
+  if(fn){
+    fn.addEventListener('keydown', function(e){
+      if(e.key==='Enter' || e.keyCode===13) onFarmNoEnter(e);
+    });
+    fn.addEventListener('beforeinput', function(e){
+      if(e.inputType==='insertLineBreak') onFarmNoEnter(e);
+    });
+  }
+});
 
 function openResetModal(){document.getElementById('reset-overlay').classList.add('show');}
 function closeResetModal(){document.getElementById('reset-overlay').classList.remove('show');}
@@ -1176,6 +1264,7 @@ function loadState(){
 }
 
 function resetAll(){
+  rememberContractor(); // 초기화 직전 계약자명 기록 → 다음 농지에서 자동입력
   _lastResetFarmNo=(document.getElementById('farm_no')?.value||'').trim();
   _isAmendCase=false; _farmNoSeq=0;
   try{localStorage.removeItem('bean_state');}catch(e){}
@@ -1298,6 +1387,7 @@ async function saveImage(){
     const now=new Date();
     const stamp=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
     link.download=`콩피해율_${stamp}.png`;link.href=canvas.toDataURL('image/png');link.click();
+    rememberContractor(); // 직전 계약자명 기록
     try{
       const _rec={id:Date.now(),crop:'콩',cropDetail:'콩',category:'밭작물',
         farmNo:(document.getElementById('farm_no')?.value||'').trim()+(_farmNoSeq>0?'('+_farmNoSeq+')':''),

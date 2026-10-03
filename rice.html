@@ -713,9 +713,9 @@ function checkDupFarmNo(val){
 
 function openResetModal(){ document.getElementById('reset-overlay').style.display='flex'; }
 
-// ── 직전 계약자명 자동입력 (전 계산기 공용 키) ──────
+// ── 직전 계약자명 자동입력 (계산기별로 따로 기억) ──────
 // 계약자명 칸이 비어 있을 때 Enter → 직전 계약자명 입력 후 농지번호로 이동
-const LAST_CONTRACTOR_KEY = 'last_contractor';
+const LAST_CONTRACTOR_KEY = 'rice_last_contractor';
 function _getLastContractor(){
   try{ return (localStorage.getItem(LAST_CONTRACTOR_KEY)||'').trim(); }catch(e){ return ''; }
 }
