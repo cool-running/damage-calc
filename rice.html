@@ -748,6 +748,18 @@ function onContractorEnter(e){
   const nx=document.getElementById('farm_no');
   if(nx) nx.focus();
 }
+// 농지번호 칸에서 Enter → 평년수확량 칸으로 이동
+let _fnEnterTs = 0;
+function onFarmNoEnter(e){
+  e.preventDefault();
+  const now=Date.now();
+  if(now-_fnEnterTs<300) return; // keydown·beforeinput 중복 처리 방지
+  _fnEnterTs=now;
+  if(_dupCheckPending) return; // 원장변경건 확인창이 떠 있으면 이동 보류
+  const nx=document.getElementById('avgYield');
+  if(nx && !nx.disabled && !nx.readOnly) nx.focus();
+  else document.getElementById('farm_no')?.blur();
+}
 // 손가락으로 직접 누른 시각 — 키보드 '이동' 버튼과 터치 이동을 구분
 let _ctPtrTs = 0;
 ['pointerdown','touchstart','mousedown'].forEach(function(t){
@@ -777,6 +789,16 @@ document.addEventListener('DOMContentLoaded', function(){
   });
   el.addEventListener('focus', refreshContractorPh);
   refreshContractorPh();
+
+  const fn=document.getElementById('farm_no');
+  if(fn){
+    fn.addEventListener('keydown', function(e){
+      if(e.key==='Enter' || e.keyCode===13) onFarmNoEnter(e);
+    });
+    fn.addEventListener('beforeinput', function(e){
+      if(e.inputType==='insertLineBreak') onFarmNoEnter(e);
+    });
+  }
 });
 
 function normalizeDim(val){
