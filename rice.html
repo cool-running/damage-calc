@@ -713,6 +713,50 @@ function checkDupFarmNo(val){
 
 function openResetModal(){ document.getElementById('reset-overlay').style.display='flex'; }
 
+// ── 직전 계약자명 자동입력 (전 계산기 공용 키) ──────
+// 계약자명 칸이 비어 있을 때 Enter → 직전 계약자명 입력 후 농지번호로 이동
+const LAST_CONTRACTOR_KEY = 'last_contractor';
+function _getLastContractor(){
+  try{ return (localStorage.getItem(LAST_CONTRACTOR_KEY)||'').trim(); }catch(e){ return ''; }
+}
+function refreshContractorPh(){
+  const el=document.getElementById('contractor_name'); if(!el) return;
+  const last=_getLastContractor();
+  el.placeholder = last ? last+' ↵' : '이름';
+}
+function rememberContractor(){
+  const v=(document.getElementById('contractor_name')?.value||'').trim();
+  if(v){ try{ localStorage.setItem(LAST_CONTRACTOR_KEY, v); }catch(e){} }
+  refreshContractorPh();
+}
+let _ctEnterTs = 0;
+function onContractorEnter(e){
+  e.preventDefault();
+  const now=Date.now();
+  if(now-_ctEnterTs<300) return; // keydown·beforeinput 중복 처리 방지
+  _ctEnterTs=now;
+  const el=document.getElementById('contractor_name'); if(!el) return;
+  if(el.value.trim()===''){
+    const last=_getLastContractor();
+    if(last){ el.value=last; el.classList.add('filled'); saveState(); }
+  }
+  const nx=document.getElementById('farm_no');
+  if(nx) nx.focus();
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const el=document.getElementById('contractor_name'); if(!el) return;
+  el.addEventListener('keydown', function(e){
+    if(e.key!=='Enter' && e.keyCode!==13) return;
+    if(e.isComposing) return; // 한글 조합 중 Enter는 beforeinput에서 처리
+    onContractorEnter(e);
+  });
+  el.addEventListener('beforeinput', function(e){
+    if(e.inputType==='insertLineBreak') onContractorEnter(e);
+  });
+  el.addEventListener('focus', refreshContractorPh);
+  refreshContractorPh();
+});
+
 function normalizeDim(val){
   if(!val && val!==0) return '';
   let v = String(val).trim();
@@ -1252,6 +1296,7 @@ function saveToHistory(){
 }
 
 function resetAll(){
+  rememberContractor(); // 초기화 직전 계약자명 기록 → 다음 농지에서 Enter로 자동입력
   _lastResetFarmNo=(document.getElementById('farm_no')?.value||'').trim();
   _isAmendCase=false; _farmNoSeq=0;
   try{ localStorage.removeItem('rice_state'); }catch(e){}
@@ -1323,6 +1368,7 @@ async function saveImage(){
     link.download=`벼피해율_${stamp}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+    rememberContractor(); // 직전 계약자명 기록
     // ── 저장목록 기록 ──────────────────────────────
     try{
       const _farmNo = (document.getElementById('farm_no')?.value||'').trim();
