@@ -430,6 +430,17 @@ body.big-text .scell .ci{font-size:19px!important}
   </div>
 </div>
 
+<div class="modal-bg" id="halfInfoModal">
+  <div class="modal">
+    <div style="font-size:26px;text-align:center;margin-bottom:4px">ℹ️</div>
+    <h3 style="text-align:center">일부(절반)수확 조사</h3>
+    <p style="text-align:center">표본주 착과된 과실 중 <b>절반만 수확</b>하여 조사한 경우입니다.<br>입력하는 착과량(g)은 <b style="color:var(--main)">실제 수확한 절반 무게</b>를 그대로 넣으면,<br>계산 시 자동으로 <b style="color:var(--red)">×2</b> 하여 표본주 전체 착과량으로 인정합니다.</p>
+    <div class="modal-btns">
+      <button class="mb-ok" style="background:var(--main);width:100%" onclick="$('halfInfoModal').style.display='none'">확인</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="treeAddModal">
   <div class="modal">
     <div style="font-size:26px;text-align:center;margin-bottom:4px">⚠️</div>
@@ -828,6 +839,7 @@ function onHalf(i,checked){
   if(_locked)return;
   varieties[i].half=checked;
   renderVarieties();calc();saveState();
+  if(checked){ $('halfInfoModal').style.display='flex'; }
 }
 function addTree(i){
   if(_locked)return;
