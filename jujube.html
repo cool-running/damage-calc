@@ -432,11 +432,12 @@ body.big-text .scell .ci{font-size:19px!important}
 
 <div class="modal-bg" id="halfInfoModal">
   <div class="modal">
-    <div style="font-size:26px;text-align:center;margin-bottom:4px">ℹ️</div>
-    <h3 style="text-align:center">일부(절반)수확 조사</h3>
-    <p style="text-align:center">표본주 착과된 과실 중 <b>절반만 수확</b>하여 조사한 경우입니다.<br>입력하는 착과량(g)은 <b style="color:var(--main)">실제 수확한 절반 무게</b>를 그대로 넣으면,<br>계산 시 자동으로 <b style="color:var(--red)">×2</b> 하여 표본주 전체 착과량으로 인정합니다.</p>
+    <div style="font-size:26px;text-align:center;margin-bottom:4px">⚠️</div>
+    <h3 style="text-align:center">절반 수확 조사</h3>
+    <p style="text-align:center"><b style="color:var(--main)" id="halfInfoName">품종</b> <b style="color:var(--main)"><span id="halfInfoAge">0</span>년</b> 절반조사 입력이 맞습니까?</p>
     <div class="modal-btns">
-      <button class="mb-ok" style="background:var(--main);width:100%" onclick="$('halfInfoModal').style.display='none'">확인</button>
+      <button class="mb-cancel" onclick="cancelHalf()">취소</button>
+      <button class="mb-ok" style="background:var(--main)" onclick="confirmHalf()">확인</button>
     </div>
   </div>
 </div>
@@ -835,11 +836,31 @@ function addVariety(){if(_locked||(_phase!=='tree'&&!_expandAll))return;if(varie
 function delVariety(i){if(_locked||(_phase!=='tree'&&!_expandAll))return;if(varieties.length<=1){showToast('최소 1개 품종이 필요합니다');return;}varieties.splice(i,1);renderVarieties();calc();saveState();}
 let _treeI=-1;
 function properOf(i){ const R=computeAll(); return R.rows[i]?R.rows[i].calc.proper:0; }
+let _halfPendingI=-1;
 function onHalf(i,checked){
   if(_locked)return;
-  varieties[i].half=checked;
+  if(checked){
+    // 절반 선택 시 확인 팝업 — 확인 누르기 전까지는 half 적용 안 함
+    _halfPendingI=i;
+    const v=varieties[i];
+    $('halfInfoName').textContent=vBase(v)||'품종';
+    $('halfInfoAge').textContent=v.age||'0';
+    $('halfInfoModal').style.display='flex';
+    return;
+  }
+  varieties[i].half=false;
   renderVarieties();calc();saveState();
-  if(checked){ $('halfInfoModal').style.display='flex'; }
+}
+function confirmHalf(){
+  $('halfInfoModal').style.display='none';
+  if(_halfPendingI>=0&&varieties[_halfPendingI]){varieties[_halfPendingI].half=true;}
+  _halfPendingI=-1;
+  renderVarieties();calc();saveState();
+}
+function cancelHalf(){
+  $('halfInfoModal').style.display='none';
+  _halfPendingI=-1;
+  renderVarieties();   // 토글을 전부 상태로 되돌림
 }
 function addTree(i){
   if(_locked)return;
