@@ -169,7 +169,7 @@ kakao.maps.load(function(){
   geocoder = new kakao.maps.services.Geocoder();
 
   map = new kakao.maps.Map(document.getElementById('map'), {
-    center: new kakao.maps.LatLng(37.5665, 126.9780), level: 1,
+    center: new kakao.maps.LatLng(...(geoLastGet()?[geoLastGet().lat,geoLastGet().lng]:[37.5665,126.9780])), level: 1,
     mapTypeId: kakao.maps.MapTypeId.HYBRID,
     tileAnimation: false
   });
@@ -177,7 +177,7 @@ kakao.maps.load(function(){
 
   // 내 위치 마커 — 빨간 동그라미
   myMarker = new kakao.maps.CustomOverlay({
-    position: new kakao.maps.LatLng(37.5665, 126.9780),
+    position: new kakao.maps.LatLng(...(geoLastGet()?[geoLastGet().lat,geoLastGet().lng]:[37.5665,126.9780])),
     content: '<div style="width:18px;height:18px;border-radius:50%;background:#E53935;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
     zIndex:3
   });
@@ -236,7 +236,7 @@ function getLocation(){
   document.getElementById('gpsBadge').className='gps-badge';
   document.getElementById('gpsBadge').textContent='위치 확인 중...';
   if(!navigator.geolocation){ setErr('GPS 미지원'); return; }
-  navigator.geolocation.getCurrentPosition(
+  geoTwoStage(
     pos=>{
       curLat=pos.coords.latitude; curLng=pos.coords.longitude; curAcc=Math.round(pos.coords.accuracy);
       const label = curAcc<10?'좋음':curAcc<30?'보통':'낮음';
@@ -247,10 +247,27 @@ function getLocation(){
       reverseGeocode(curLat,curLng);
       fetchParcelPolygon(curLat,curLng);
     },
-    err=>setErr(err.code===1?'위치 권한 거부':err.code===2?'GPS 없음':'시간 초과'),
-    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+    err=>setErr(err.code===1?'위치 권한 거부':err.code===2?'GPS 없음':'시간 초과')
   );
 }
+
+/* ── GPS 2단계 측위: 빠른 대략위치(셀/와이파이) → 정밀 GPS로 갱신 ── */
+function geoLastGet(){ try{ const v=JSON.parse(localStorage.getItem('gps_last')||'null'); return v&&v.lat?v:null; }catch(_){ return null; } }
+function geoLastSet(lat,lng){ try{ localStorage.setItem('gps_last', JSON.stringify({lat,lng})); }catch(_){} }
+function geoTwoStage(onPos, onErr){
+  let best=Infinity, fails=0, lastErr=null;
+  const ok=pos=>{
+    const acc=pos.coords.accuracy||9999;
+    if(acc>=best) return; // 더 정확한 값만 반영
+    best=acc;
+    geoLastSet(pos.coords.latitude,pos.coords.longitude);
+    onPos(pos);
+  };
+  const fail=err=>{ lastErr=err; if(++fails===2 && best===Infinity) onErr(lastErr); };
+  navigator.geolocation.getCurrentPosition(ok, fail, {enableHighAccuracy:false, timeout:10000, maximumAge:120000});
+  navigator.geolocation.getCurrentPosition(ok, fail, {enableHighAccuracy:true,  timeout:30000, maximumAge:5000});
+}
+
 function setErr(msg){
   document.getElementById('gpsBadge').className='gps-badge err';
   document.getElementById('gpsBadge').textContent=msg;
