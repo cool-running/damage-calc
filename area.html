@@ -2,9 +2,6 @@
 <html lang="ko" translate="no">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#185FA5">
 <meta name="mobile-web-app-capable" content="yes">
@@ -246,11 +243,11 @@ body{font-family:-apple-system,'Noto Sans KR',sans-serif;color:var(--text);font-
 </div>
 
 <nav class="bottom-nav">
-  <button class="nav-item" onclick="location.href='./cover_card.html?v='+Date.now()"><div class="nav-icon">📋</div><span>표지카드</span></button>
-  <button class="nav-item" onclick="location.href='./location.html?v='+Date.now()"><div class="nav-icon">📍</div><span>위치</span></button>
+  <button class="nav-item" onclick="location.href='./cover_card.html'"><div class="nav-icon">📋</div><span>표지카드</span></button>
+  <button class="nav-item" onclick="location.href='./location.html'"><div class="nav-icon">📍</div><span>위치</span></button>
   <button class="nav-item on"><div class="nav-icon">📐</div><span>면적측정</span></button>
-  <button class="nav-item" onclick="location.href='./index.html?v='+Date.now()"><div class="nav-icon" style="padding:0;"><img src="./icon-192.png" style="width:100%;height:100%;object-fit:contain;" alt=""></div><span>계산기</span></button>
-  <button class="nav-item" onclick="location.href='./help.html?v='+Date.now()"><div class="nav-icon">💡</div><span>도움말</span></button>
+  <button class="nav-item" onclick="location.href='./index.html'"><div class="nav-icon" style="padding:0;"><img src="./icon-192.png" style="width:100%;height:100%;object-fit:contain;" alt=""></div><span>계산기</span></button>
+  <button class="nav-item" onclick="location.href='./help.html'"><div class="nav-icon">💡</div><span>도움말</span></button>
 </nav>
 
 <script>
@@ -627,10 +624,11 @@ function applyFarmSelection(it,lat,lng){
 const FARM_MAX_LEVEL=3;      // 이 확대 수준 이하(더 가깝게)일 때만 주변 필지 표시
 const FARM_MAX_RADIUS=300;   // 반경 상한(m)
 const FARM_STORE_KEY='farmmap_cache_v1';
+const farmCellCacheGeo={};
 let farmCache={};            // id → {id,use,lnm,year,img,rings}
 let farmCellCache={};        // 격자칸 → id 목록
 let farmPolys={};            // id → kakao.maps.Polygon
-let _nearbyTimer=null, _nearbyBusy=false;
+let _nearbyTimer=null, _nearbyBusy=false, _nearbyAgain=false, _farmZoomHintAt=0;
 try{
   const saved=JSON.parse(localStorage.getItem(FARM_STORE_KEY)||'{}');
   // 팜맵은 해마다 갱신되므로 저장한 지 60일 지나면 버리고 새로 받음
@@ -676,8 +674,13 @@ function scheduleNearbyFarm(){
   _nearbyTimer=setTimeout(loadNearbyFarm,500);
 }
 async function loadNearbyFarm(){
-  if(!farmModeOn() || _nearbyBusy) return;
-  if(map.getLevel()>FARM_MAX_LEVEL){ return; }
+  if(!farmModeOn()) return;
+  if(_nearbyBusy){ _nearbyAgain=true; return; } // 불러오는 중에 지도를 옮기면, 끝난 뒤 새 위치도 이어서 불러옴
+  if(map.getLevel()>FARM_MAX_LEVEL){
+    // 너무 넓게 보고 있으면 경계를 불러오지 않음 — 확대하라고 알려줌 (20초에 한 번)
+    if(Date.now()-_farmZoomHintAt>20000){ _farmZoomHintAt=Date.now(); showToast('🌾 지도를 조금 더 확대하면 농지 경계가 보여요'); }
+    return;
+  }
   const c=map.getCenter(), b=map.getBounds();
   const lat=c.getLat(), lng=c.getLng();
   // 이미 불러온 필지는 즉시 그리기
@@ -696,28 +699,42 @@ async function loadNearbyFarm(){
       const d=await r.json();
       if(!d.ok){ if(!isNoData(d)) showToast('🌾 주변 농지 조회 실패: '+(d.error||'알 수 없음')); else { farmCellCache[cell]=[]; saveFarmStore(); } return; }
       ids=[...new Set((d.items||[]).map(x=>x.id).filter(Boolean))];
+      // 응답에 위치가 있으면 기억해 두고 가까운 순서로 불러올 때 사용
+      (d.items||[]).forEach(x=>{ const la=+(x.lat||x.y||(x.center&&x.center[0])), ln=+(x.lng||x.x||(x.center&&x.center[1])); if(x.id && la && ln) farmCellCacheGeo[x.id]=[la,ln]; });
       farmCellCache[cell]=ids; saveFarmStore();
     }
     const need=ids.filter(id=>!farmCache[id]);
     if(need.length) showToast(`🌾 주변 농지 ${need.length}곳 불러오는 중...`);
-    for(let i=0;i<need.length;i+=40){
-      if(!farmModeOn()) break;
-      const r=await fetch(`${FARMMAP_URL}?mode=ids&ids=${need.slice(i,i+40).join(',')}`);
-      const d=await r.json();
-      if(!d.ok){ showToast('🌾 농지 경계 조회 실패: '+(d.error||'알 수 없음')+' — 워커 업데이트 확인'); break; }
-      (d.items||[]).forEach(it=>{
-        if(it.rings&&it.rings.length){
-          farmCache[it.id]={id:it.id,use:it.use,lnm:it.lnm,year:it.year,img:it.img,rings:it.rings};
-          drawFarmPoly(farmCache[it.id]);
-        }
-      });
-    }
+    // 화면 가운데에서 가까운 필지부터, 40개씩 묶어 4묶음을 동시에 요청 (예전: 한 묶음씩 차례로)
+    const dist=id=>{ const it=farmCellCacheGeo[id]; return it ? Math.abs(it[0]-lat)+Math.abs(it[1]-lng) : 1; };
+    need.sort((a,b)=>dist(a)-dist(b));
+    const chunks=[]; for(let i=0;i<need.length;i+=40) chunks.push(need.slice(i,i+40));
+    let failMsg='';
+    const worker=async()=>{
+      while(chunks.length && farmModeOn() && !failMsg){
+        const part=chunks.shift();
+        try{
+          const r=await fetch(`${FARMMAP_URL}?mode=ids&ids=${part.join(',')}`);
+          const d=await r.json();
+          if(!d.ok){ failMsg='🌾 농지 경계 조회 실패: '+(d.error||'알 수 없음'); return; }
+          (d.items||[]).forEach(it=>{
+            if(it.rings&&it.rings.length){
+              farmCache[it.id]={id:it.id,use:it.use,lnm:it.lnm,year:it.year,img:it.img,rings:it.rings};
+              drawFarmPoly(farmCache[it.id]);
+            }
+          });
+        }catch(e){ failMsg='🌾 주변 농지 불러오기 실패(네트워크)'; return; }
+      }
+    };
+    await Promise.all([worker(),worker(),worker(),worker()]);
+    if(failMsg) showToast(failMsg);
     if(need.length) saveFarmStore();
     ids.forEach(id=>{ if(farmCache[id]) drawFarmPoly(farmCache[id]); });
   }catch(e){
     showToast('🌾 주변 농지 불러오기 실패(네트워크)');
   }finally{
     _nearbyBusy=false;
+    if(_nearbyAgain){ _nearbyAgain=false; scheduleNearbyFarm(); }
   }
 }
 
@@ -1713,12 +1730,12 @@ function locateMe(keepView){
   };
   // 1) 빠른 위치: 최근 2분 안에 잡힌 위치나 기지국 위치로 즉시 표시
   navigator.geolocation.getCurrentPosition(pos=>{ if(!gotPrecise) apply(pos,false); }, ()=>{},
-    {enableHighAccuracy:false,timeout:10000,maximumAge:120000});
+    {enableHighAccuracy:false,timeout:3000,maximumAge:120000});
   // 2) 정밀 위치: GPS로 정확한 위치를 잡으면 갱신
   navigator.geolocation.getCurrentPosition(pos=>{ gotPrecise=true; apply(pos,true); },
     err=>{ if(!moved){ badge.className='gps-badge err';
       badge.textContent=err.code===1?'위치 권한 거부':err.code===2?'GPS 없음':'시간 초과'; } },
-    {enableHighAccuracy:true,timeout:30000,maximumAge:5000});
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0});
 }
 
 function showToast(msg){
