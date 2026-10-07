@@ -1711,5 +1711,58 @@ document.querySelectorAll('.datewrap input[type=date]').forEach(inp=>{
   inp.addEventListener('click',()=>{ try{ if(inp.showPicker) inp.showPicker(); }catch(e){} });
 });
 </script>
+<script>
+/* ── 항목별 입력 순서 보정 ──
+   일부 키보드는 숫자 칸에서 '다음' 버튼을 누르면 Enter 신호 없이 바로 옆 칸으로 넘어간다.
+   항목별(위→아래) 입력일 때는 그렇게 넘어간 것을 알아채서 같은 항목의 다음 구간 칸으로 옮겨 준다.
+   다른 칸을 손가락으로 직접 누른 경우에는 건드리지 않는다. */
+(function(){
+  var CFG={"sel": "#sample-body input", "fn": "getNextOrderedInput"};
+  function colMode(){ try{ return sampleInputOrder==='col'; }catch(e){ return false; } }
+  function inputs(){
+    return Array.prototype.filter.call(document.querySelectorAll(CFG.sel), function(x){ return x.offsetParent!==null && !x.disabled && x.type!=='hidden'; });
+  }
+  function isCell(el){ return !!(el && el.tagName==='INPUT' && el.matches && el.matches(CFG.sel)); }
+  function want(el){ try{ return window[CFG.fn](el) || null; }catch(e){ return null; } }
+  var ptrTs=0, navTs=0;
+  ['pointerdown','touchstart','touchend','mousedown'].forEach(function(t){
+    document.addEventListener(t, function(){ ptrTs=Date.now(); }, {capture:true, passive:true});
+  });
+  function go(to){
+    navTs=Date.now();
+    to.focus();
+    try{
+      if(to.classList.contains('dim-input')){ var L=to.value.length; to.setSelectionRange(L,L); }
+      else if(to.select) to.select();
+    }catch(e){}
+  }
+  // ① 키보드가 Tab 신호를 보내는 경우
+  document.addEventListener('keydown', function(e){
+    if(e.key!=='Tab' || e.shiftKey || e.defaultPrevented) return;
+    if(!isCell(e.target) || !colMode()) return;
+    var w=want(e.target);
+    if(w){ e.preventDefault(); go(w); }
+  }, true);
+  // ② 아무 신호 없이 옆 칸으로 넘어가는 경우
+  document.addEventListener('focusout', function(e){
+    var from=e.target;
+    if(!isCell(from) || !colMode()) return;
+    if(Date.now()-ptrTs<700) return;  // 다른 칸을 손가락으로 직접 누른 경우
+    if(Date.now()-navTs<250) return;  // 방금 이 코드가 옮긴 경우
+    var all=inputs(), i=all.indexOf(from);
+    if(i<0) return;
+    var domNext=all[i+1]||null;
+    var check=function(to){
+      if(!to || to===from || to===document.body) return;
+      var nativeNext = domNext ? (to===domNext) : !isCell(to); // 화면 순서상 바로 다음 칸으로 넘어갔는가
+      if(!nativeNext) return;
+      var w=want(from);
+      if(w && w!==to) go(w);
+    };
+    if(e.relatedTarget) check(e.relatedTarget);
+    else setTimeout(function(){ check(document.activeElement); },0);
+  }, true);
+})();
+</script>
 </body>
 </html>
