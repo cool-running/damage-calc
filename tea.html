@@ -722,6 +722,22 @@ function updateTotals(){
 function onInsHarvestRateChange(){ calc(); saveState(); }
 function onActHarvestRateChange(){ calc(); saveState(); }
 
+// ── 원장변경(수확면적률 변경) 때 적용할 평년수확량 ──
+//   가입수확면적률과 실제수확면적률이 다르면, 평년수확량을 실제 면적률 기준으로 다시 잡는다 (kg 미만 버림).
+//   전산 사례: 309kg, 90% → 80%  ⇒  309 × 80 ÷ 90 = 274.67 → 274kg  (피해율 35.04%)
+function teaRateChanged(){
+  const ins=parseFloat(document.getElementById('ins_harvest_rate').value)||0;
+  const act=parseFloat(document.getElementById('harvest_area_rate').value)||0;
+  return ins>0 && act>0 && ins!==act;
+}
+function teaAdjAvgYield(){
+  const avg=toNum(document.getElementById('avg_yield'));
+  if(!(avg>0) || !teaRateChanged()) return avg;
+  const ins=parseFloat(document.getElementById('ins_harvest_rate').value)||0;
+  const act=parseFloat(document.getElementById('harvest_area_rate').value)||0;
+  return Math.floor(avg*act/ins + 1e-9);
+}
+
 // ── 메인 계산 ────────────────────────────────────
 function calc(){
   const avgYield=toNum(document.getElementById('avg_yield'));
@@ -735,14 +751,15 @@ function calc(){
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
   const effArea=(insArea>0&&!isChanged)?insArea:actArea;
   const surveyArea=Math.max(0,effArea-deadArea-otherArea-harvArea);
-  const m2Avg=insArea>0?Math.round(avgYield/insArea*10000)/10000:0;
+  const m2Avg=insArea>0?Math.round(teaAdjAvgYield()/insArea*10000)/10000:0;
   const properSample=actArea>0?getProperSample(actArea):4;
 
   // 계약변경
   const contractEl=document.getElementById('contract_yn_disp');
   if(insArea>0&&actArea>0){
-    contractEl.value=isChanged?'원장변경 대상':'이상무';
-    contractEl.style.color=isChanged?'#e24b4a':'#5B7E3F';
+    const _orgChanged=isChanged||teaRateChanged();   // 면적 변경 또는 수확면적률 변경
+    contractEl.value=_orgChanged?'원장변경 대상':'이상무';
+    contractEl.style.color=_orgChanged?'#e24b4a':'#5B7E3F';
     contractEl.style.fontWeight='700';
   } else {
     contractEl.value=''; contractEl.style.color=''; contractEl.style.fontWeight='';
@@ -765,7 +782,7 @@ function calcResult(){
   const uninsRate=(parseFloat(document.getElementById('unins_rate').value)||0)/100;
   const harvestAreaRate=(parseFloat(document.getElementById('harvest_area_rate').value)||0)/100;
   const insHarvestRate=(parseFloat(document.getElementById('ins_harvest_rate').value)||0)/100;
-  const avgYieldAdj=avgYield;
+  const avgYieldAdj=teaAdjAvgYield();   // 수확면적률이 바뀌었으면 그 비율로 다시 잡은 평년수확량
 
   const areaErrNum=insArea>0?(actArea-insArea)/insArea:0;
   const isChanged=insArea>0&&actArea>0&&Math.abs(areaErrNum)>0.1;
@@ -1152,7 +1169,10 @@ function fillTeaCaptureTemplate(){
   document.getElementById('cap-farmno-disp').textContent=contractorName
     ? contractorName+(farmNoFull?'('+farmNoFull+')':'')
     : (farmNo?'농지번호: '+farmNoFull:'');
-  document.getElementById('cap-avg-yield').textContent=document.getElementById('avg_yield').value?document.getElementById('avg_yield').value+' kg':'-';
+  { const _ay=document.getElementById('avg_yield').value, _ayEl=document.getElementById('cap-avg-yield'), _adj=teaAdjAvgYield();
+    const _ayChanged=!!_ay && teaRateChanged();
+    _ayEl.textContent=_ay ? (_ayChanged ? _ay+'→'+_adj.toLocaleString()+' kg' : _ay+' kg') : '-';
+    _ayEl.style.color=_ayChanged?'#e24b4a':'#111827'; _ayEl.style.fontWeight=_ayChanged?'700':''; }
   document.getElementById('cap-ins-area').textContent=document.getElementById('ins_area').value?document.getElementById('ins_area').value+' ㎡':'-';
   const _insHR=document.getElementById('ins_harvest_rate').value||'';
   const _actHR=document.getElementById('harvest_area_rate').value||'';
