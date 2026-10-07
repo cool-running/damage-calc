@@ -908,20 +908,22 @@ function calc(){
     resultBox.className='result-box pending'; pctEl.textContent='- -'; pctEl.style.color='white'; return;
   }
 
-  const m2 = totalEff/totalArea/1000;
-  const m2r3 = Math.round(m2*10000)/10000;            // m2 소수4자리 ROUND
+  // 전산 공식: 표본구간 단위면적당 수확량 = ROUND(유효중량합 ÷ 면적합 ÷ 1000, 소수3자리)
+  // (㎡당 g을 정수로 반올림한 것과 같다. 예: 603.08g ÷ 3.84㎡ = 157.05 → 0.157 kg/㎡ → ×780㎡ = 122.46 → 122kg)
+  const gPerM2 = Math.round(totalEff/totalArea + 1e-9);
+  const m2r3 = gPerM2/1000;
   // 조사수확량 = 단위면적당 × 조사대상면적 + ㎡당평년수확량 × (타작물미보상+기수확면적)
   const m2Avg = insArea>0 ? Math.round(avgYield/insArea*10000)/10000 : 0;
-  const surveyYield = Math.round(m2r3*surveyArea) + Math.floor(m2Avg*(uninsArea+harvArea));
+  const surveyYield = Math.round(gPerM2*surveyArea/1000 + 1e-9) + Math.floor(m2Avg*(uninsArea+harvArea));
   const uninsLoss = Math.round(Math.max(0,effAvg-surveyYield)*uninsRate);
   // ROUND 피해율 (소수4자리)
   const _rawP = Math.round((effAvg-surveyYield-uninsLoss)/effAvg*10000)/10000;
   const pihaeyul = _rawP < 0 ? _rawP : Math.max(0, _rawP);
 
   document.getElementById('s-area').textContent = totalArea>0 ? totalArea.toFixed(2)+' ㎡' : '-';
-  document.getElementById('s-unit').textContent = m2r3.toFixed(4)+' kg/㎡';
+  document.getElementById('s-unit').textContent = m2r3.toFixed(3)+' kg/㎡';
   document.getElementById('commonSurvey').value = surveyYield.toLocaleString()+' kg';
-  showResult(effAvg, surveyYield, m2r3.toFixed(4)+' kg/㎡', surveyArea, uninsLoss, pihaeyul);
+  showResult(effAvg, surveyYield, m2r3.toFixed(3)+' kg/㎡', surveyArea, uninsLoss, pihaeyul);
   saveState();
 }
 
