@@ -673,6 +673,12 @@ function scheduleNearbyFarm(){
   clearTimeout(_nearbyTimer);
   _nearbyTimer=setTimeout(loadNearbyFarm,500);
 }
+function fetchT(url,ms){   // 시간 제한 있는 fetch (응답이 없으면 ms 뒤 포기)
+  const c=new AbortController(), t=setTimeout(()=>c.abort(),ms||15000);
+  return fetch(url,{signal:c.signal}).finally(()=>clearTimeout(t));
+}
+const _farmEmptyCells={};   // 이번 실행에서만 기억하는 '자료 없음' 칸
+let _farmSlowAt=0;
 async function loadNearbyFarm(){
   if(!farmModeOn()) return;
   if(_nearbyBusy){ _nearbyAgain=true; return; } // 불러오는 중에 지도를 옮기면, 끝난 뒤 새 위치도 이어서 불러옴
@@ -693,11 +699,11 @@ async function loadNearbyFarm(){
   const cell=(Math.round(lat/0.002)*0.002).toFixed(3)+','+(Math.round(lng/0.002)*0.002).toFixed(3)+','+radius;
   _nearbyBusy=true;
   try{
-    let ids=farmCellCache[cell];
+    let ids=(farmCellCache[cell]&&farmCellCache[cell].length) ? farmCellCache[cell] : _farmEmptyCells[cell];
     if(!ids){
-      const r=await fetch(`${FARMMAP_URL}?mode=area&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}&radius=${radius}&rows=500`);
+      const r=await fetchT(`${FARMMAP_URL}?mode=area&lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}&radius=${radius}&rows=500`);
       const d=await r.json();
-      if(!d.ok){ if(!isNoData(d)) showToast('🌾 주변 농지 조회 실패: '+(d.error||'알 수 없음')); else { farmCellCache[cell]=[]; saveFarmStore(); } return; }
+      if(!d.ok){ if(!isNoData(d)) showToast('🌾 주변 농지 조회 실패: '+(d.error||'알 수 없음')); else { _farmEmptyCells[cell]=[]; showToast('🌾 이 주변에는 팜맵 정보가 없어요'); } return; }
       ids=[...new Set((d.items||[]).map(x=>x.id).filter(Boolean))];
       // 응답에 위치가 있으면 기억해 두고 가까운 순서로 불러올 때 사용
       (d.items||[]).forEach(x=>{ const la=+(x.lat||x.y||(x.center&&x.center[0])), ln=+(x.lng||x.x||(x.center&&x.center[1])); if(x.id && la && ln) farmCellCacheGeo[x.id]=[la,ln]; });
@@ -714,7 +720,7 @@ async function loadNearbyFarm(){
       while(chunks.length && farmModeOn() && !failMsg){
         const part=chunks.shift();
         try{
-          const r=await fetch(`${FARMMAP_URL}?mode=ids&ids=${part.join(',')}`);
+          const r=await fetchT(`${FARMMAP_URL}?mode=ids&ids=${part.join(',')}`);
           const d=await r.json();
           if(!d.ok){ failMsg='🌾 농지 경계 조회 실패: '+(d.error||'알 수 없음'); return; }
           (d.items||[]).forEach(it=>{
@@ -723,7 +729,7 @@ async function loadNearbyFarm(){
               drawFarmPoly(farmCache[it.id]);
             }
           });
-        }catch(e){ failMsg='🌾 주변 농지 불러오기 실패(네트워크)'; return; }
+        }catch(e){ failMsg = e.name==='AbortError' ? '🌾 팜맵 서버 응답이 늦어요 — 지도를 조금 움직이면 다시 불러와요' : '🌾 주변 농지 불러오기 실패(네트워크)'; return; }
       }
     };
     await Promise.all([worker(),worker(),worker(),worker()]);
@@ -731,7 +737,8 @@ async function loadNearbyFarm(){
     if(need.length) saveFarmStore();
     ids.forEach(id=>{ if(farmCache[id]) drawFarmPoly(farmCache[id]); });
   }catch(e){
-    showToast('🌾 주변 농지 불러오기 실패(네트워크)');
+    if(e.name==='AbortError'){ if(Date.now()-_farmSlowAt>20000){ _farmSlowAt=Date.now(); showToast('🌾 팜맵 서버 응답이 늦어요 — 지도를 조금 움직이면 다시 불러와요'); } }
+    else showToast('🌾 주변 농지 불러오기 실패(네트워크)');
   }finally{
     _nearbyBusy=false;
     if(_nearbyAgain){ _nearbyAgain=false; scheduleNearbyFarm(); }
