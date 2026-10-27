@@ -751,5 +751,51 @@ if('serviceWorker' in navigator){
   caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));
 }
 </script>
+<!-- ══ 앱 출시 안내 팝업 (웹 전용) ══
+     NOTICE_ON : false 로 바꾸면 팝업이 안 뜸
+     CLOSE_DATE: 이 날짜부터는 닫기 없이 종료 안내 화면만 보임 -->
+<script>
+(function(){
+  var NOTICE_ON  = true;
+  var CLOSE_DATE = '2026-12-01';
+  var STORE = 'https://play.google.com/store/apps/details?id=io.github.coolrunning.damagecalc';
+  if(!NOTICE_ON) return;
+  function ymd(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  var today = ymd(new Date());
+  var closed = today >= CLOSE_DATE;
+  if(!closed){
+    try{ if(localStorage.getItem('appNotice_hide')===today) return; }catch(e){}
+    try{ if(sessionStorage.getItem('appNotice_x')==='1') return; }catch(e){}
+  }
+  var css='#appNotice{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,"Noto Sans KR",sans-serif}'
+   +'#appNotice .an-box{background:#fff;border-radius:20px;max-width:360px;width:100%;padding:24px 20px 18px;box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:center;box-sizing:border-box}'
+   +'#appNotice .an-ico{width:72px;height:72px;border-radius:16px;margin:0 auto 12px;display:block}'
+   +'#appNotice h2{margin:0 0 10px;font-size:20px;font-weight:800;color:#1B3A5C}'
+   +'#appNotice .an-txt{font-size:14.5px;line-height:1.55;color:#333;margin:0 0 14px}'
+   +'#appNotice .an-warn{background:#FFF4E5;border:1px solid #F5C27A;color:#8A4B00;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.5;font-weight:700;margin:0 0 16px}'
+   +'#appNotice .an-go{display:block;width:100%;height:50px;border-radius:14px;background:#2E7D32;color:#fff;font-size:17px;font-weight:800;text-decoration:none;line-height:50px}'
+   +'#appNotice .an-row{display:flex;justify-content:space-between;margin-top:12px}'
+   +'#appNotice .an-row button{background:none;border:none;color:#888;font-size:13.5px;padding:6px 4px;cursor:pointer;font-family:inherit}';
+  function show(){
+    var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+    var d=document.createElement('div'); d.id='appNotice';
+    d.innerHTML = closed
+      ? '<div class="an-box"><img class="an-ico" src="icon-192.png" alt=""><h2>웹버전 서비스가 종료되었어요</h2>'
+        +'<p class="an-txt">그동안 이용해 주셔서 감사합니다.<br>이제 앱에서 이용해 주세요.</p>'
+        +'<a class="an-go" href="'+STORE+'">플레이스토어에서 설치</a></div>'
+      : '<div class="an-box"><img class="an-ico" src="icon-192.png" alt=""><h2>📱 앱으로 출시되었어요</h2>'
+        +'<p class="an-txt">웹버전보다 더 안정적이고,<br>기능이 업데이트 된 상위 버전으로<br>사용하실 수 있어요</p>'
+        +'<div class="an-warn">⚠️ 2026년 12월부터<br>웹버전은 이용할 수 없어요.<br>미리 앱을 설치해 주세요</div>'
+        +'<a class="an-go" href="'+STORE+'">플레이스토어에서 설치</a>'
+        +'<div class="an-row"><button type="button" id="anToday">오늘 하루 보지 않기</button><button type="button" id="anClose">닫기</button></div></div>';
+    document.body.appendChild(d);
+    if(!closed){
+      document.getElementById('anToday').onclick=function(){ try{localStorage.setItem('appNotice_hide',today);}catch(e){} d.remove(); };
+      document.getElementById('anClose').onclick=function(){ try{sessionStorage.setItem('appNotice_x','1');}catch(e){} d.remove(); };
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',show); else show();
+})();
+</script>
 </body>
 </html>
